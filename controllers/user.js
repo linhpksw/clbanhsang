@@ -5,3 +5,7 @@ export const userRequest = (req, res) => {
     requests.push(request);
     res.send('Success');
 };
+
+export const getUserRequest = (req, res) => {
+    res.send(requests);
+};
