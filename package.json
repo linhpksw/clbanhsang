@@ -6,7 +6,7 @@
     "type": "module",
     "scripts": {
         "start": "node index.js",
-        "start:dev": "nodemon index.js"
+        "dev": "nodemon index.js"
     },
     "keywords": [],
     "author": "",
@@ -16,5 +16,13 @@
     },
     "devDependencies": {
         "nodemon": "^2.0.18"
-    }
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/linhpksw/zalo-server.git"
+    },
+    "bugs": {
+        "url": "https://github.com/linhpksw/zalo-server/issues"
+    },
+    "homepage": "https://github.com/linhpksw/zalo-server#readme"
 }
