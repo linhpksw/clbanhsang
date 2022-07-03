@@ -17,8 +17,10 @@ export const userRequest = (req, res) => {
     const userId = webhook.sender.id;
     const syntax = webhook.message.text;
 
-    if (eventName !== 'user_send_text')
-        return sendMessage(userId, 'Cú pháp không đúng.');
+    if (eventName !== 'user_send_text') {
+        sendMessage(userId, 'Cú pháp không đúng.');
+        return res.send('Error');
+    }
 
     if (eventName === 'anonymous_send_text') {
         res.send(
