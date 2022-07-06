@@ -28,18 +28,14 @@ export const userRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
-        console.log('Đọc access token từ db thành công');
 
         await sendMessage(accessToken, userId, 'Success!');
-        console.log('send tin nhắn thành công');
 
         await updateTokenInDB(tokenColl, refreshToken);
 
-        res.send('Done!');
+        await res.send('Done!');
     } catch (err) {
         console.error(err);
-    } finally {
-        client.close();
     }
 };
 
