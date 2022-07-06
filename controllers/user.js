@@ -99,8 +99,8 @@ async function updateTokenInDB(tokenColl, refreshToken) {
         const result = await tokenColl.replaceOne(query, replacement);
 
         console.log(result);
-    } finally {
-        await client.close();
+    } catch (err) {
+        console.error(err);
     }
 }
 
