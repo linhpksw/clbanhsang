@@ -1,79 +1,64 @@
-// import { google } from 'googleapis';
+import { MongoClient } from 'mongodb';
 import fetch from 'node-fetch';
-
+/********************************************************** */
 import path from 'path';
-
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-
+import * as dotenv from 'dotenv';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-
-import * as dotenv from 'dotenv';
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-let requests = [];
+/********************************************************** */
+const uri = process.env.URI;
+const client = new MongoClient(uri);
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
     const eventName = webhook.event_name;
-    // const unixTimestamp = parseInt(webhook.timestamp);
-    // const timeStamp = new Date(unixTimestamp);
-    // const localeTimeStamp = timeStamp.toLocaleString('vi-VN');
+    const unixTimestamp = parseInt(webhook.timestamp);
+    const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
 
-    // const userId = webhook.sender.id;
-    // const syntax = webhook.message.text;
+    const userId = webhook.sender.id;
+    const syntax = webhook.message.text;
 
-    // sendMessage(userId, 'Thành công.');
+    await client.connect();
+    const db = client.db('zalo_servers');
 
-    // if (eventName === 'user_send_text') {
-    //     const createNewToken = await getAccessToken();
-    //     console.log(createNewToken);
-    //     return res.send('Success');
-    // } else {
-    //     return res.send('Err');
-    // }
+    const tokenColl = db.collection('tokens');
+    const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-    // const client = new google.auth.JWT(
-    //     process.env.CLIENT_EMAIL,
-    //     null,
-    //     process.env.PRIVATE_KEY,
-    //     [process.env.SCOPE]
-    // );
+    await sendMessage(accessToken, userId, 'Success!');
 
-    // client.authorize((err, token) => {
-    //     if (err) {
-    //         console.log(err);
-    //         return;
-    //     } else {
-    //         console.log('Connect to Google Sheets success!');
-    //         getAccessToken(client);
-    //     }
-    // });
-
-    // async function getAccessToken(client) {
-    //     const sheets = google.sheets({ version: 'v4', auth: client });
-    //     const request = {
-    //         spreadsheetId: process.env.SPREADSHEET_ID,
-    //         range: 'Key!A1:B2',
-    //     };
-
-    //     try {
-    //         const response = (await sheets.spreadsheets.values.get(request))
-    //             .data;
-    //         res.send(response);
-    //     } catch (err) {
-    //         console.error(err);
-    //     }
-    // }
+    res.send('Done!');
+    updateTokenInDB(tokenColl, refreshToken);
 };
 
-export const getUserRequest = (req, res) => {
-    res.send(requests);
-};
+/******************************************************************** */
+async function deleteOneUser(coll, query) {
+    const result = await coll.deleteOne(query);
+    if (result.deletedCount === 1) {
+        console.log('Successfully deleted one document.');
+    } else {
+        console.log('No documents matched the query. Deleted 0 documents.');
+    }
+}
 
-async function sendMessage(userId, message) {
-    const accessToken = process.env.ACCESS_TOKEN;
+async function insertManyUsers(coll, docs) {
+    const result = await coll.insertMany(docs);
+    let ids = result.insertedIds;
+
+    console.log(`${result.insertedCount} users were inserted.`);
+    for (let id of Object.values(ids)) {
+        console.log(`Inserted an user with id ${id}`);
+    }
+}
+
+async function insertOneUser(coll, doc) {
+    const result = await coll.insertOne(doc);
+    console.log(`New user created with the following id: ${result.insertedId}`);
+}
+/************************************************************** */
+async function sendMessage(accessToken, userId, message) {
     const headers = {
         access_token: accessToken,
         'Content-Type': 'application/json',
@@ -92,7 +77,57 @@ async function sendMessage(userId, message) {
         body: JSON.stringify(content),
     });
 
-    // const jsonResponse = await response.json();
-    // console.log(jsonResponse);
-    getAccessToken();
+    const jsonResponse = await response.json();
+    console.log(jsonResponse);
 }
+
+/*************************************************************** */
+async function updateTokenInDB(tokenColl, refreshToken) {
+    try {
+        const query = { refreshToken: `${refreshToken}` };
+
+        const { access_token, refresh_token } = await createNewToken(
+            refreshToken
+        );
+
+        const replacement = {
+            accessToken: `${access_token}`,
+            refreshToken: `${refresh_token}`,
+        };
+
+        const result = await tokenColl.replaceOne(query, replacement);
+
+        console.log(result);
+    } finally {
+        await client.close();
+    }
+}
+
+async function readTokenFromDB(tokenColl) {
+    return tokenColl.findOne();
+}
+
+async function createNewToken(refreshToken) {
+    const SECRET_KEY = process.env.SECRET_KEY;
+    const APP_ID = process.env.APP_ID;
+
+    const URL = `https://oauth.zaloapp.com/v4/oa/access_token?refresh_token=${refreshToken}&app_id=${APP_ID}&grant_type=refresh_token`;
+
+    const headers = {
+        secret_key: SECRET_KEY,
+        'Content-Type': 'application/x-www-form-urlencoded',
+    };
+
+    try {
+        const response = await fetch(URL, {
+            method: 'post',
+            headers: headers,
+        });
+
+        const jsonResponse = await response.json();
+        return jsonResponse;
+    } catch (err) {
+        console.error(err);
+    }
+}
+/*************************************************************** */
