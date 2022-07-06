@@ -84,8 +84,8 @@ async function sendMessage(accessToken, userId, message) {
         body: JSON.stringify(content),
     });
 
-    const jsonResponse = await response.json();
-    console.log(jsonResponse);
+    // const jsonResponse = await response.json();
+    // console.log(jsonResponse);
 }
 
 /*************************************************************** */
@@ -99,9 +99,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
         refreshToken: `${refresh_token}`,
     };
 
-    const result = await tokenColl.replaceOne(query, replacement);
-
-    console.log(result);
+    await tokenColl.replaceOne(query, replacement);
 }
 
 async function readTokenFromDB(tokenColl) {
