@@ -36,6 +36,7 @@ export const userRequest = async (req, res) => {
         await res.send('Done!');
     } catch (err) {
         console.error(err);
+    } finally {
     }
 };
 
