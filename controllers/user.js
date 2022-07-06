@@ -31,7 +31,7 @@ export const userRequest = async (req, res) => {
 
     await updateTokenInDB(tokenColl, refreshToken);
 
-    res.send('Done!');
+    await res.send('Done!');
 };
 
 /******************************************************************** */
