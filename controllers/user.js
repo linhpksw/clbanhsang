@@ -29,8 +29,9 @@ export const userRequest = async (req, res) => {
 
     await sendMessage(accessToken, userId, 'Success!');
 
+    await updateTokenInDB(tokenColl, refreshToken);
+
     res.send('Done!');
-    updateTokenInDB(tokenColl, refreshToken);
 };
 
 /******************************************************************** */
