@@ -22,18 +22,18 @@ export const userRequest = async (req, res) => {
     const syntax = webhook.message.text;
 
     try {
-        await client.connect();
-        const db = client.db('zalo_servers');
+        // await client.connect();
+        // const db = client.db('zalo_servers');
 
-        const tokenColl = db.collection('tokens');
+        // const tokenColl = db.collection('tokens');
 
-        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        // const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        await sendMessage(accessToken, userId, 'Success!');
+        // await sendMessage(accessToken, userId, 'Success!');
 
-        await updateTokenInDB(tokenColl, refreshToken);
-
-        await res.send('Done!');
+        // await updateTokenInDB(tokenColl, refreshToken);
+        console.log('send from zalo pc');
+        res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
