@@ -25,22 +25,8 @@ async function run(data) {
         const db = client.db('zalo_servers');
         const classUsers = db.collection('classUsers');
 
-        await insertManyUsers(classUsers, data);
-
-        /* await listDatabases(client);
-		
-        await insertOneUser(users, {
-            name: 'Linh',
-            age: 21,
-        });
-
-        
-
-		await deleteOneUser(users, {
-            age: 19,
-        });
-		
-		*/
+        // await insertManyUsers(classUsers, data);
+        await insertOneUser(classUsers, data);
     } finally {
         await client.close();
     }
