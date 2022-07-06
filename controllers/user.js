@@ -21,17 +21,24 @@ export const userRequest = async (req, res) => {
     const userId = webhook.sender.id;
     const syntax = webhook.message.text;
 
-    await client.connect();
-    const db = client.db('zalo_servers');
+    try {
+        await client.connect();
+        const db = client.db('zalo_servers');
 
-    const tokenColl = db.collection('tokens');
-    const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        const tokenColl = db.collection('tokens');
 
-    await sendMessage(accessToken, userId, 'Success!');
+        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-    await updateTokenInDB(tokenColl, refreshToken);
+        await sendMessage(accessToken, userId, 'Success!');
 
-    await res.send('Done!');
+        await updateTokenInDB(tokenColl, refreshToken);
+
+        await res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+        client.close();
+    }
 };
 
 /******************************************************************** */
@@ -84,24 +91,18 @@ async function sendMessage(accessToken, userId, message) {
 
 /*************************************************************** */
 async function updateTokenInDB(tokenColl, refreshToken) {
-    try {
-        const query = { refreshToken: `${refreshToken}` };
+    const query = { refreshToken: `${refreshToken}` };
 
-        const { access_token, refresh_token } = await createNewToken(
-            refreshToken
-        );
+    const { access_token, refresh_token } = await createNewToken(refreshToken);
 
-        const replacement = {
-            accessToken: `${access_token}`,
-            refreshToken: `${refresh_token}`,
-        };
+    const replacement = {
+        accessToken: `${access_token}`,
+        refreshToken: `${refresh_token}`,
+    };
 
-        const result = await tokenColl.replaceOne(query, replacement);
+    const result = await tokenColl.replaceOne(query, replacement);
 
-        console.log(result);
-    } catch (err) {
-        console.error(err);
-    }
+    console.log(result);
 }
 
 async function readTokenFromDB(tokenColl) {
@@ -119,16 +120,12 @@ async function createNewToken(refreshToken) {
         'Content-Type': 'application/x-www-form-urlencoded',
     };
 
-    try {
-        const response = await fetch(URL, {
-            method: 'post',
-            headers: headers,
-        });
+    const response = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+    });
 
-        const jsonResponse = await response.json();
-        return jsonResponse;
-    } catch (err) {
-        console.error(err);
-    }
+    const jsonResponse = await response.json();
+    return jsonResponse;
 }
 /*************************************************************** */
