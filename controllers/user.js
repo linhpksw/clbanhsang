@@ -33,6 +33,9 @@ export const userRequest = async (req, res) => {
 
         // await updateTokenInDB(tokenColl, refreshToken);
         console.log('send from zalo pc');
+        console.log(userId);
+        console.log(syntax);
+        console.log(eventName);
         res.send('Done!');
     } catch (err) {
         console.error(err);
