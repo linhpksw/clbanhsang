@@ -2,7 +2,6 @@
 import fetch from 'node-fetch';
 
 import path from 'path';
-import { readFile, writeFile } from 'fs';
 
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -96,60 +95,4 @@ async function sendMessage(userId, message) {
     // const jsonResponse = await response.json();
     // console.log(jsonResponse);
     getAccessToken();
-}
-
-/** Dùng app script trigger lấy new access token hàng giờ */
-function storeNewToken(newRT, newAT) {
-    readFile(path.resolve(__dirname, '../.env'), (err, data) => {
-        if (err) {
-            return console.error(err);
-        }
-        const contents = data.toString();
-        const oldRefeshToken = contents.split('\r\n')[1];
-        const oldAccessToken = contents.split('\r\n')[2];
-
-        const oldToken = `${oldRefeshToken}\r\n${oldAccessToken}`;
-
-        const newRefreshToken = `REFRESH_TOKEN="${newRT}"`;
-        const newAccessToken = `ACCESS_TOKEN="${newAT}"`;
-
-        const newToken = `${newRefreshToken}\r\n${newAccessToken}`;
-
-        const replaced = contents.replace(oldToken, newToken);
-
-        writeFile(path.resolve(__dirname, '../.env'), replaced, (err) => {
-            if (err) {
-                return console.error(err);
-            }
-        });
-    });
-}
-
-async function getAccessToken() {
-    const refreshToken = process.env.REFRESH_TOKEN;
-    const SECRET_KEY = process.env.SECRET_KEY;
-    const APP_ID = process.env.APP_ID;
-
-    const URL = `https://oauth.zaloapp.com/v4/oa/access_token?refresh_token=${refreshToken}&app_id=${APP_ID}&grant_type=refresh_token`;
-
-    const headers = {
-        secret_key: SECRET_KEY,
-        'Content-Type': 'application/x-www-form-urlencoded',
-    };
-
-    try {
-        const response = await fetch(URL, {
-            method: 'post',
-            headers: headers,
-        });
-
-        const jsonResponse = await response.json();
-        const { access_token, refresh_token } = jsonResponse;
-
-        storeNewToken(refresh_token, access_token);
-
-        return jsonResponse;
-    } catch (err) {
-        console.error(err);
-    }
 }
