@@ -35,7 +35,7 @@ export const userRequest = async (req, res) => {
                 userId,
                 `Phụ huynh cần nhấn quan tâm OA để có thể thực hiện tính năng này.`
             );
-        } else {
+        } else if (eventName === 'user_send_text') {
             await sendMessage(accessToken, userId, `Phụ huynh đã follow OA.`);
         }
         await res.send('Done!');
