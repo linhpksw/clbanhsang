@@ -29,15 +29,17 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        if (eventName === 'anonymous_send_text') {
-            await sendMessage(
-                accessToken,
-                userId,
-                `Phụ huynh cần nhấn quan tâm OA để có thể thực hiện tính năng này.`
-            );
-        } else if (eventName === 'user_send_text') {
-            await sendMessage(accessToken, userId, `Phụ huynh đã follow OA.`);
-        }
+        await sendMessage(accessToken, userId, eventName);
+
+        // if (eventName === 'anonymous_send_text') {
+        //     await sendMessage(
+        //         accessToken,
+        //         userId,
+        //         `Phụ huynh cần nhấn quan tâm OA để có thể thực hiện tính năng này.`
+        //     );
+        // } else if (eventName === 'user_send_text') {
+        //     await sendMessage(accessToken, userId, `Phụ huynh đã follow OA.`);
+        // }
         await res.send('Done!');
 
         await updateTokenInDB(tokenColl, refreshToken);
