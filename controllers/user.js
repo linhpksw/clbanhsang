@@ -29,9 +29,6 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        console.log(accessToken);
-        return;
-
         await sendMessage(accessToken, userId, 'Success!');
 
         await updateTokenInDB(tokenColl, refreshToken);
@@ -87,7 +84,7 @@ async function sendMessage(accessToken, userId, message) {
         body: JSON.stringify(content),
     });
 
-    return await response.json();
+    // return await response.json();
     // console.log(jsonResponse);
 }
 
