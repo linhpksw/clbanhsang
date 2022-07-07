@@ -1,5 +1,5 @@
 import { nomarlizeSyntax } from './tool.js';
-import { getFollowers, getProfile } from './zalo.js';
+import { getFollowers, getProfile, sendMessage } from './zalo.js';
 import { updateTokenInDB, readTokenFromDB, client } from './mongo.js';
 
 export const userRequest = async (req, res) => {
