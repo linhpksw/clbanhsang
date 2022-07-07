@@ -37,6 +37,9 @@ export const userRequest = async (req, res) => {
 
                 const formatSyntax = nomarlizeSyntax(content);
 
+                await sendMessage(accessToken, userId, formatSyntax);
+                return;
+
                 if (formatSyntax.includes('dkph')) {
                     if (nomarlizeSyntax.length !== 21) {
                         await sendMessage(
@@ -66,7 +69,6 @@ export const userRequest = async (req, res) => {
                         'Tài khoản chưa có trên hệ thống.'
                     );
                 }
-
                 break;
         }
 
