@@ -49,7 +49,7 @@ export const userRequest = async (req, res) => {
 
                     const query = { zaloUserId: `${userId}` };
                     const options = { projection: { role: 1 } };
-                    const role = findOneUser(zaloColl, query, options);
+                    const role = findOneUser(zaloColl, query, options).role;
 
                     if (role !== null) {
                         await sendMessage(
