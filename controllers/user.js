@@ -29,7 +29,11 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        await sendMessage(accessToken, userId, 'Success!');
+        await sendMessage(
+            accessToken,
+            userId,
+            `Bạn vừa gửi tin nhắn với nội dung là: ${syntax}`
+        );
 
         await updateTokenInDB(tokenColl, refreshToken);
 
@@ -78,14 +82,11 @@ async function sendMessage(accessToken, userId, message) {
         message: { text: `${message}` },
     };
 
-    const response = await fetch(URL, {
+    await fetch(URL, {
         method: 'post',
         headers: headers,
         body: JSON.stringify(content),
     });
-
-    // return await response.json();
-    // console.log(jsonResponse);
 }
 
 /*************************************************************** */
@@ -99,8 +100,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
         refreshToken: `${refresh_token}`,
     };
 
-    const result = await tokenColl.replaceOne(query, replacement);
-    return result;
+    await tokenColl.replaceOne(query, replacement);
 }
 
 async function readTokenFromDB(tokenColl) {
