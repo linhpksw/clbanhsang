@@ -85,7 +85,11 @@ async function sendMessage(accessToken, userId, message) {
         body: JSON.stringify(content),
     });
 
+<<<<<<< HEAD
     return await response.json();
+=======
+    // const jsonResponse = await response.json();
+>>>>>>> 561ec0eff378eb16bbfd9c4d962dc80cdba91c65
     // console.log(jsonResponse);
 }
 
@@ -100,8 +104,12 @@ async function updateTokenInDB(tokenColl, refreshToken) {
         refreshToken: `${refresh_token}`,
     };
 
+<<<<<<< HEAD
     const result = await tokenColl.replaceOne(query, replacement);
     return result;
+=======
+    await tokenColl.replaceOne(query, replacement);
+>>>>>>> 561ec0eff378eb16bbfd9c4d962dc80cdba91c65
 }
 
 async function readTokenFromDB(tokenColl) {
