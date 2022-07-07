@@ -29,15 +29,18 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        await sendMessage(
-            accessToken,
-            userId,
-            `Bạn vừa gửi tin nhắn với nội dung là: ${syntax}`
-        );
+        if (eventName === 'anonymous_send_text') {
+            await sendMessage(
+                accessToken,
+                userId,
+                `Phụ huynh cần nhấn quan tâm OA để có thể thực hiện tính năng này.`
+            );
+        } else {
+            await sendMessage(accessToken, userId, `Phụ huynh đã follow OA.`);
+        }
+        await res.send('Done!');
 
         await updateTokenInDB(tokenColl, refreshToken);
-
-        await res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
