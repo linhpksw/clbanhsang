@@ -29,7 +29,9 @@ export const userRequest = async (req, res) => {
                 userId = webhook.sender.id;
                 const content = webhook.message.text;
 
-                if (nomarlizeSyntax(content).includes('dkph')) {
+                const formatSyntax = nomarlizeSyntax(content);
+
+                if (formatSyntax.includes('dkph')) {
                     if (nomarlizeSyntax.length !== 21) {
                         await sendMessage(
                             accessToken,
@@ -40,7 +42,7 @@ export const userRequest = async (req, res) => {
                     }
                 }
 
-                await sendMessage(accessToken, userId, nomarlizeSyntax);
+                await sendMessage(accessToken, userId, formatSyntax);
                 break;
         }
 
