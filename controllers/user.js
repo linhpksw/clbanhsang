@@ -38,7 +38,12 @@ export const userRequest = async (req, res) => {
             case 'user_send_text':
                 userId = webhook.sender.id;
                 const content = webhook.message.text;
-                await sendMessage(accessToken, userId, content);
+
+                const nomarlizeSyntax = xoaDauTiengViet(content)
+                    .toLowerCase()
+                    .replace(/\s+/g, '');
+
+                await sendMessage(accessToken, userId, nomarlizeSyntax);
         }
 
         await res.send('Done!');
@@ -49,6 +54,14 @@ export const userRequest = async (req, res) => {
     } finally {
     }
 };
+
+function xoaDauTiengViet(str) {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+}
 
 /******************************************************************** */
 async function deleteOneUser(coll, query) {
