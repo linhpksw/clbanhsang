@@ -1,6 +1,11 @@
 import { nomarlizeSyntax } from './tool.js';
-import { getFollowers, getProfile, sendMessage } from './zalo.js';
-import { updateTokenInDB, readTokenFromDB, client } from './mongo.js';
+import { sendMessage } from './zalo.js';
+import {
+    updateTokenInDB,
+    readTokenFromDB,
+    findOneUser,
+    client,
+} from './mongo.js';
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
@@ -12,6 +17,7 @@ export const userRequest = async (req, res) => {
         await client.connect();
         const db = client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
+        const zaloColl = db.collection('zaloUsers');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
         let userId;
@@ -40,9 +46,27 @@ export const userRequest = async (req, res) => {
                         );
                         return;
                     }
+
+                    const query = { zaloUserId: `${userId}` };
+                    const options = { projection: { role: 1 } };
+                    const role = findOneUser(zaloColl, query, options);
+
+                    if (role !== null) {
+                        await sendMessage(
+                            accessToken,
+                            userId,
+                            'Tài khoản đã có trên hệ thống. Phụ huynh có thể sử dụng các tính năng ở mục tiện ích bên dưới.'
+                        );
+                        return;
+                    }
+
+                    await sendMessage(
+                        accessToken,
+                        userId,
+                        'Tài khoản chưa có trên hệ thống.'
+                    );
                 }
 
-                await sendMessage(accessToken, userId, formatSyntax);
                 break;
         }
 

@@ -49,7 +49,7 @@ async function createNewToken(refreshToken) {
     const jsonResponse = await response.json();
     return jsonResponse;
 }
-
+/*************************************************************** */
 async function deleteOneUser(coll, query) {
     const result = await coll.deleteOne(query);
     if (result.deletedCount === 1) {
@@ -74,4 +74,8 @@ async function insertOneUser(coll, doc) {
     console.log(`New user created with the following id: ${result.insertedId}`);
 }
 
-export { updateTokenInDB, readTokenFromDB, insertManyToDB, client };
+async function findOneUser(coll, query, options) {
+    return await coll.findOne(query, options);
+}
+
+export { updateTokenInDB, readTokenFromDB, findOneUser, client };
