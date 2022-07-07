@@ -18,28 +18,29 @@ export const userRequest = async (req, res) => {
     const unixTimestamp = parseInt(webhook.timestamp);
     const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
 
-    const userId = webhook.sender.id;
-    const syntax = webhook.message.text;
-
     try {
         await client.connect();
         const db = client.db('zalo_servers');
-
         const tokenColl = db.collection('tokens');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        let userId;
 
-        await sendMessage(accessToken, userId, eventName);
+        switch (eventName) {
+            case 'user_click_chatnow':
+                userId = webhook.user_id;
 
-        // if (eventName === 'anonymous_send_text') {
-        //     await sendMessage(
-        //         accessToken,
-        //         userId,
-        //         `Phụ huynh cần nhấn quan tâm OA để có thể thực hiện tính năng này.`
-        //     );
-        // } else if (eventName === 'user_send_text') {
-        //     await sendMessage(accessToken, userId, `Phụ huynh đã follow OA.`);
-        // }
+                const notFollowContent =
+                    'PHHS vui lòng nhấn quan tâm OA để sử dụng đầy đủ những tính năng của lớp toán.';
+                await sendMessage(accessToken, userId, notFollowContent);
+                break;
+
+            case 'user_send_text':
+                userId = webhook.sender.id;
+                const content = webhook.message.text;
+                await sendMessage(accessToken, userId, content);
+        }
+
         await res.send('Done!');
 
         await updateTokenInDB(tokenColl, refreshToken);
