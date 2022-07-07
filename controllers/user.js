@@ -29,9 +29,10 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        await sendMessage(accessToken, userId, 'Success!');
-
-        await updateTokenInDB(tokenColl, refreshToken);
+        const messageSent = await sendMessage(accessToken, userId, 'Success!');
+        console.log(messageSent);
+        const updateToken = await updateTokenInDB(tokenColl, refreshToken);
+        console.log(updateToken);
 
         await res.send('Done!');
     } catch (err) {
@@ -84,8 +85,8 @@ async function sendMessage(accessToken, userId, message) {
         body: JSON.stringify(content),
     });
 
-    const jsonResponse = await response.json();
-    console.log(jsonResponse);
+    return await response.json();
+    // console.log(jsonResponse);
 }
 
 /*************************************************************** */
@@ -100,8 +101,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
     };
 
     const result = await tokenColl.replaceOne(query, replacement);
-
-    console.log(result);
+    return result;
 }
 
 async function readTokenFromDB(tokenColl) {
