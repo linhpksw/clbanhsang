@@ -37,11 +37,8 @@ export const userRequest = async (req, res) => {
 
                 const formatSyntax = nomarlizeSyntax(content);
 
-                await sendMessage(accessToken, userId, formatSyntax);
-                return;
-
                 if (formatSyntax.includes('dkph')) {
-                    if (nomarlizeSyntax.length !== 21) {
+                    if (formatSyntax.length !== 21) {
                         await sendMessage(
                             accessToken,
                             userId,
@@ -58,7 +55,7 @@ export const userRequest = async (req, res) => {
                         await sendMessage(
                             accessToken,
                             userId,
-                            'Tài khoản đã có trên hệ thống. Phụ huynh có thể sử dụng các tính năng ở mục tiện ích bên dưới.'
+                            'Tài khoản đã có trên hệ thống. Phụ huynh có quyền truy cập vào các tính năng ở mục tiện ích bên dưới.'
                         );
                         return;
                     }
