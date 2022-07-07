@@ -41,6 +41,7 @@ export const userRequest = async (req, res) => {
                 }
 
                 await sendMessage(accessToken, userId, nomarlizeSyntax);
+                break;
         }
 
         await res.send('Done!');
