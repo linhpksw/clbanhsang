@@ -29,13 +29,12 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
-        console.log(refreshToken);
-        console.log(userId);
-        console.log(syntax);
-        // const messageSent = await sendMessage(accessToken, userId, 'Success!');
-        // console.log(messageSent);
-        // const updateToken = await updateTokenInDB(tokenColl, refreshToken);
-        // console.log(updateToken);
+        console.log(accessToken);
+        return;
+
+        await sendMessage(accessToken, userId, 'Success!');
+
+        await updateTokenInDB(tokenColl, refreshToken);
 
         await res.send('Done!');
     } catch (err) {
