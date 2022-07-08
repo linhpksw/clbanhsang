@@ -40,17 +40,19 @@ export const userRequest = async (req, res) => {
             case 'user_send_text':
                 zaloUserId = webhook.sender.id;
                 const messageId = webhook.message.msg_id;
-                await ZaloAPI.sendHeartReaction(
-                    accessToken,
-                    zaloUserId,
-                    messageId
-                );
+
                 const content = webhook.message.text;
 
                 const formatSyntax = nomarlizeSyntax(content);
 
                 if (formatSyntax.includes('dkph')) {
                     if (formatSyntax.length !== 21) {
+                        await ZaloAPI.sendHeartReaction(
+                            accessToken,
+                            zaloUserId,
+                            messageId,
+                            'sad'
+                        );
                         await ZaloAPI.sendMessage(
                             accessToken,
                             zaloUserId,
@@ -67,6 +69,12 @@ export const userRequest = async (req, res) => {
                     );
 
                     if (role !== null) {
+                        await ZaloAPI.sendHeartReaction(
+                            accessToken,
+                            zaloUserId,
+                            messageId,
+                            'like'
+                        );
                         await ZaloAPI.sendMessage(
                             accessToken,
                             zaloUserId,
@@ -95,6 +103,12 @@ export const userRequest = async (req, res) => {
                     );
 
                     if (userInfo === null) {
+                        await ZaloAPI.sendHeartReaction(
+                            accessToken,
+                            zaloUserId,
+                            messageId,
+                            'sad'
+                        );
                         await ZaloAPI.sendMessage(
                             accessToken,
                             zaloUserId,
@@ -117,6 +131,12 @@ export const userRequest = async (req, res) => {
                     ];
 
                     if (!registerPhoneList.includes(registerPhone)) {
+                        await ZaloAPI.sendHeartReaction(
+                            accessToken,
+                            zaloUserId,
+                            messageId,
+                            'sad'
+                        );
                         await ZaloAPI.sendMessage(
                             accessToken,
                             zaloUserId,
@@ -125,6 +145,12 @@ export const userRequest = async (req, res) => {
                         break;
                     }
                     // set up role cho phu huynh
+                    await ZaloAPI.sendHeartReaction(
+                        accessToken,
+                        zaloUserId,
+                        messageId,
+                        'heart'
+                    );
                     await ZaloAPI.sendMessage(
                         accessToken,
                         zaloUserId,

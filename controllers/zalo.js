@@ -185,15 +185,21 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
     });
 }
 
-async function sendHeartReaction(accessToken, zaloUserId, messageId) {
+async function sendHeartReaction(accessToken, zaloUserId, messageId, action) {
     const URL = 'https://openapi.zalo.me/v2.0/oa/message';
+
+    const action2ReactIcon = {
+        heart: '/-heart',
+        sad: ':-((',
+        like: '/-strong',
+    };
 
     const data = {
         recipient: {
             user_id: zaloUserId,
         },
         sender_action: {
-            react_icon: '/-heart',
+            react_icon: action2ReactIcon[action],
             react_message_id: messageId,
         },
     };
