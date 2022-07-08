@@ -1,5 +1,5 @@
 import * as Tools from './tool.js';
-import { updateTokenInDB, readTokenFromDB, client } from './mongo.js';
+import { readTokenFromDB, client } from './mongo.js';
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
@@ -15,6 +15,7 @@ export const userRequest = async (req, res) => {
         const classColl = db.collection('classUsers');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+
         let zaloUserId;
 
         if (eventName === 'user_click_chatnow') {
@@ -25,17 +26,20 @@ export const userRequest = async (req, res) => {
             zaloUserId = webhook.sender.id;
 
             const messageId = webhook.message.msg_id;
-
             const content = webhook.message.text;
+
             const formatSyntax = Tools.nomarlizeSyntax(content);
 
             if (formatSyntax.includes('dkph')) {
                 // Sign up for Phu huynh
                 Tools.signUp(
+                    res,
                     accessToken,
+                    refreshToken,
                     zaloUserId,
                     zaloColl,
                     classColl,
+                    tokenColl,
                     formatSyntax,
                     messageId,
                     'Phụ huynh'
@@ -43,20 +47,19 @@ export const userRequest = async (req, res) => {
             } else if (formatSyntax.includes('dkhs')) {
                 // sign up for Hoc sinh
                 Tools.signUp(
+                    res,
                     accessToken,
+                    refreshToken,
                     zaloUserId,
                     zaloColl,
                     classColl,
+                    tokenColl,
                     formatSyntax,
                     messageId,
                     'Học sinh'
                 );
             }
         }
-
-        await res.send('Done!');
-
-        await updateTokenInDB(tokenColl, refreshToken);
     } catch (err) {
         console.error(err);
     } finally {

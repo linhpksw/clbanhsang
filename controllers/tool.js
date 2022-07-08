@@ -1,5 +1,6 @@
 import { findOneUser, updateOneUser } from './mongo.js';
 import * as ZaloAPI from './zalo.js';
+import { updateTokenInDB } from './mongo.js';
 
 function xoaDauTiengViet(str) {
     return str
@@ -13,11 +14,19 @@ function nomarlizeSyntax(str) {
     return xoaDauTiengViet(str).toLowerCase().replace(/\s+/g, '');
 }
 
+async function sendBack2Client(res, tokenColl, refreshToken) {
+    await res.send('Done!');
+    await updateTokenInDB(tokenColl, refreshToken);
+}
+
 async function signUp(
+    res,
     accessToken,
+    refreshToken,
     zaloUserId,
     zaloColl,
     classColl,
+    tokenColl,
     formatSyntax,
     messageId,
     quyen
@@ -34,6 +43,9 @@ async function signUp(
             zaloUserId,
             `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${quyen} hãy nhập lại.`
         );
+
+        await sendBack2Client(res, tokenColl, refreshToken);
+
         return;
     }
     // kiem tra tren zalo collection
@@ -55,6 +67,9 @@ async function signUp(
             zaloUserId,
             `Tài khoản đã có trên hệ thống. ${quyen} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`
         );
+
+        await sendBack2Client(res, tokenColl, refreshToken);
+
         return;
     }
 
@@ -90,6 +105,9 @@ async function signUp(
             zaloUserId,
             `❌ Đăng kí thất bại!\n\nMã học sinh ${studentId} không có trên hệ thống. ${quyen} hãy liên hệ với trợ giảng để được hỗ trợ.`
         );
+
+        await sendBack2Client(res, tokenColl, refreshToken);
+
         return;
     }
 
@@ -121,6 +139,9 @@ async function signUp(
             zaloUserId,
             `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${quyen} hãy liên hệ với trợ giảng để được hỗ trợ.`
         );
+
+        await sendBack2Client(res, tokenColl, refreshToken);
+
         return;
     }
     // set up role cho zalo user
@@ -156,6 +177,8 @@ async function signUp(
     await ZaloAPI.tagFollower(accessToken, zaloUserId, quyen);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, classID);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+
+    await sendBack2Client(res, tokenColl, refreshToken);
 
     return;
 }
