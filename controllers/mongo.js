@@ -69,6 +69,13 @@ async function insertManyToDB(coll, docs) {
     }
 }
 
+async function updateOneUser(coll, filter, updateDoc) {
+    const result = await coll.updateOne(filter, updateDoc);
+    console.log(
+        `${result.matchedCount} document(s) matched the filter, updated ${result.modifiedCount} document(s)`
+    );
+}
+
 async function insertOneUser(coll, doc) {
     const result = await coll.insertOne(doc);
     console.log(`New user created with the following id: ${result.insertedId}`);
@@ -78,4 +85,4 @@ async function findOneUser(coll, query, options) {
     return await coll.findOne(query, options);
 }
 
-export { updateTokenInDB, readTokenFromDB, findOneUser, client };
+export { updateTokenInDB, readTokenFromDB, findOneUser, updateOneUser, client };

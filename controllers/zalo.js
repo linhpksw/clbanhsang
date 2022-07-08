@@ -42,7 +42,7 @@ async function getFollowers(accessToken) {
     for (let i = 0; i < totalFollowers.length; i++) {
         const zaloUserId = totalFollowers[i].user_id;
 
-        const userData = await getProfile(zaloUserId, accessToken);
+        const userData = await getProfile(accessToken, zaloUserId);
 
         result.push(userData);
     }
@@ -50,7 +50,7 @@ async function getFollowers(accessToken) {
     return result;
 }
 
-async function getProfile(zaloUserId, accessToken) {
+async function getProfile(accessToken, zaloUserId) {
     const dataRequest = `%7B%22user_id%22%3A%22${zaloUserId}%22%7D`;
 
     const URL = `https://openapi.zalo.me/v2.0/oa/getprofile?data=${dataRequest}`;
@@ -101,7 +101,37 @@ async function getProfile(zaloUserId, accessToken) {
     return result;
 }
 
-async function sendMessage(accessToken, userId, message) {
+async function updateFollowerInfo(
+    accessToken,
+    studentId,
+    zaloUserId,
+    phone,
+    aliasName
+) {
+    const URL = `https://openapi.zalo.me/v2.0/oa/updatefollowerinfo`;
+
+    const data = {
+        address: `${studentId}`,
+        user_id: `${zaloUserId}`,
+        phone: `${phone}`,
+        name: `${aliasName}`,
+        district_id: '009',
+        city_id: '01',
+    };
+
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        payload: JSON.stringify(data),
+    });
+}
+
+async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,
         'Content-Type': 'application/json',
@@ -110,7 +140,7 @@ async function sendMessage(accessToken, userId, message) {
     const URL = `https://openapi.zalo.me/v2.0/oa/message?`;
 
     const content = {
-        recipient: { user_id: `${userId}` },
+        recipient: { user_id: `${zaloUserId}` },
         message: { text: `${message}` },
     };
 
@@ -121,4 +151,70 @@ async function sendMessage(accessToken, userId, message) {
     });
 }
 
-export { getFollowers, getProfile, sendMessage };
+async function tagFollower(accessToken, zaloUserId, tagName) {
+    const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
+
+    const data = { user_id: zaloUserId, tag_name: tagName };
+
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const resutl = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(data),
+    });
+    return await resutl.json();
+}
+
+async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
+    const URL = 'https://openapi.zalo.me/v2.0/oa/tag/rmfollowerfromtag';
+
+    const data = { user_id: `${zaloUserId}`, tag_name: `${tagName}` };
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        payload: JSON.stringify(data),
+    });
+}
+
+async function sendHeartReaction(accessToken, zaloUserId, messageId) {
+    const URL = 'https://openapi.zalo.me/v2.0/oa/message';
+
+    const data = {
+        recipient: {
+            user_id: zaloUserId,
+        },
+        sender_action: {
+            react_icon: '/-heart',
+            react_message_id: messageId,
+        },
+    };
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(data),
+    });
+}
+
+export {
+    getFollowers,
+    getProfile,
+    sendMessage,
+    updateFollowerInfo,
+    tagFollower,
+    removeFollowerFromTag,
+    sendHeartReaction,
+};
