@@ -19,6 +19,26 @@ async function sendBack2Client(res, tokenColl, refreshToken) {
     await updateTokenInDB(tokenColl, refreshToken);
 }
 
+async function deleteAccount() {
+    if (formatSyntax.length !== 21) {
+        await ZaloAPI.sendHeartReaction(
+            accessToken,
+            zaloUserId,
+            messageId,
+            'sad'
+        );
+        await ZaloAPI.sendMessage(
+            accessToken,
+            zaloUserId,
+            `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${quyen} hãy nhập lại.`
+        );
+
+        await sendBack2Client(res, tokenColl, refreshToken);
+
+        return;
+    }
+}
+
 async function signUp(
     res,
     accessToken,
@@ -154,7 +174,7 @@ async function signUp(
     await ZaloAPI.sendMessage(
         accessToken,
         zaloUserId,
-        `✅ Đăng kí thành công!\n\n${quyen} ${displayName} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`
+        `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh: ${fullName}. Mã ID: ${studentId}\nTừ bây giờ, ${quyen} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`
     );
     let status;
     leaveDate === null ? (status = 'Đang học') : (status = 'Nghỉ học');
