@@ -134,22 +134,25 @@ async function sendMessage(accessToken, zaloUserId, message) {
     });
 }
 
-async function tagFollower(accessToken, zaloUserId, tagName) {
-    const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
+async function tagFollower(accessToken, zaloUserId, tagNameArray) {
+    for (let i = 0; i < tagNameArray.length; i++) {
+        const tagName = array[i];
 
-    const data = { user_id: zaloUserId, tag_name: tagName };
+        const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
 
-    const headers = {
-        access_token: accessToken,
-        'Content-Type': 'application/json',
-    };
+        const data = { user_id: zaloUserId, tag_name: tagName };
 
-    const resutl = await fetch(URL, {
-        method: 'post',
-        headers: headers,
-        body: JSON.stringify(data),
-    });
-    return await resutl.json();
+        const headers = {
+            access_token: accessToken,
+            'Content-Type': 'application/json',
+        };
+
+        await fetch(URL, {
+            method: 'post',
+            headers: headers,
+            body: JSON.stringify(data),
+        });
+    }
 }
 
 async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
