@@ -176,9 +176,9 @@ async function signUp(
     // them alias moi
     aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
-    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
-    ZaloAPI.tagFollower(accessToken, zaloUserId, status);
-    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
     const newDoc = {
         aliasName: aliasName,
@@ -202,7 +202,13 @@ async function signUp(
 
     aliasName.length === 1 ? (aliasName = aliasName[0]) : (aliasName = aliasName.join(' và '));
 
-    ZaloAPI.updateFollowerInfo(accessToken, zaloStudentId, zaloUserId, registerPhone, aliasName);
+    await ZaloAPI.updateFollowerInfo(
+        accessToken,
+        zaloStudentId,
+        zaloUserId,
+        registerPhone,
+        aliasName
+    );
 
     return;
 }
