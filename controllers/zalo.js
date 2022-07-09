@@ -143,41 +143,22 @@ async function sendMessage(accessToken, zaloUserId, message) {
     });
 }
 
-async function tagFollower(accessToken, zaloUserId, tagNameArray) {
-    for (let i = 0; i < tagNameArray.length; i++) {
-        const tagName = tagNameArray[i];
+async function tagFollower(accessToken, zaloUserId, tagName) {
+    const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
 
-        const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
+    const data = { user_id: zaloUserId, tag_name: tagName };
 
-        const data = { user_id: zaloUserId, tag_name: tagName };
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
 
-        const headers = {
-            access_token: accessToken,
-            'Content-Type': 'application/json',
-        };
-
-        const result = await fetch(URL, {
-            method: 'post',
-            headers: headers,
-            body: JSON.stringify(data),
-        });
-
-        console.log(result);
-    }
+    await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(data),
+    });
 }
-
-async function test() {
-    const zaloClassId = ['2004A1', '2004A0'];
-    const tagNameArray = ['Phụ huynh', ...zaloClassId, 'Đang học'];
-
-    const accessToken =
-        'KupO0eSIX55LZT8CWHY7KL-FrG611_8SBTBxCByHgMGjpU5l_2tLPKF1zNNr8wD2U-28H_OjtKPMxDnurtxsSGY7yI325jKb7Eha2he4kIfe-fewxZYv6pd1jWoD3ODRNyYNPjS2eczHyVv_qWV8RcBRdcVm5ynqK-7QM_X_Z4rzZujOr12yJNk3dXlaSBeQKuwJCeqVkpeOxOHii7_LFmFqn3co0UqA4lZ69gfcymSLgwSGX4gJCIkxmmo6QVCvMRl71Uzp-YXccDrr-Gc9QMhNfcBa0vbpHzMPKT45nKLyuCzfrdx8QK2_cq_uAQXIBR-OSQDuitSblPXqaIsvI0-ybcHFvwPbP804ZrG';
-    const zaloUserId = '4966494673333610309';
-
-    tagFollower(accessToken, zaloUserId, tagNameArray);
-}
-
-test().catch(console.dir);
 
 async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
     const URL = 'https://openapi.zalo.me/v2.0/oa/tag/rmfollowerfromtag';

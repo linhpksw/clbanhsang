@@ -31,8 +31,6 @@ async function sendResponse2Client(
     await updateTokenInDB(tokenColl, refreshToken);
 }
 
-async function deleteAccount() {}
-
 async function signUp(
     res,
     accessToken,
@@ -151,7 +149,7 @@ async function signUp(
     }
     // set up role cho zalo user
 
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã IDHS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã ID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(
         res,
@@ -171,14 +169,20 @@ async function signUp(
         'Phụ huynh': 'PH',
         'Học sinh': 'HS',
     };
+    // them class id moi
+    zaloClassId.push(classID.slice(-7));
+    // them id hs moi
+    zaloStudentId.push(targetStudentId);
+    // them alias moi
+    aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
     const newDoc = {
-        aliasName: aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`),
+        aliasName: aliasName,
         userPhone: `${registerPhone}`,
         role: zaloRole,
         status: status,
-        zaloClassId: zaloClassId.push(classID.slice(-7)),
-        zaloStudentId: zaloStudentId.push(targetStudentId),
+        zaloClassId: zaloClassId,
+        zaloStudentId: zaloStudentId,
     };
 
     const filter = { zaloUserId: `${zaloUserId}` };
@@ -187,8 +191,9 @@ async function signUp(
     };
     await updateOneUser(zaloColl, filter, updateDoc);
 
-    const tagNameArray = [zaloRole, ...zaloClassId, status];
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, tagNameArray);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
     return;
 }
