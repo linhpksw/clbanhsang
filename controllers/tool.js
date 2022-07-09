@@ -195,6 +195,20 @@ async function signUp(
     await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
+    zaloStudentId.length === 1
+        ? (zaloStudentId = zaloStudentId[0])
+        : (zaloStudentId = zaloStudentId.join(', '));
+
+    aliasName.length === 1 ? (aliasName = aliasName) : (aliasName = aliasName.join('và '));
+
+    await ZaloAPI.updateFollowerInfo(
+        accessToken,
+        zaloStudentId,
+        zaloUserId,
+        registerPhone,
+        aliasName
+    );
+
     return;
 }
 
