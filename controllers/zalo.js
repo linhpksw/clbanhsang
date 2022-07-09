@@ -119,7 +119,7 @@ async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, ali
     await fetch(URL, {
         method: 'post',
         headers: headers,
-        payload: JSON.stringify(data),
+        body: JSON.stringify(data),
     });
 }
 
