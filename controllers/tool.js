@@ -179,6 +179,8 @@ async function signUp(
     await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, '2005A0');
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, '2006A0');
 
     const newDoc = {
         aliasName: aliasName,
