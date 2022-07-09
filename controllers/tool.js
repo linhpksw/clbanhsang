@@ -177,8 +177,8 @@ async function signUp(
         userPhone: `${registerPhone}`,
         role: zaloRole,
         status: status,
-        classId: zaloClassId.push(classID.slice(-7)),
-        studentId: zaloStudentId.push(targetStudentId),
+        zaloClassId: zaloClassId.push(classID.slice(-7)),
+        zaloStudentId: zaloStudentId.push(targetStudentId),
     };
 
     const filter = { zaloUserId: `${zaloUserId}` };
@@ -187,7 +187,8 @@ async function signUp(
     };
     await updateOneUser(zaloColl, filter, updateDoc);
 
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, [zaloRole, ...zaloClassId, status]);
+    const tagNameArray = [zaloRole, ...zaloClassId, status];
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, tagNameArray);
 
     return;
 }

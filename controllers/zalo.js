@@ -62,11 +62,20 @@ async function getProfile(accessToken, zaloUserId) {
 
     const jsonResponse = (await response.json()).data;
 
-    let { user_gender: userGender, display_name: displayName, shared_info: shareInfo = {}, tags_and_notes_info: tagsAndNotesInfo } = jsonResponse;
+    let {
+        user_gender: userGender,
+        display_name: displayName,
+        shared_info: shareInfo = {},
+        tags_and_notes_info: tagsAndNotesInfo,
+    } = jsonResponse;
 
     userGender === 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
 
-    const { address: studentId = null, phone: userPhone = null, name: aliasName = null } = shareInfo;
+    const {
+        address: studentId = null,
+        phone: userPhone = null,
+        name: aliasName = null,
+    } = shareInfo;
 
     const { tag_names: tagsName } = tagsAndNotesInfo;
 
@@ -147,11 +156,13 @@ async function tagFollower(accessToken, zaloUserId, tagNameArray) {
             'Content-Type': 'application/json',
         };
 
-        await fetch(URL, {
+        const result = await fetch(URL, {
             method: 'post',
             headers: headers,
             body: JSON.stringify(data),
         });
+
+        console.log(result);
     }
 }
 
@@ -201,4 +212,12 @@ async function sendReaction(accessToken, zaloUserId, messageId, action) {
     });
 }
 
-export { getFollowers, getProfile, sendMessage, updateFollowerInfo, tagFollower, removeFollowerFromTag, sendReaction };
+export {
+    getFollowers,
+    getProfile,
+    sendMessage,
+    updateFollowerInfo,
+    tagFollower,
+    removeFollowerFromTag,
+    sendReaction,
+};
