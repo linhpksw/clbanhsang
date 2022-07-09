@@ -176,6 +176,10 @@ async function signUp(
     // them alias moi
     aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
+
     const newDoc = {
         aliasName: aliasName,
         userPhone: `${registerPhone}`,
@@ -189,17 +193,14 @@ async function signUp(
     const updateDoc = {
         $set: newDoc,
     };
-    await updateOneUser(zaloColl, filter, updateDoc);
 
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
+    await updateOneUser(zaloColl, filter, updateDoc);
 
     zaloStudentId.length === 1
         ? (zaloStudentId = zaloStudentId[0])
-        : (zaloStudentId = zaloStudentId.join(', '));
+        : (zaloStudentId = zaloStudentId.join(' và '));
 
-    aliasName.length === 1 ? (aliasName = aliasName) : (aliasName = aliasName.join('và '));
+    aliasName.length === 1 ? (aliasName = aliasName[0]) : (aliasName = aliasName.join(' và '));
 
     await ZaloAPI.updateFollowerInfo(
         accessToken,

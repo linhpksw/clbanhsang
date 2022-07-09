@@ -99,6 +99,19 @@ async function getProfile(accessToken, zaloUserId) {
     return result;
 }
 
+// async function test() {
+//     const accessToken =
+//         'A3NA1g2YH44kDC08fgX7GIGsnmMcjpKYAMlO0_E7B4CvJTrSjBqU7s5Dx5cUssX_JYAARA7d26qgBzTuuzWgPMmGrbcWpW9QTLVpHBo-SdLqHVKpbuOICqKOt3cwsZW7QmNTF-Vj6NeF1FuyxF5y9cGrc3U7hdrqHNQTLB6TPcndMUX6aQC51sO-WY2lydqy8oNx8gpQ1pD01yKJhvapBN53rHQkZWSj9K_x2iwq0W8WK-4_puqLAq5dq0s-y0e7I1ln0CFi3X8BS_WNyueGDXzfupFEdZeWB7Jh8zZs1JSXTFmHyUi44Ya3zIsct24dMH-W8AR1S3vCEQuiblL6Q7uzm4cIo3XnIxkljt2dj4z4';
+//     const zaloStudentId = '2004001';
+//     const zaloUserId = '4966494673333610309';
+//     const registerPhone = '0915806944';
+//     const aliasName = 'PH Nguyen Van A';
+
+//     await updateFollowerInfo(accessToken, zaloStudentId, zaloUserId, registerPhone, aliasName);
+// }
+
+// test().catch(console.dir);
+
 async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, aliasName) {
     const URL = `https://openapi.zalo.me/v2.0/oa/updatefollowerinfo`;
 
@@ -116,11 +129,15 @@ async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, ali
         'Content-Type': 'application/json',
     };
 
-    await fetch(URL, {
+    const result = await fetch(URL, {
         method: 'post',
         headers: headers,
-        body: JSON.stringify(data),
+        payload: JSON.stringify(data),
     });
+
+    const jsonResponse = await result.json();
+
+    console.log(jsonResponse);
 }
 
 async function sendMessage(accessToken, zaloUserId, message) {
@@ -153,11 +170,15 @@ async function tagFollower(accessToken, zaloUserId, tagName) {
         'Content-Type': 'application/json',
     };
 
-    await fetch(URL, {
+    const result = await fetch(URL, {
         method: 'post',
         headers: headers,
         body: JSON.stringify(data),
     });
+
+    const jsonResponse = await result.json();
+
+    console.log(jsonResponse);
 }
 
 async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
