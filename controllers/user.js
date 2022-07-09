@@ -32,32 +32,10 @@ export const userRequest = async (req, res) => {
 
             if (formatSyntax.includes('dkph')) {
                 // Sign up for Phu huynh
-                Tools.signUp(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    classColl,
-                    tokenColl,
-                    formatSyntax,
-                    messageId,
-                    'Phụ huynh'
-                );
+                Tools.signUp(res, accessToken, refreshToken, zaloUserId, zaloColl, classColl, tokenColl, formatSyntax, messageId, 'Phụ huynh');
             } else if (formatSyntax.includes('dkhs')) {
                 // sign up for Hoc sinh
-                Tools.signUp(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    classColl,
-                    tokenColl,
-                    formatSyntax,
-                    messageId,
-                    'Học sinh'
-                );
+                Tools.signUp(res, accessToken, refreshToken, zaloUserId, zaloColl, classColl, tokenColl, formatSyntax, messageId, 'Học sinh');
             }
         }
     } catch (err) {

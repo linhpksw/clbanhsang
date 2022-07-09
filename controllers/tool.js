@@ -2,93 +2,41 @@ import { findOneUser, updateOneUser } from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 import { updateTokenInDB } from './mongo.js';
 
-function xoaDauTiengViet(str) {
+function nomarlizeSyntax(str) {
     return str
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/đ/g, 'd')
-        .replace(/Đ/g, 'D');
+        .replace(/Đ/g, 'D')
+        .toLowerCase()
+        .replace(/\s+/g, '');
 }
 
-function nomarlizeSyntax(str) {
-    return xoaDauTiengViet(str).toLowerCase().replace(/\s+/g, '');
-}
+async function sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, responseContent, action) {
+    await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
-async function sendBack2Client(res, tokenColl, refreshToken) {
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
+
     await res.send('Done!');
+
     await updateTokenInDB(tokenColl, refreshToken);
 }
 
-async function deleteAccount() {
+async function deleteAccount() {}
+
+async function signUp(res, accessToken, refreshToken, zaloUserId, zaloColl, classColl, tokenColl, formatSyntax, messageId, zaloRole) {
     if (formatSyntax.length !== 21) {
-        await ZaloAPI.sendHeartReaction(
-            accessToken,
-            zaloUserId,
-            messageId,
-            'sad'
-        );
-        await ZaloAPI.sendMessage(
-            accessToken,
-            zaloUserId,
-            `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${quyen} hãy nhập lại.`
-        );
-
-        await sendBack2Client(res, tokenColl, refreshToken);
-
-        return;
-    }
-}
-
-async function signUp(
-    res,
-    accessToken,
-    refreshToken,
-    zaloUserId,
-    zaloColl,
-    classColl,
-    tokenColl,
-    formatSyntax,
-    messageId,
-    quyen
-) {
-    if (formatSyntax.length !== 21) {
-        await ZaloAPI.sendHeartReaction(
-            accessToken,
-            zaloUserId,
-            messageId,
-            'sad'
-        );
-        await ZaloAPI.sendMessage(
-            accessToken,
-            zaloUserId,
-            `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${quyen} hãy nhập lại.`
-        );
-
-        await sendBack2Client(res, tokenColl, refreshToken);
-
+        const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
+        sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, failContent, 'sad');
         return;
     }
     // kiem tra tren zalo collection
-    const { role, displayName } = await findOneUser(
-        zaloColl,
-        { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, role: 1, displayName: 1 } }
-    );
+    const { role, displayName } = await findOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { projection: { _id: 0, role: 1, displayName: 1 } });
 
     if (role !== null) {
-        await ZaloAPI.sendHeartReaction(
-            accessToken,
-            zaloUserId,
-            messageId,
-            'like'
-        );
-        await ZaloAPI.sendMessage(
-            accessToken,
-            zaloUserId,
-            `Tài khoản đã có trên hệ thống. ${quyen} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`
-        );
+        const failContent = `Tài khoản đã có trên hệ thống. ${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-        await sendBack2Client(res, tokenColl, refreshToken);
+        sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, failContent, 'like');
 
         return;
     }
@@ -114,75 +62,42 @@ async function signUp(
     );
 
     if (userInfo === null) {
-        await ZaloAPI.sendHeartReaction(
-            accessToken,
-            zaloUserId,
-            messageId,
-            'sad'
-        );
-        await ZaloAPI.sendMessage(
-            accessToken,
-            zaloUserId,
-            `❌ Đăng kí thất bại!\n\nMã học sinh ${studentId} không có trên hệ thống. ${quyen} hãy liên hệ với trợ giảng để được hỗ trợ.`
-        );
+        const failContent = `❌ Đăng kí thất bại!\n\nMã học sinh ${studentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        await sendBack2Client(res, tokenColl, refreshToken);
+        sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, failContent, 'sad');
 
         return;
     }
 
-    let {
-        firstParentPhone,
-        secondParentPhone,
-        studentPhone,
-        fullName,
-        classID,
-        leaveDate,
-    } = userInfo;
+    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classID, leaveDate } = userInfo;
 
     let registerPhoneList;
-    if (quyen === 'Phụ huynh') {
+    if (zaloRole === 'Phụ huynh') {
         registerPhoneList = [firstParentPhone, secondParentPhone];
     } else {
         registerPhoneList = [studentPhone];
     }
 
     if (!registerPhoneList.includes(registerPhone)) {
-        await ZaloAPI.sendHeartReaction(
-            accessToken,
-            zaloUserId,
-            messageId,
-            'sad'
-        );
-        await ZaloAPI.sendMessage(
-            accessToken,
-            zaloUserId,
-            `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${quyen} hãy liên hệ với trợ giảng để được hỗ trợ.`
-        );
+        const failContent = `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        await sendBack2Client(res, tokenColl, refreshToken);
+        sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, failContent, 'sad');
 
         return;
     }
     // set up role cho zalo user
-    await ZaloAPI.sendHeartReaction(
-        accessToken,
-        zaloUserId,
-        messageId,
-        'heart'
-    );
-    await ZaloAPI.sendMessage(
-        accessToken,
-        zaloUserId,
-        `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh: ${fullName}. Mã ID: ${studentId}\nTừ bây giờ, ${quyen} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`
-    );
+
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh: ${fullName}.\nMã IDHS: ${studentId}\n\nTừ bây giờ, ${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+
+    sendResponse2Client(res, accessToken, refreshToken, zaloUserId, tokenColl, messageId, successContent, 'heart');
+
     let status;
     leaveDate === null ? (status = 'Đang học') : (status = 'Nghỉ học');
 
     const newDoc = {
         aliasName: `PH ${fullName}`,
         userPhone: `${registerPhone}`,
-        role: quyen,
+        role: zaloRole,
         status: status,
         classId: classID.slice(-7),
         studentId: studentId,
@@ -194,18 +109,15 @@ async function signUp(
     };
     await updateOneUser(zaloColl, filter, updateDoc);
 
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, quyen);
+    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, classID);
     await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
-
-    await sendBack2Client(res, tokenColl, refreshToken);
 
     return;
 }
 
 async function forceFollowOA(accessToken, zaloUserId) {
-    const notFollowContent =
-        'PHHS vui lòng nhấn quan tâm OA để sử dụng đầy đủ những tính năng của lớp toán.';
+    const notFollowContent = 'PHHS vui lòng nhấn quan tâm OA để sử dụng đầy đủ những tính năng của lớp toán.';
     await ZaloAPI.sendMessage(accessToken, zaloUserId, notFollowContent);
 }
 

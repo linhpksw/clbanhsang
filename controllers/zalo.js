@@ -62,20 +62,11 @@ async function getProfile(accessToken, zaloUserId) {
 
     const jsonResponse = (await response.json()).data;
 
-    let {
-        user_gender: userGender,
-        display_name: displayName,
-        shared_info: shareInfo = {},
-        tags_and_notes_info: tagsAndNotesInfo,
-    } = jsonResponse;
+    let { user_gender: userGender, display_name: displayName, shared_info: shareInfo = {}, tags_and_notes_info: tagsAndNotesInfo } = jsonResponse;
 
     userGender === 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
 
-    const {
-        address: studentId = null,
-        phone: userPhone = null,
-        name: aliasName = null,
-    } = shareInfo;
+    const { address: studentId = null, phone: userPhone = null, name: aliasName = null } = shareInfo;
 
     const { tag_names: tagsName } = tagsAndNotesInfo;
 
@@ -83,9 +74,7 @@ async function getProfile(accessToken, zaloUserId) {
 
     const role = tagsName.filter((s) => s.includes('P')) || null;
 
-    const status =
-        tagsName.filter((s) => !s.includes(classId) && !s.includes(role)) ||
-        null;
+    const status = tagsName.filter((s) => !s.includes(classId) && !s.includes(role)) || null;
 
     const result = {
         zaloUserId: zaloUserId,
@@ -101,13 +90,7 @@ async function getProfile(accessToken, zaloUserId) {
     return result;
 }
 
-async function updateFollowerInfo(
-    accessToken,
-    studentId,
-    zaloUserId,
-    phone,
-    aliasName
-) {
+async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, aliasName) {
     const URL = `https://openapi.zalo.me/v2.0/oa/updatefollowerinfo`;
 
     const data = {
@@ -185,7 +168,7 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
     });
 }
 
-async function sendHeartReaction(accessToken, zaloUserId, messageId, action) {
+async function sendReaction(accessToken, zaloUserId, messageId, action) {
     const URL = 'https://openapi.zalo.me/v2.0/oa/message';
 
     const action2ReactIcon = {
@@ -215,12 +198,4 @@ async function sendHeartReaction(accessToken, zaloUserId, messageId, action) {
     });
 }
 
-export {
-    getFollowers,
-    getProfile,
-    sendMessage,
-    updateFollowerInfo,
-    tagFollower,
-    removeFollowerFromTag,
-    sendHeartReaction,
-};
+export { getFollowers, getProfile, sendMessage, updateFollowerInfo, tagFollower, removeFollowerFromTag, sendReaction };
