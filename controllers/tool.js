@@ -45,7 +45,7 @@ async function signUp(
 ) {
     if (formatSyntax.length !== 21) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
-        sendResponse2Client(
+        await sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -71,7 +71,7 @@ async function signUp(
     if (zaloStudentId.includes(targetStudentId)) {
         const notifyContent = `⭐ Tài khoản đã có trên hệ thống!\n\n${zaloRole} có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-        sendResponse2Client(
+        await sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -106,7 +106,7 @@ async function signUp(
     if (classUserInfo === null) {
         const failContent = `❌ Đăng kí thất bại!\n\nMã học sinh ${targetStudentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(
+        await sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -134,7 +134,7 @@ async function signUp(
     if (!registerPhoneList.includes(registerPhone)) {
         const failContent = `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(
+        await sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -151,7 +151,7 @@ async function signUp(
 
     const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã ID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-    sendResponse2Client(
+    await sendResponse2Client(
         res,
         accessToken,
         refreshToken,
@@ -176,11 +176,9 @@ async function signUp(
     // them alias moi
     aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, '2005A0');
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, '2006A0');
+    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
+    ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
     const newDoc = {
         aliasName: aliasName,
@@ -204,13 +202,7 @@ async function signUp(
 
     aliasName.length === 1 ? (aliasName = aliasName[0]) : (aliasName = aliasName.join(' và '));
 
-    await ZaloAPI.updateFollowerInfo(
-        accessToken,
-        zaloStudentId,
-        zaloUserId,
-        registerPhone,
-        aliasName
-    );
+    ZaloAPI.updateFollowerInfo(accessToken, zaloStudentId, zaloUserId, registerPhone, aliasName);
 
     return;
 }
