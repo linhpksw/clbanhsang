@@ -151,7 +151,7 @@ async function signUp(
 
     const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã ID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-    await sendResponse2Client(
+    sendResponse2Client(
         res,
         accessToken,
         refreshToken,
@@ -176,9 +176,9 @@ async function signUp(
     // them alias moi
     aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, status);
-    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
+    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
+    ZaloAPI.tagFollower(accessToken, zaloUserId, status);
+    ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
     const newDoc = {
         aliasName: aliasName,
@@ -194,20 +194,25 @@ async function signUp(
         $set: newDoc,
     };
 
-    await updateOneUser(zaloColl, filter, updateDoc);
+    updateOneUser(zaloColl, filter, updateDoc);
+
+    let formatZaloStudentId;
+    let formatAliasName;
 
     zaloStudentId.length === 1
-        ? (zaloStudentId = zaloStudentId[0])
-        : (zaloStudentId = zaloStudentId.join(' và '));
+        ? (formatZaloStudentId = zaloStudentId[0])
+        : (formatZaloStudentId = zaloStudentId.join(' và '));
 
-    aliasName.length === 1 ? (aliasName = aliasName[0]) : (aliasName = aliasName.join(' và '));
+    aliasName.length === 1
+        ? (formatAliasName = aliasName[0])
+        : (formatAliasName = aliasName.join(' và '));
 
-    await ZaloAPI.updateFollowerInfo(
+    ZaloAPI.updateFollowerInfo(
         accessToken,
-        zaloStudentId,
+        formatZaloStudentId,
         zaloUserId,
         registerPhone,
-        aliasName
+        formatAliasName
     );
 
     return;
