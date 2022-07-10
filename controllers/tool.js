@@ -22,13 +22,13 @@ async function sendResponse2Client(
     responseContent,
     action
 ) {
-    ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
+    await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
-    ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
 
-    res.send('Done!');
+    await res.send('Done!');
 
-    updateTokenInDB(tokenColl, refreshToken);
+    await updateTokenInDB(tokenColl, refreshToken);
 }
 
 async function signUp(
