@@ -22,13 +22,13 @@ async function sendResponse2Client(
     responseContent,
     action
 ) {
-    await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
+    ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
-    await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
+    ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
 
-    await res.send('Done!');
+    res.send('Done!');
 
-    await updateTokenInDB(tokenColl, refreshToken);
+    updateTokenInDB(tokenColl, refreshToken);
 }
 
 async function signUp(
@@ -45,7 +45,7 @@ async function signUp(
 ) {
     if (formatSyntax.length !== 21) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
-        await sendResponse2Client(
+        sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -71,7 +71,7 @@ async function signUp(
     if (zaloStudentId.includes(targetStudentId)) {
         const notifyContent = `⭐ Tài khoản đã có trên hệ thống!\n\n${zaloRole} có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-        await sendResponse2Client(
+        sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -86,7 +86,6 @@ async function signUp(
     }
 
     // kiem tra tren classes collection
-
     const classUserInfo = await findOneUser(
         classColl,
         { studentID: targetStudentId },
@@ -106,7 +105,7 @@ async function signUp(
     if (classUserInfo === null) {
         const failContent = `❌ Đăng kí thất bại!\n\nMã học sinh ${targetStudentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        await sendResponse2Client(
+        sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -134,7 +133,7 @@ async function signUp(
     if (!registerPhoneList.includes(registerPhone)) {
         const failContent = `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        await sendResponse2Client(
+        sendResponse2Client(
             res,
             accessToken,
             refreshToken,
@@ -148,7 +147,6 @@ async function signUp(
         return;
     }
     // set up role cho zalo user
-
     const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã ID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(
@@ -176,10 +174,12 @@ async function signUp(
     // them alias moi
     aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
+    // Cap nhat tag tren Zalo OA Chat
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     ZaloAPI.tagFollower(accessToken, zaloUserId, status);
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
+    // cap nhat role cho PHHS trong Zalo Collection
     const newDoc = {
         aliasName: aliasName,
         userPhone: `${registerPhone}`,
@@ -196,6 +196,7 @@ async function signUp(
 
     updateOneUser(zaloColl, filter, updateDoc);
 
+    // Cap nhat thong tin tren Zalo OA Chat
     let formatZaloStudentId;
     let formatAliasName;
 
