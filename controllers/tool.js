@@ -160,15 +160,13 @@ async function signUp(
         'heart'
     );
 
-    let status;
-    leaveDate === null ? (status = 'Đang học') : (status = 'Nghỉ học');
-
     const zaloRole2Short = {
         'Phụ huynh': 'PH',
         'Học sinh': 'HS',
     };
     // them class id moi
-    zaloClassId.push(classID.slice(-7));
+    classID.includes('#') ? zaloClassId.push(`N${classID.slice(-6)}`) : zaloClassId.push(classID);
+
     // them id hs moi
     zaloStudentId.push(targetStudentId);
     // them alias moi
@@ -176,15 +174,13 @@ async function signUp(
 
     // Cap nhat tag tren Zalo OA Chat
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
-    ZaloAPI.tagFollower(accessToken, zaloUserId, status);
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
-    // cap nhat role cho PHHS trong Zalo Collection
+    // cap nhat role cho PHHS trong zaloUsers Collection
     const newDoc = {
         aliasName: aliasName,
         userPhone: `${registerPhone}`,
         role: zaloRole,
-        status: status,
         zaloClassId: zaloClassId,
         zaloStudentId: zaloStudentId,
     };
@@ -202,11 +198,11 @@ async function signUp(
 
     zaloStudentId.length === 1
         ? (formatZaloStudentId = zaloStudentId[0])
-        : (formatZaloStudentId = zaloStudentId.join(' và '));
+        : (formatZaloStudentId = zaloStudentId.join(', '));
 
     aliasName.length === 1
         ? (formatAliasName = aliasName[0])
-        : (formatAliasName = aliasName.join(' và '));
+        : (formatAliasName = aliasName.join(', '));
 
     ZaloAPI.updateFollowerInfo(
         accessToken,
