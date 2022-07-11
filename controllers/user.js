@@ -1,5 +1,30 @@
 import * as Tools from './tool.js';
-import { readTokenFromDB, client } from './mongo.js';
+import * as ZaloAPI from './zalo.js';
+import { readTokenFromDB, client, insertManyToDB } from './mongo.js';
+
+// async function insertToZaloDB() {
+//     try {
+//         await client.connect();
+//         const db = client.db('zalo_servers');
+//         const tokenColl = db.collection('tokens');
+//         const zaloColl = db.collection('zaloUsers');
+
+//         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+
+//         const followers = await ZaloAPI.getFollowers(accessToken);
+
+//         console.log(followers);
+
+//         await insertManyToDB(zaloColl, followers);
+
+//         console.log('Success!');
+//     } catch (err) {
+//         console.error(err);
+//     } finally {
+//     }
+// }
+
+// insertToZaloDB();
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
@@ -32,10 +57,32 @@ export const userRequest = async (req, res) => {
 
             if (formatSyntax.includes('dkph')) {
                 // Sign up for Phu huynh
-                Tools.signUp(res, accessToken, refreshToken, zaloUserId, zaloColl, classColl, tokenColl, formatSyntax, messageId, 'Phụ huynh');
+                Tools.signUp(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    classColl,
+                    tokenColl,
+                    formatSyntax,
+                    messageId,
+                    'Phụ huynh'
+                );
             } else if (formatSyntax.includes('dkhs')) {
                 // sign up for Hoc sinh
-                Tools.signUp(res, accessToken, refreshToken, zaloUserId, zaloColl, classColl, tokenColl, formatSyntax, messageId, 'Học sinh');
+                Tools.signUp(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    classColl,
+                    tokenColl,
+                    formatSyntax,
+                    messageId,
+                    'Học sinh'
+                );
             }
         }
     } catch (err) {

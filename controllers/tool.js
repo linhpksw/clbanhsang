@@ -88,12 +88,12 @@ async function signUp(
     // kiem tra tren classes collection
     const classUserInfo = await findOneUser(
         classColl,
-        { studentID: targetStudentId },
+        { studentId: targetStudentId },
         {
             projection: {
                 _id: 0,
                 fullName: 1,
-                classID: 1,
+                classId: 1,
                 leaveDate: 1,
                 studentPhone: 1,
                 firstParentPhone: 1,
@@ -119,7 +119,7 @@ async function signUp(
         return;
     }
 
-    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classID, leaveDate } =
+    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classId, leaveDate } =
         classUserInfo;
 
     let registerPhoneList;
@@ -165,7 +165,7 @@ async function signUp(
         'Học sinh': 'HS',
     };
     // them class id moi
-    classID.includes('#') ? zaloClassId.push(`N${classID.slice(-6)}`) : zaloClassId.push(classID);
+    classId.includes('#') ? zaloClassId.push(`N${classId.slice(-6)}`) : zaloClassId.push(classId);
 
     // them id hs moi
     zaloStudentId.push(targetStudentId);

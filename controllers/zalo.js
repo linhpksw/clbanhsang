@@ -15,6 +15,9 @@ async function getFollowers(accessToken) {
 
     const jsonResponse = await response.json();
 
+    // console.log(jsonResponse);
+    // return;
+
     const { total, followers } = jsonResponse.data;
     totalFollowers.push(...followers);
 
@@ -62,39 +65,19 @@ async function getProfile(accessToken, zaloUserId) {
 
     const jsonResponse = (await response.json()).data;
 
-    let {
-        user_gender: userGender,
-        display_name: displayName,
-        shared_info: shareInfo = {},
-        tags_and_notes_info: tagsAndNotesInfo,
-    } = jsonResponse;
+    let { user_gender: userGender, display_name: displayName } = jsonResponse;
 
     userGender === 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
-
-    const {
-        address: studentId = null,
-        phone: userPhone = null,
-        name: aliasName = null,
-    } = shareInfo;
-
-    const { tag_names: tagsName } = tagsAndNotesInfo;
-
-    const classId = tagsName.filter((s) => s.includes('A')) || null;
-
-    const role = tagsName.filter((s) => s.includes('P')) || null;
-
-    const status = tagsName.filter((s) => !s.includes(classId) && !s.includes(role)) || null;
 
     const result = {
         zaloUserId: zaloUserId,
         displayName: displayName,
-        aliasName: aliasName,
         userGender: userGender,
-        userPhone: userPhone,
-        role: role[0],
-        status: status[0],
-        classId: classId[0],
-        studentId: studentId,
+        role: null,
+        userPhone: null,
+        aliasName: [],
+        zaloClassId: [],
+        zaloStudentId: [],
     };
     return result;
 }
