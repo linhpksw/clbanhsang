@@ -85,4 +85,12 @@ async function findOneUser(coll, query, options) {
     return await coll.findOne(query, options);
 }
 
-export { updateTokenInDB, readTokenFromDB, findOneUser, updateOneUser, insertManyToDB, client };
+export {
+    updateTokenInDB,
+    readTokenFromDB,
+    findOneUser,
+    updateOneUser,
+    insertManyToDB,
+    insertOneUser,
+    client,
+};
