@@ -136,11 +136,15 @@ async function sendMessage(accessToken, zaloUserId, message) {
         message: { text: `${message}` },
     };
 
-    await fetch(URL, {
+    const result = await fetch(URL, {
         method: 'post',
         headers: headers,
         body: JSON.stringify(content),
     });
+
+    const jsonResponse = result.json();
+
+    return jsonResponse;
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {

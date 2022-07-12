@@ -42,7 +42,13 @@ export const appsheetRequest = async (req, res) => {
         insertOneUser(classColl, newDoc);
 
         const successContent = `✅ Thêm mới thành công vào cơ sở dữ liệu!\n\nTên học sinh: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
-        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
+        const sendMessageResult = await ZaloAPI.sendMessage(
+            accessToken,
+            '4966494673333610309',
+            successContent
+        );
+
+        console.log(sendMessageResult);
 
         res.send('Success');
         return;
