@@ -14,6 +14,12 @@ export const appsheetRequest = async (req, res) => {
 
         const webhook = req.body;
 
+        for (const property in webhook) {
+            if (webhook[property] == '') {
+                webhook[property] = null;
+            }
+        }
+
         let {
             studentId,
             classId,
@@ -31,13 +37,7 @@ export const appsheetRequest = async (req, res) => {
             secondParentPhone,
         } = webhook;
 
-        for (const property in webhook) {
-            if (webhook[property] == '') {
-                webhook[property] = null;
-            }
-        }
-
-        const fullName = `${firstName} ${lastName}`.trim();
+        const fullName = `${firstName} ${lastName}`.replace(/\s+/g, ' ').trim();
 
         const newDoc = {
             studentId: studentId,
