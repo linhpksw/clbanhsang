@@ -5,6 +5,8 @@ import { readTokenFromDB, client, insertManyToDB } from './mongo.js';
 export const appsheetRequest = async (req, res) => {
     const webhook = req.body;
 
+    console.log(webhook);
+
     let {
         studentId,
         classId,
@@ -13,9 +15,9 @@ export const appsheetRequest = async (req, res) => {
         firstName,
         lastName,
         subject,
-        studentPhone,
-        school,
-        studentEmail,
+        studentPhone = null,
+        school = null,
+        studentEmail = null,
         firstParentName,
         firstParentPhone,
         secondParentName,
