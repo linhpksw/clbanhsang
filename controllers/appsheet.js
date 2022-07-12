@@ -13,42 +13,54 @@ export const appsheetRequest = async (req, res) => {
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
 
         const webhook = req.body;
+
+        let {
+            studentId,
+            classId,
+            enrollDate,
+            birthYear,
+            firstName,
+            lastName,
+            subject,
+            studentPhone,
+            school,
+            studentEmail,
+            firstParentName,
+            firstParentPhone,
+            secondParentName,
+            secondParentPhone,
+        } = webhook;
+
         for (const property in webhook) {
             if (webhook[property] == '') {
                 webhook[property] = null;
             }
         }
 
-        const fullName = `${webhook.firstName} ${webhook.lastName}`.trim();
+        const fullName = `${firstName} ${lastName}`.trim();
 
         const newDoc = {
-            studentId: webhook.studentId,
-            classId: webhook.classId,
-            enrollDate: webhook.enrollDate,
+            studentId: studentId,
+            classId: classId,
+            enrollDate: enrollDate,
             status: 'Học',
-            birthYear: webhook.birthYear,
+            birthYear: birthYear,
             fullName: fullName,
-            subject: webhook.subject,
+            subject: subject,
             leaveDate: null,
-            studentPhone: webhook.studentPhone,
-            school: webhook.school,
-            studentEmail: webhook.studentEmail,
-            firstParentName: webhook.firstParentName,
-            firstParentPhone: webhook.firstParentPhone,
-            secondParentName: webhook.secondParentName,
-            secondParentPhone: webhook.secondParentPhone,
+            studentPhone: studentPhone,
+            school: school,
+            studentEmail: studentEmail,
+            firstParentName: firstParentName,
+            firstParentPhone: firstParentPhone,
+            secondParentName: secondParentName,
+            secondParentPhone: secondParentPhone,
         };
 
         insertOneUser(classColl, newDoc);
 
         const successContent = `✅ Thêm mới thành công vào cơ sở dữ liệu!\n\nTên học sinh: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
-        const sendMessageResult = await ZaloAPI.sendMessage(
-            accessToken,
-            '4966494673333610309',
-            successContent
-        );
-
-        console.log(sendMessageResult);
+        ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         res.send('Success');
         return;
