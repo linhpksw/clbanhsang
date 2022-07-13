@@ -1,6 +1,6 @@
 import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
-import { readTokenFromDB, client, insertOneUser } from './mongo.js';
+import { readTokenFromDB, client, insertOneUser, updateTokenInDB } from './mongo.js';
 
 export const appsheetRequest = async (req, res) => {
     try {
@@ -57,18 +57,15 @@ export const appsheetRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        await insertOneUser(classColl, newDoc);
+        insertOneUser(classColl, newDoc);
 
         const successContent = `✅ Thêm mới thành công vào cơ sở dữ liệu!\n\nTên học sinh: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
-        const result = await ZaloAPI.sendMessage(
-            accessToken,
-            '4966494673333610309',
-            successContent
-        );
 
-        console.log(result);
+        ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
+
+        updateTokenInDB(tokenColl, refreshToken);
+
         res.send('Success');
-        return;
     } catch (err) {
         console.error(err);
     } finally {

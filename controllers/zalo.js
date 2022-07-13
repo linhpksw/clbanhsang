@@ -144,7 +144,7 @@ async function sendMessage(accessToken, zaloUserId, message) {
 
     const jsonResponse = result.json();
 
-    return jsonResponse;
+    console.log(jsonResponse);
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {
@@ -177,11 +177,15 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
         'Content-Type': 'application/json',
     };
 
-    await fetch(URL, {
+    const response = await fetch(URL, {
         method: 'post',
         headers: headers,
         payload: JSON.stringify(data),
     });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
 }
 
 async function sendReaction(accessToken, zaloUserId, messageId, action) {
@@ -207,11 +211,15 @@ async function sendReaction(accessToken, zaloUserId, messageId, action) {
         'Content-Type': 'application/json',
     };
 
-    await fetch(URL, {
+    const response = await fetch(URL, {
         method: 'post',
         headers: headers,
         body: JSON.stringify(data),
     });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
 }
 
 export {

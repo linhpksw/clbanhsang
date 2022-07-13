@@ -23,7 +23,11 @@ async function updateTokenInDB(tokenColl, refreshToken) {
         refreshToken: `${refresh_token}`,
     };
 
-    await tokenColl.replaceOne(query, replacement);
+    const response = await tokenColl.replaceOne(query, replacement);
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
 }
 
 async function readTokenFromDB(tokenColl) {
