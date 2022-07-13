@@ -37,7 +37,7 @@ export const createStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Thêm mới thành công!\n\nMã lớp: ${classId}\n\nID HS: ${studentId}\n\nTênHS: ${fullName}`;
+        const successContent = `✅ Thêm mới thành công!\n\nID lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
         ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const newDoc = {
@@ -128,7 +128,7 @@ export const updateStudentRequest = async (req, res) => {
 
         updateOneUser(classColl, { studentId: `${studentId}` }, { $set: updateDoc });
 
-        const successContent = `✅ Cập nhật thành công!\n\nMã lớp: ${classId}\n\nID HS: ${studentId}\n\nTênHS: ${fullName}`;
+        const successContent = `✅ Cập nhật thành công!\n\nID lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
 
         ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
