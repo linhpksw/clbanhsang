@@ -105,7 +105,7 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `🔃 Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const updateDoc = {
@@ -175,9 +175,9 @@ export const deleteStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Xoá thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
 
-        ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
+        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
@@ -197,11 +197,14 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-        updateOneUser(classColl, { studentId: `${studentId}` }, { $set: updateClassDoc });
+        updateOneUser(classColl, { studentId: studentId }, { $set: updateClassDoc });
 
         // set trang thai nghi trong Zalo Coll
-        const updateZaloDoc = {};
-        updateOneUser(zaloColl, { zaloStudentId: `${studentId}` }, { $set: updateZaloDoc });
+        updateOneUser(
+            zaloColl,
+            { 'students.zaloStudentId': studentId },
+            { $set: { 'students.$.zaloClassId': `N${classId.slice(-6)}` } }
+        );
 
         updateTokenInDB(tokenColl, refreshToken);
 
