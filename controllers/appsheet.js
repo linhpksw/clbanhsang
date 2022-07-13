@@ -1,4 +1,3 @@
-import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import { readTokenFromDB, client, insertOneUser, updateTokenInDB, updateOneUser } from './mongo.js';
 
@@ -7,7 +6,6 @@ export const createStudentRequest = async (req, res) => {
         await client.connect();
         const db = client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
-        const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
@@ -59,7 +57,7 @@ export const createStudentRequest = async (req, res) => {
 
         insertOneUser(classColl, newDoc);
 
-        const successContent = `✅ Thêm mới thành công!\n\nTên học sinh: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
+        const successContent = `✅ Thêm mới thành công!\n\nTên HS: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
 
         ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
@@ -77,7 +75,6 @@ export const updateStudentRequest = async (req, res) => {
         await client.connect();
         const db = client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
-        const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
 
         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
@@ -130,9 +127,9 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        updateOneUser(classColl, { studentId: `${studentId}` }, updateDoc);
+        updateOneUser(classColl, { $set: { studentId: `${studentId}` } }, updateDoc);
 
-        const successContent = `✅ Cập nhật thành công!\n\nTên học sinh: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
+        const successContent = `✅ Cập nhật thành công!\n\nTên HS: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
 
         ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 

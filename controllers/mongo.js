@@ -25,7 +25,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
 
     const response = await tokenColl.replaceOne(query, replacement);
 
-    console.log(response);
+    console.log('Đã update token trong DB.');
 }
 
 async function readTokenFromDB(tokenColl) {
