@@ -108,6 +108,8 @@ export const updateStudentRequest = async (req, res) => {
         const successContent = `🔃 Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
+        console.log(typeof studentId);
+
         const updateDoc = {
             studentId: studentId,
             classId: classId,
