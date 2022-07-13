@@ -1,4 +1,4 @@
-import { findOneUser, updateOneUser } from './mongo.js';
+import { findOneUser, updateOneUser, insertOneUser } from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 import { updateTokenInDB } from './mongo.js';
 
@@ -61,14 +61,13 @@ async function signUp(
     const targetStudentId = parseInt(formatSyntax.substring(4, 11));
     const registerPhone = formatSyntax.slice(-10);
 
-    // kiem tra tren zalo collection
-    let { displayName, zaloStudentId, aliasName, zaloClassId } = await findOneUser(
+    const specificZaloUserInfo = await findOneUser(
         zaloColl,
-        { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, displayName: 1, zaloStudentId: 1, aliasName: 1, zaloClassId: 1 } }
+        { zaloUserId: `${zaloUserId}`, 'students.zaloStudentId': targetStudentId },
+        { projection: { _id: 0, students: 1 } }
     );
 
-    if (zaloStudentId.includes(targetStudentId)) {
+    if (specificZaloUserInfo !== null) {
         const notifyContent = `⭐ Tài khoản đã có trên hệ thống!\n\n${zaloRole} có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
         sendResponse2Client(
@@ -119,8 +118,7 @@ async function signUp(
         return;
     }
 
-    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classId, leaveDate } =
-        classUserInfo;
+    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classId } = classUserInfo;
 
     let registerPhoneList;
 
@@ -147,7 +145,7 @@ async function signUp(
         return;
     }
     // set up role cho zalo user
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nMã ID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nID HS: ${targetStudentId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(
         res,
@@ -164,45 +162,50 @@ async function signUp(
         'Phụ huynh': 'PH',
         'Học sinh': 'HS',
     };
-    // them class id moi
-    classId.includes('#') ? zaloClassId.push(`N${classId.slice(-6)}`) : zaloClassId.push(classId);
-
-    // them id hs moi
-    zaloStudentId.push(targetStudentId);
-    // them alias moi
-    aliasName.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
 
     // Cap nhat tag tren Zalo OA Chat
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.at(-1));
 
     // cap nhat role cho PHHS trong zaloUsers Collection
-    const newDoc = {
-        aliasName: aliasName,
-        userPhone: `${registerPhone}`,
-        role: zaloRole,
-        zaloClassId: zaloClassId,
-        zaloStudentId: zaloStudentId,
-    };
-
     const filter = { zaloUserId: `${zaloUserId}` };
+
     const updateDoc = {
-        $set: newDoc,
+        userPhone: `${registerPhone}`,
+        $push: {
+            students: {
+                zaloStudentId: targetStudentId,
+                zaloClassId: classId,
+                aliasName: `${zaloRole2Short[zaloRole]} ${fullName}`,
+                role: zaloRole,
+            },
+        },
     };
 
     updateOneUser(zaloColl, filter, updateDoc);
 
     // Cap nhat thong tin tren Zalo OA Chat
-    let formatZaloStudentId;
-    let formatAliasName;
+    const totalZaloUserInfo = await findOneUser(
+        zaloColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, students: 1 } }
+    );
 
-    zaloStudentId.length === 1
-        ? (formatZaloStudentId = zaloStudentId[0])
-        : (formatZaloStudentId = zaloStudentId.join(', '));
+    let formatZaloStudentId = [];
+    let formatAliasName = [];
+    totalZaloUserInfo.forEach((v) => {
+        const [zaloStudentId, zaloClassId, aliasName, role] = v;
+        formatZaloStudentId.push(zaloStudentId);
+        formatAliasName.push(aliasName);
+    });
 
-    aliasName.length === 1
-        ? (formatAliasName = aliasName[0])
-        : (formatAliasName = aliasName.join(', '));
+    formatZaloStudentId.length === 1
+        ? (formatZaloStudentId = formatZaloStudentId[0])
+        : formatZaloStudentId.join(', ');
+
+    formatAliasName.length === 1
+        ? (formatAliasName = formatAliasName[0])
+        : formatAliasName.join(', ');
 
     ZaloAPI.updateFollowerInfo(
         accessToken,

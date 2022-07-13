@@ -13,7 +13,7 @@ import { readTokenFromDB, client, insertManyToDB } from './mongo.js';
 
 //         const followers = await ZaloAPI.getFollowers(accessToken);
 
-//         console.log(followers);
+//         // console.log(followers);
 
 //         await insertManyToDB(zaloColl, followers);
 

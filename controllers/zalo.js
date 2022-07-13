@@ -73,11 +73,8 @@ async function getProfile(accessToken, zaloUserId) {
         zaloUserId: zaloUserId,
         displayName: displayName,
         userGender: userGender,
-        role: null,
         userPhone: null,
-        aliasName: [],
-        zaloClassId: [],
-        zaloStudentId: [],
+        students: [],
     };
     return result;
 }
