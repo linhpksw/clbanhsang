@@ -69,3 +69,27 @@ export const appsheetRequest = async (req, res) => {
     } finally {
     }
 };
+
+export const updateStudentRequest = async (req, res) => {
+    try {
+        await client.connect();
+        const db = client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const zaloColl = db.collection('zaloUsers');
+        const classColl = db.collection('classUsers');
+
+        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+
+        const webhook = req.body;
+        const { studentId } = req.params;
+
+        console.log(studentId);
+        console.log(webhook);
+
+        res.send('Success');
+        return;
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
