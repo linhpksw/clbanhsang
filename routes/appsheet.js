@@ -1,8 +1,8 @@
 import express from 'express';
-import { appsheetRequest, updateStudentRequest } from '../controllers/appsheet.js';
+import { createStudentRequest, updateStudentRequest } from '../controllers/appsheet.js';
 
 const router = express.Router();
-router.post('/', appsheetRequest);
-router.put('/:studentId', updateStudentRequest);
+router.post('/', createStudentRequest);
+router.put('/', updateStudentRequest);
 
 export default router;
