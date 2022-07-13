@@ -136,13 +136,13 @@ async function sendMessage(accessToken, zaloUserId, message) {
         message: { text: `${message}` },
     };
 
-    const result = await fetch(URL, {
+    const response = await fetch(URL, {
         method: 'post',
         headers: headers,
         body: JSON.stringify(content),
     });
 
-    const jsonResponse = result.json();
+    const jsonResponse = await response.json();
 
     console.log(jsonResponse);
 }

@@ -89,7 +89,6 @@ export const updateStudentRequest = async (req, res) => {
         console.log(webhook);
 
         res.send('Success');
-        return;
     } catch (err) {
         console.error(err);
     } finally {
