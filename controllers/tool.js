@@ -193,7 +193,7 @@ async function signUp(
     const filter = { zaloUserId: `${zaloUserId}` };
 
     const updateDoc = {
-        userPhone: `${registerPhone}`,
+        $set: { userPhone: `${registerPhone}` },
         $push: {
             students: {
                 zaloStudentId: targetStudentId,
