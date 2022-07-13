@@ -41,7 +41,7 @@ export const createStudentRequest = async (req, res) => {
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const newDoc = {
-            studentId: studentId,
+            studentId: parseInt(studentId),
             classId: classId,
             enrollDate: enrollDate,
             status: 'Học',
@@ -108,10 +108,8 @@ export const updateStudentRequest = async (req, res) => {
         const successContent = `🔃 Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
-        console.log(typeof studentId);
-
         const updateDoc = {
-            studentId: studentId,
+            studentId: parseInt(studentId),
             classId: classId,
             enrollDate: enrollDate,
             status: 'Học',
@@ -128,7 +126,7 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        updateOneUser(classColl, { studentId: `${studentId}` }, { $set: updateDoc });
+        updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
 
         updateTokenInDB(tokenColl, refreshToken);
 
@@ -183,7 +181,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
-            studentId: studentId,
+            studentId: parseInt(studentId),
             classId: `N${classId.slice(-6)}`,
             enrollDate: enrollDate,
             status: 'Nghỉ',
@@ -199,12 +197,12 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-        updateOneUser(classColl, { studentId: studentId }, { $set: updateClassDoc });
+        updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
 
         // set trang thai nghi trong Zalo Coll
         updateOneUser(
             zaloColl,
-            { 'students.zaloStudentId': studentId },
+            { 'students.zaloStudentId': parseInt(studentId) },
             { $set: { 'students.$.zaloClassId': `N${classId.slice(-6)}` } }
         );
 
