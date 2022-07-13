@@ -67,14 +67,14 @@ async function signUp(
         { projection: { _id: 0, displayName: 1, students: 1 } }
     );
 
-    let { displayName, students } = zaloUserInfo;
+    const { displayName, students } = zaloUserInfo;
 
     let zaloStudentIdArr = [];
     let zaloClassIdArr = [];
     let aliasNameArr = [];
 
-    if (students.length) {
-        students.map((v) => {
+    if (students.length > 0) {
+        students.forEach((v) => {
             const { zaloStudentId, zaloClassId, aliasName } = v;
             zaloStudentIdArr.push(zaloStudentId);
             zaloClassIdArr.push(zaloClassId);
@@ -82,7 +82,7 @@ async function signUp(
         });
     }
 
-    if (zaloClassIdArr.includes(targetStudentId)) {
+    if (zaloStudentIdArr.includes(targetStudentId)) {
         const notifyContent = `⭐ Tài khoản đã có trên hệ thống!\n\n${zaloRole} có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
         sendResponse2Client(

@@ -175,9 +175,14 @@ export const deleteStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        // Gui tin nhan ket qua den Zalo tro giang
+        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId.slice(
+            -6
+        )}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
 
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
+
+        // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
 
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
