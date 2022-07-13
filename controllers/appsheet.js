@@ -173,21 +173,22 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentPhone,
         } = webhook;
 
+        classId = classId.slice(-6);
+
         const fullName = `${firstName} ${lastName}`;
 
         // Gui tin nhan ket qua den Zalo tro giang
-        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId.slice(
-            -6
-        )}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
 
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-
+        await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
+        await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
             studentId: parseInt(studentId),
-            classId: `N${classId.slice(-6)}`,
+            classId: `N${classId}`,
             enrollDate: enrollDate,
             status: 'Nghỉ',
             birthYear: birthYear,
@@ -208,7 +209,7 @@ export const deleteStudentRequest = async (req, res) => {
         updateOneUser(
             zaloColl,
             { 'students.zaloStudentId': parseInt(studentId) },
-            { $set: { 'students.$.zaloClassId': `N${classId.slice(-6)}` } }
+            { $set: { 'students.$.zaloClassId': `N${classId}` } }
         );
 
         updateTokenInDB(tokenColl, refreshToken);
