@@ -127,7 +127,7 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        updateOneUser(classColl, { $set: { studentId: `${studentId}` } }, updateDoc);
+        updateOneUser(classColl, { studentId: `${studentId}` }, { $set: updateDoc });
 
         const successContent = `✅ Cập nhật thành công!\n\nTên HS: ${fullName}\nMã lớp: ${classId}\nID HS: ${studentId}`;
 
