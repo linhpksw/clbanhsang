@@ -25,9 +25,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
 
     const response = await tokenColl.replaceOne(query, replacement);
 
-    const jsonResponse = await response.json();
-
-    console.log(jsonResponse);
+    console.log(response);
 }
 
 async function readTokenFromDB(tokenColl) {
