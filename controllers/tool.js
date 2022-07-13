@@ -178,6 +178,13 @@ async function signUp(
         'Học sinh': 'HS',
     };
 
+    // them class id moi
+    zaloClassIdArr.push(classId);
+    // them id hs moi
+    zaloStudentIdArr.push(targetStudentId);
+    // them alias moi
+    aliasNameArr.push(`${zaloRole2Short[zaloRole]} ${fullName}`);
+
     // Cap nhat tag tren Zalo OA Chat
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassIdArr.at(-1));
