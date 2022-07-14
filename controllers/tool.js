@@ -248,10 +248,4 @@ async function signUp(
     return;
 }
 
-async function forceFollowOA(accessToken, zaloUserId) {
-    const notFollowContent =
-        'PHHS vui lòng nhấn quan tâm OA để sử dụng đầy đủ những tính năng của lớp toán.';
-    await ZaloAPI.sendMessage(accessToken, zaloUserId, notFollowContent);
-}
-
-export { nomarlizeSyntax, forceFollowOA, signUp, isFollow };
+export { nomarlizeSyntax, signUp, isFollow };

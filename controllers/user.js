@@ -46,7 +46,7 @@ export const userRequest = async (req, res) => {
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;
 
-            Tools.forceFollowOA(accessToken, zaloUserId);
+            await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl);
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 
@@ -89,6 +89,22 @@ export const userRequest = async (req, res) => {
             }
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
+
+            const isExistInZaloColl = await MongoDB.findOneUser(
+                zaloColl,
+                { zaloUserId: `${zaloUserId}` },
+                { projection: { _id: 0, displayName: 1 } }
+            );
+
+            if (isExistInZaloColl === null) {
+                const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+
+                MongoDB.insertOneUser(zaloColl, profileDoc);
+
+                await MongoDB.updateTokenInDB(tokenColl, refreshToken);
+            }
+
+            res.send('Done!');
         } else if (eventName === 'unfollow') {
             zaloUserId = webhook.follower.id;
         }
