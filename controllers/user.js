@@ -1,11 +1,11 @@
 import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
-import { readTokenFromDB, client, insertManyToDB } from './mongo.js';
+import * as MongoDB from './mongo.js';
 
 // async function insertToZaloDB() {
 //     try {
-//         await client.connect();
-//         const db = client.db('zalo_servers');
+//         await MongoDB.client.connect();
+//         const db = MongoDB.client.db('zalo_servers');
 //         const tokenColl = db.collection('tokens');
 //         const zaloColl = db.collection('zaloUsers');
 
@@ -33,13 +33,13 @@ export const userRequest = async (req, res) => {
     const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
 
     try {
-        await client.connect();
-        const db = client.db('zalo_servers');
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
 
-        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         let zaloUserId;
 
@@ -54,6 +54,9 @@ export const userRequest = async (req, res) => {
             const content = webhook.message.text;
 
             const formatSyntax = Tools.nomarlizeSyntax(content);
+
+            // Check xem nguoi dung da follow OA chua
+            await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl);
 
             if (formatSyntax.includes('dkph')) {
                 // Sign up for Phu huynh
@@ -84,6 +87,10 @@ export const userRequest = async (req, res) => {
                     'Học sinh'
                 );
             }
+        } else if (eventName === 'follow') {
+            zaloUserId = webhook.follower.id;
+        } else if (eventName === 'unfollow') {
+            zaloUserId = webhook.follower.id;
         }
     } catch (err) {
         console.error(err);

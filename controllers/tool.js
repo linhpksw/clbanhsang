@@ -1,6 +1,5 @@
-import { findOneUser, updateOneUser, insertOneUser } from './mongo.js';
+import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
-import { updateTokenInDB } from './mongo.js';
 
 function nomarlizeSyntax(str) {
     return str
@@ -28,7 +27,27 @@ async function sendResponse2Client(
 
     res.send('Done!');
 
-    updateTokenInDB(tokenColl, refreshToken);
+    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+}
+
+async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl) {
+    const result = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, displayName: 1 } }
+    );
+
+    if (result === null) {
+        const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+        res.send('Done!');
+
+        await MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+        return;
+    }
 }
 
 async function signUp(
@@ -61,7 +80,7 @@ async function signUp(
     const targetStudentId = parseInt(formatSyntax.substring(4, 11));
     const registerPhone = formatSyntax.slice(-10);
 
-    const zaloUserInfo = await findOneUser(
+    const zaloUserInfo = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
         { projection: { _id: 0, displayName: 1, students: 1 } }
@@ -100,7 +119,7 @@ async function signUp(
     }
 
     // kiem tra tren classes collection
-    const classUserInfo = await findOneUser(
+    const classUserInfo = await MongoDB.findOneUser(
         classColl,
         { studentId: targetStudentId },
         {
@@ -204,7 +223,7 @@ async function signUp(
         },
     };
 
-    updateOneUser(zaloColl, filter, updateDoc);
+    MongoDB.updateOneUser(zaloColl, filter, updateDoc);
 
     // Cap nhat thong tin tren Zalo OA Chat
     let formatZaloStudentId = [];
@@ -235,4 +254,4 @@ async function forceFollowOA(accessToken, zaloUserId) {
     await ZaloAPI.sendMessage(accessToken, zaloUserId, notFollowContent);
 }
 
-export { nomarlizeSyntax, forceFollowOA, signUp };
+export { nomarlizeSyntax, forceFollowOA, signUp, isFollow };
