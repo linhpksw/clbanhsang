@@ -109,6 +109,8 @@ export const userRequest = async (req, res) => {
                             { projection: { _id: 0, zaloUserId: 1 } }
                         );
 
+                        console.log(zaloUserId);
+
                         const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
                         await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
