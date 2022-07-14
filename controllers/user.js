@@ -98,11 +98,11 @@ export const userRequest = async (req, res) => {
                 console.log('Chuyển tiếp tin nhắn');
                 console.log(isRegister);
 
-                if (isRegister.length === 0) {
+                if (isRegister.students.length === 0) {
                     res.send('Done');
                 } else {
-                    for (let i = 0; i < isRegister.length; i++) {
-                        const { zaloStudentId, zaloClassId, aliasName } = isRegister[i];
+                    for (let i = 0; i < isRegister.students.length; i++) {
+                        const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                         console.log(zaloStudentId, zaloClassId, aliasName);
 
