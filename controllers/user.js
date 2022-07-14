@@ -95,9 +95,6 @@ export const userRequest = async (req, res) => {
                     { projection: { _id: 0, students: 1 } }
                 );
 
-                console.log('Chuyển tiếp tin nhắn');
-                console.log(isRegister);
-
                 if (isRegister.students.length === 0) {
                     res.send('Done');
                 } else {
@@ -111,8 +108,6 @@ export const userRequest = async (req, res) => {
                             { 'classes.classId': `${zaloClassId}` },
                             { projection: { _id: 0, zaloUserId: 1 } }
                         );
-
-                        console.log(zaloUserId);
 
                         const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
