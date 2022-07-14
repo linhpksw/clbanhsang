@@ -106,7 +106,7 @@ export const userRequest = async (req, res) => {
                             'classes.classId': zaloClassId,
                         });
 
-                        const result = cursor.toArray();
+                        const result = await cursor.toArray();
 
                         console.log(result);
 
@@ -114,7 +114,7 @@ export const userRequest = async (req, res) => {
 
                         // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
 
-                        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+                        // MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
                         res.send('Done!');
                     }
