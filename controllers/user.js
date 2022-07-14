@@ -137,6 +137,7 @@ export const userRequest = async (req, res) => {
             res.send('Done!');
         } else if (eventName === 'unfollow') {
             zaloUserId = webhook.follower.id;
+            console.log('Người dùng bỏ quan tâm');
         }
     } catch (err) {
         console.error(err);
