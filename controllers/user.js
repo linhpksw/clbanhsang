@@ -94,6 +94,7 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { projection: { _id: 0, students: 1 } }
                 );
+                console.log(isRegister.students);
 
                 if (isRegister.students.length === 0) {
                     res.send('Done');
@@ -101,7 +102,7 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < isRegister.students.length; i++) {
                         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                        const response = await managerColl.findOne({
+                        const response = await MongoDB.findOneUser(managerColl, {
                             'classes.classId': zaloClassId,
                         });
 
