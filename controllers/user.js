@@ -101,9 +101,11 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < isRegister.students.length; i++) {
                         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                        const result = managerColl.find({ students: { classId: zaloClassId } });
+                        const response = managerColl.find({ students: { classId: zaloClassId } });
 
-                        console.log(result);
+                        const jsonResponse = await response.json();
+
+                        console.log(jsonResponse);
 
                         const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
