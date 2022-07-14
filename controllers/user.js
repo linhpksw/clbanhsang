@@ -96,6 +96,7 @@ export const userRequest = async (req, res) => {
                 );
 
                 console.log('Chuyển tiếp tin nhắn');
+                console.log(isRegister);
 
                 if (isRegister.length === 0) {
                     res.send('Done');
