@@ -105,9 +105,9 @@ export const userRequest = async (req, res) => {
                             'classes.classId': zaloClassId,
                         });
 
-                        // const jsonResponse = await response.json();
+                        const jsonResponse = await response.json();
 
-                        console.log(response);
+                        console.log(jsonResponse);
 
                         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
