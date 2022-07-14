@@ -101,9 +101,11 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < isRegister.students.length; i++) {
                         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                        const response = await managerColl.findOne({
-                            students: { classId: zaloClassId },
-                        });
+                        const response = await MongoDB.findOneUser(
+                            managerColl,
+                            { students: { classId: zaloClassId } },
+                            { projection: { _id: 0, students: 1 } }
+                        );
 
                         const jsonResponse = await response.json();
 
