@@ -105,13 +105,13 @@ export const userRequest = async (req, res) => {
                             students: { classId: zaloClassId },
                         });
 
-                        // const jsonResponse = await response.json();
+                        const jsonResponse = await response.json();
 
-                        console.log(response);
+                        console.log(jsonResponse);
 
-                        const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+                        // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
-                        await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
+                        // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
 
                         MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
