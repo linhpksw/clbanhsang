@@ -103,7 +103,7 @@ export const userRequest = async (req, res) => {
 
                         const result = await MongoDB.findOneUser(
                             managerColl,
-                            { 'classes.classId': `${zaloClassId}` },
+                            { students: { classId: zaloClassId } },
                             { projection: { _id: 0, zaloUserId: 1 } }
                         );
 
