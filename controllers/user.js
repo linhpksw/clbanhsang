@@ -103,13 +103,13 @@ export const userRequest = async (req, res) => {
 
                         console.log(zaloStudentId, zaloClassId, aliasName);
 
-                        const { zaloUserId } = MongoDB.findOneUser(
+                        const result = MongoDB.findOneUser(
                             managerColl,
                             { 'classes.classId': `${zaloClassId}` },
                             { projection: { _id: 0, zaloUserId: 1 } }
                         );
 
-                        console.log(zaloUserId);
+                        console.log(result);
 
                         const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
