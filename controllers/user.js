@@ -95,6 +95,8 @@ export const userRequest = async (req, res) => {
                     { projection: { _id: 0, students: 1 } }
                 );
 
+                console.log('Chuyển tiếp tin nhắn');
+
                 if (isRegister.length === 0) {
                     res.send('Done');
                 } else {
