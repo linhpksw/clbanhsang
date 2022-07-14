@@ -102,13 +102,13 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < isRegister.students.length; i++) {
                         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                        const response = await MongoDB.findOneUser(managerColl, {
+                        const cursor = managerColl.find({
                             'classes.classId': zaloClassId,
                         });
 
-                        const jsonResponse = await response.json();
+                        const result = cursor.toArray();
 
-                        console.log(jsonResponse);
+                        console.log(result);
 
                         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
