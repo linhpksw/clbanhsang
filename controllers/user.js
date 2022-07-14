@@ -38,6 +38,7 @@ export const userRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
+        const managerColl = db.collection('managers');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -86,6 +87,35 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Học sinh'
                 );
+            } else {
+                // chuyen tiep tin nhan tu PHHS den tro giang
+                const isRegister = await MongoDB.findOneUser(
+                    zaloColl,
+                    { zaloUserId: `${zaloUserId}` },
+                    { projection: { _id: 0, students: 1 } }
+                );
+
+                if (isRegister.length === 0) {
+                    res.send('Done');
+                } else {
+                    for (let i = 0; i < isRegister.length; i++) {
+                        const { zaloStudentId, zaloClassId, aliasName } = isRegister[i];
+
+                        const { zaloUserId } = MongoDB.findOneUser(
+                            managerColl,
+                            { 'classes.classId': `${zaloClassId}` },
+                            { projection: { _id: 0, zaloUserId: 1 } }
+                        );
+
+                        const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
+
+                        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+                        res.send('Done!');
+                    }
+                }
             }
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
@@ -101,7 +131,7 @@ export const userRequest = async (req, res) => {
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
 
-                await MongoDB.updateTokenInDB(tokenColl, refreshToken);
+                MongoDB.updateTokenInDB(tokenColl, refreshToken);
             }
 
             res.send('Done!');

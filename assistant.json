@@ -1,0 +1,11 @@
+[
+    {
+        "zaloUserId": "",
+        "role": "",
+        "status": "",
+        "name": "",
+        "phone": "",
+        "email": "",
+        "classes": [{ "classId": "", "className": "" }]
+    }
+]
