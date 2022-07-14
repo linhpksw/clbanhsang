@@ -101,7 +101,7 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < isRegister.students.length; i++) {
                         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                        const response = managerColl.find({
+                        const response = await managerColl.findOne({
                             'classes.classId': zaloClassId,
                         });
 
