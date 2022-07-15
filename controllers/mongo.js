@@ -80,7 +80,7 @@ async function updateOneUser(coll, filter, updateDoc) {
 
 async function insertOneUser(coll, doc) {
     const result = await coll.insertOne(doc);
-    console.log(`Tạo thành công user mới với Id: ${result.insertedId}`);
+    console.log(`Tạo thành công user mới với id: ${result.insertedId}`);
 }
 
 async function findOneUser(coll, query, options) {

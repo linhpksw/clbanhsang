@@ -52,7 +52,101 @@ async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, to
     return true;
 }
 
-async function isRegister() {}
+async function signUp4Assistant(
+    res,
+    accessToken,
+    refreshToken,
+    zaloUserId,
+    managerColl,
+    tokenColl,
+    content,
+    messageId
+) {
+    const [syntax, classId, phone, name] = content.split(' ');
+
+    // check xem da co tro giang tren he thong chua
+    const isAssistantExist = await MongoDB.findOneUser(
+        managerColl,
+        { phone: phone },
+        { projection: { _id: 0 } }
+    );
+
+    if (isAssistantExist === null) {
+        MongoDB.insertOneUser(managerColl, {
+            zaloUserId: zaloUserId,
+            role: 'Trợ giảng',
+            status: 'On',
+            name: name,
+            phone: phone,
+            classes: [{ classId: classId }],
+        });
+
+        const successContent = `✅ Đăng kí thành công cho trợ giảng!\n\nTên TG: ${name}\nID Lớp: ${classId}\nSĐT: ${phone}`;
+
+        await sendResponse2Client(
+            res,
+            accessToken,
+            refreshToken,
+            zaloUserId,
+            tokenColl,
+            messageId,
+            successContent,
+            'heart'
+        );
+
+        return;
+    } else {
+        // check xem tro giang da dang ki voi lop chua
+        const isRegisterWithAssistant = await MongoDB.findOneUser(
+            managerColl,
+            { phone: phone, 'classes.classId': classId },
+            { projection: { _id: 0 } }
+        );
+
+        if (isRegisterWithAssistant === null) {
+            MongoDB.updateOneUser(
+                zaloColl,
+                { 'classes.classId': classId },
+                {
+                    $push: {
+                        classes: {
+                            classId: classId,
+                        },
+                    },
+                }
+            );
+            const successContent = `✅ Đăng kí thành công cho trợ giảng!\n\nTên TG: ${name}\nID Lớp: ${classId}\nSĐT: ${phone}`;
+
+            await sendResponse2Client(
+                res,
+                accessToken,
+                refreshToken,
+                zaloUserId,
+                tokenColl,
+                messageId,
+                successContent,
+                'heart'
+            );
+
+            return;
+        } else {
+            const failContent = `❌ Đăng kí thất bại cho trợ giảng!\n\nTG ${name} đã liên kết với ID lớp ${classId}`;
+
+            await sendResponse2Client(
+                res,
+                accessToken,
+                refreshToken,
+                zaloUserId,
+                tokenColl,
+                messageId,
+                failContent,
+                'sad'
+            );
+
+            return;
+        }
+    }
+}
 
 async function signUp(
     res,
@@ -241,15 +335,9 @@ async function signUp(
         ? (formatAliasName = aliasNameArr[0])
         : (formatAliasName = aliasNameArr.join(', '));
 
-    ZaloAPI.updateFollowerInfo(
-        accessToken,
-        formatZaloStudentId,
-        zaloUserId,
-        registerPhone,
-        formatAliasName
-    );
+    ZaloAPI.updateFollowerInfo(accessToken, formatZaloStudentId, zaloUserId, registerPhone, formatAliasName);
 
     return;
 }
 
-export { nomarlizeSyntax, signUp, isFollow };
+export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant };

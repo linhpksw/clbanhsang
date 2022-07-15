@@ -49,89 +49,6 @@ export const userRequest = async (req, res) => {
             zaloUserId = webhook.user_id;
 
             await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl);
-        } else if (eventName === 'user_send_text') {
-            zaloUserId = webhook.sender.id;
-
-            const messageId = webhook.message.msg_id;
-            const content = webhook.message.text;
-
-            const formatContent = Tools.nomarlizeSyntax(content);
-
-            // Check xem nguoi dung da follow OA chua
-            if (
-                !(await Tools.isFollow(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    tokenColl
-                ))
-            ) {
-                return;
-            }
-
-            if (formatContent.includes('dkph')) {
-                Tools.signUp(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    classColl,
-                    tokenColl,
-                    formatContent,
-                    messageId,
-                    'Phụ huynh'
-                );
-            } else if (formatContent.includes('dkhs')) {
-                Tools.signUp(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    classColl,
-                    tokenColl,
-                    formatContent,
-                    messageId,
-                    'Học sinh'
-                );
-            }
-
-            // chuyen tiep tin nhan tu PHHS den tro giang
-            // const isRegister = await MongoDB.findOneUser(
-            //     zaloColl,
-            //     { zaloUserId: `${zaloUserId}` },
-            //     { projection: { _id: 0, students: 1 } }
-            // );
-            // // console.log(isRegister.students);
-
-            // if (isRegister.students.length === 0) {
-            //     res.send('Done');
-            //     return;
-            // } else {
-            //     for (let i = 0; i < isRegister.students.length; i++) {
-            //         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-            //         const cursor = managerColl.find({
-            //             classes: zaloClassId,
-            //         });
-
-            //         console.log(cursor.toArray());
-
-            //         res.send('Done');
-            //         return;
-
-            //         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
-
-            //         // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
-
-            //         // MongoDB.updateTokenInDB(tokenColl, refreshToken);
-
-            //         res.send('Done!');
-            //     }
-            // }
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
 
@@ -168,6 +85,91 @@ export const userRequest = async (req, res) => {
                 { $set: { status: 'unfollow' } }
             );
             console.log('Người dùng bỏ quan tâm OA');
+        } else if (eventName === 'user_send_text') {
+            zaloUserId = webhook.sender.id;
+
+            const messageId = webhook.message.msg_id;
+            const content = webhook.message.text;
+
+            const formatContent = Tools.nomarlizeSyntax(content);
+
+            // Check xem nguoi dung da follow OA chua
+            if (!(await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl))) {
+                return;
+            }
+
+            if (formatContent.includes('dkph')) {
+                Tools.signUp(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    classColl,
+                    tokenColl,
+                    formatContent,
+                    messageId,
+                    'Phụ huynh'
+                );
+            } else if (formatContent.includes('dkhs')) {
+                Tools.signUp(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    classColl,
+                    tokenColl,
+                    formatContent,
+                    messageId,
+                    'Học sinh'
+                );
+            } else if (formatContent.includes('dktg')) {
+                Tools.signUp4Assistant(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    managerColl,
+                    tokenColl,
+                    content,
+                    messageId
+                );
+            }
+
+            // chuyen tiep tin nhan tu PHHS den tro giang
+            // const isRegister = await MongoDB.findOneUser(
+            //     zaloColl,
+            //     { zaloUserId: `${zaloUserId}` },
+            //     { projection: { _id: 0, students: 1 } }
+            // );
+            // // console.log(isRegister.students);
+
+            // if (isRegister.students.length === 0) {
+            //     res.send('Done');
+            //     return;
+            // } else {
+            //     for (let i = 0; i < isRegister.students.length; i++) {
+            //         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+            //         const cursor = managerColl.find({
+            //             classes: zaloClassId,
+            //         });
+
+            //         console.log(cursor.toArray());
+
+            //         res.send('Done');
+            //         return;
+
+            //         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+
+            //         // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
+
+            //         // MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+            //         res.send('Done!');
+            //     }
+            // }
         }
     } catch (err) {
         console.error(err);
