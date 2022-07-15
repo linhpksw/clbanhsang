@@ -75,6 +75,7 @@ export const updateStudentRequest = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
+        const zaloColl = db.collection('zaloUsers');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
