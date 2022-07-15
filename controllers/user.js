@@ -98,6 +98,9 @@ export const userRequest = async (req, res) => {
                 return;
             }
 
+            console.log(content);
+            console.log(formatContent);
+
             if (formatContent.includes('dkph')) {
                 Tools.signUp(
                     res,

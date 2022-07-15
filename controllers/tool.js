@@ -64,12 +64,16 @@ async function signUp4Assistant(
 ) {
     const [syntax, classId, phone, name] = content.split(' ');
 
+    console.log([syntax, classId, phone, name]);
+
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
         managerColl,
         { phone: phone },
         { projection: { _id: 0 } }
     );
+
+    console.log(isAssistantExist);
 
     if (isAssistantExist === null) {
         MongoDB.insertOneUser(managerColl, {
@@ -102,6 +106,8 @@ async function signUp4Assistant(
             { phone: phone, 'classes.classId': classId },
             { projection: { _id: 0 } }
         );
+
+        console.log(isRegisterWithAssistant);
 
         if (isRegisterWithAssistant === null) {
             MongoDB.updateOneUser(
