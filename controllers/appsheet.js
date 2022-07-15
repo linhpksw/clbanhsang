@@ -183,7 +183,7 @@ export const deleteStudentRequest = async (req, res) => {
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-        const isStudentIdExistInZaloColl = zaloColl.findOne({
+        const isStudentIdExistInZaloColl = await zaloColl.findOne({
             students: { zaloStudentId: studentId },
         });
         // const isStudentIdExistInZaloColl = zaloColl.find({
