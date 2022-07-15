@@ -132,6 +132,7 @@ export const userRequest = async (req, res) => {
 
             if (isExistInZaloColl === null) {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+                console.log(`${profileDoc.displayName} đã quan tâm OA`);
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
 
