@@ -187,7 +187,8 @@ export const deleteStudentRequest = async (req, res) => {
             students: { zaloStudentId: studentId },
         });
         console.log(studentId);
-        console.log(isStudentIdExistInZaloColl.toArray());
+
+        await isStudentIdExistInZaloColl.forEach(console.dir);
 
         if (isStudentIdExistInZaloColl !== null) {
             await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
