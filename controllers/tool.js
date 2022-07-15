@@ -66,7 +66,6 @@ async function signUp4Assistant(
 
     const name = splitName.join(' ');
 
-    console.log([syntax, classId, phone, name]);
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
         managerColl,
@@ -74,7 +73,6 @@ async function signUp4Assistant(
         { projection: { _id: 0 } }
     );
 
-    console.log(isAssistantExist);
     // Neu chua ton tai thi tao moi
     if (isAssistantExist === null) {
         MongoDB.insertOneUser(managerColl, {
@@ -109,9 +107,8 @@ async function signUp4Assistant(
             { projection: { _id: 0 } }
         );
 
-        console.log(isRegisterWithAssistant);
-        // Neu chua dang ki thi day them vao
-        if (isRegisterWithAssistant !== null) {
+        // Neu chua dang ki thi them vao
+        if (isRegisterWithAssistant === null) {
             MongoDB.updateOneUser(
                 managerColl,
                 { 'classes.classId': classId },
@@ -138,6 +135,8 @@ async function signUp4Assistant(
 
             return;
         } else {
+            // Neu dang ki roi thi gui message loi ve
+
             const failContent = `❌ Đăng kí thất bại cho trợ giảng!\n\nTG ${name} đã liên kết với mã lớp ${classId}`;
 
             await sendResponse2Client(
