@@ -108,6 +108,25 @@ export const updateStudentRequest = async (req, res) => {
         const successContent = `🔄 Cập nhật thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
+        // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
+        const isNghiHoc = await MongoDB.findOneUser(
+            zaloColl,
+            { 'students.zaloStudentId': parseInt(studentId) },
+            { projection: { _id: 0, students: 1 } }
+        );
+
+        if (isNghiHoc.students[0].zaloClassId.includes('N')) {
+            await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', `N${classId}`);
+            await ZaloAPI.tagFollower(accessToken, '4966494673333610309', classId);
+
+            // set trang thai di hoc lai trong Zalo Coll
+            MongoDB.updateOneUser(
+                zaloColl,
+                { 'students.zaloStudentId': parseInt(studentId) },
+                { $set: { 'students.$.zaloClassId': `${classId}` } }
+            );
+        }
+
         const updateDoc = {
             studentId: parseInt(studentId),
             classId: classId,
@@ -188,8 +207,6 @@ export const deleteStudentRequest = async (req, res) => {
             { 'students.zaloStudentId': parseInt(studentId) },
             { projection: { _id: 0, students: 1 } }
         );
-
-        console.log(isStudentIdExistInZaloColl);
 
         if (isStudentIdExistInZaloColl !== null) {
             await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
