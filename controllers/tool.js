@@ -106,12 +106,13 @@ async function signUp4Assistant(
             { phone: phone, 'classes.classId': classId },
             { projection: { _id: 0 } }
         );
+        console.log(isRegisterWithAssistant);
 
         // Neu chua dang ki thi them vao
         if (isRegisterWithAssistant === null) {
             MongoDB.updateOneUser(
                 managerColl,
-                { 'classes.classId': classId },
+                { phone: phone },
                 {
                     $push: {
                         classes: {
