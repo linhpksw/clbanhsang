@@ -50,6 +50,8 @@ async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, to
     }
 }
 
+async function isRegister() {}
+
 async function signUp(
     res,
     accessToken,

@@ -108,10 +108,6 @@ export const updateStudentRequest = async (req, res) => {
         const successContent = `🔃 Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
-        // Chieu nguoc lai neu them HS nghi hoc vao lai lop (lam sau)
-        // await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', `N${classId}`);
-        // await ZaloAPI.tagFollower(accessToken, '4966494673333610309', classId);
-
         const updateDoc = {
             studentId: parseInt(studentId),
             classId: classId,
