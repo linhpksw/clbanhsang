@@ -1,14 +1,14 @@
 import * as ZaloAPI from './zalo.js';
-import { readTokenFromDB, client, insertOneUser, updateTokenInDB, updateOneUser } from './mongo.js';
+import * as MongoDB from './mongo.js';
 
 export const createStudentRequest = async (req, res) => {
     try {
-        await client.connect();
-        const db = client.db('zalo_servers');
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
 
-        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
@@ -37,7 +37,7 @@ export const createStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Thêm mới thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `✅ Thêm mới thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const newDoc = {
@@ -58,9 +58,9 @@ export const createStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        insertOneUser(classColl, newDoc);
+        MongoDB.insertOneUser(classColl, newDoc);
 
-        updateTokenInDB(tokenColl, refreshToken);
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         res.send('Success');
     } catch (err) {
@@ -71,12 +71,12 @@ export const createStudentRequest = async (req, res) => {
 
 export const updateStudentRequest = async (req, res) => {
     try {
-        await client.connect();
-        const db = client.db('zalo_servers');
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
 
-        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
@@ -105,7 +105,7 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `🔄 Cập nhật thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `🔄 Cập nhật thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const updateDoc = {
@@ -126,9 +126,9 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
+        MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
 
-        updateTokenInDB(tokenColl, refreshToken);
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         res.send('Success');
     } catch (err) {
@@ -139,13 +139,13 @@ export const updateStudentRequest = async (req, res) => {
 
 export const deleteStudentRequest = async (req, res) => {
     try {
-        await client.connect();
-        const db = client.db('zalo_servers');
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
 
-        const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
@@ -178,13 +178,29 @@ export const deleteStudentRequest = async (req, res) => {
         const fullName = `${firstName} ${lastName}`;
 
         // Gui tin nhan ket qua den Zalo tro giang
-        const successContent = `💥 Xoá thành công!\n\nID Lớp: ${classId}\n\nID HS: ${studentId}\n\nTên HS: ${fullName}`;
+        const successContent = `🗑️ Xoá thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
 
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-        await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
-        await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
+        const isStudentIdExistInZaloColl = await MongoDB.findOneUser(
+            zaloColl,
+            { 'students.zaloStudentId': studentId },
+            { projection: { _id: 0 } }
+        );
+
+        if (isStudentIdExistInZaloColl !== null) {
+            await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
+            await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
+
+            // set trang thai nghi trong Zalo Coll
+            MongoDB.updateOneUser(
+                zaloColl,
+                { 'students.zaloStudentId': parseInt(studentId) },
+                { $set: { 'students.$.zaloClassId': `N${classId}` } }
+            );
+        }
+
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
             studentId: parseInt(studentId),
@@ -203,16 +219,13 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-        updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
-
-        // set trang thai nghi trong Zalo Coll
-        updateOneUser(
-            zaloColl,
-            { 'students.zaloStudentId': parseInt(studentId) },
-            { $set: { 'students.$.zaloClassId': `N${classId}` } }
+        MongoDB.updateOneUser(
+            classColl,
+            { studentId: parseInt(studentId) },
+            { $set: updateClassDoc }
         );
 
-        updateTokenInDB(tokenColl, refreshToken);
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         res.send('Success');
     } catch (err) {
