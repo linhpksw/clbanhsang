@@ -191,7 +191,9 @@ export const deleteStudentRequest = async (req, res) => {
         });
 
         console.log('----------------------------------');
-        console.log(isStudentIdExistInZaloColl.toArray());
+        await isStudentIdExistInZaloColl.forEach((v) => {
+            console.log(v);
+        });
         console.log('----------------------------------');
         // console.log(isStudentIdExistInZaloColl);
         // console.log('----------------------------------');
