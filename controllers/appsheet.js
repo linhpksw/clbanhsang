@@ -188,7 +188,7 @@ export const deleteStudentRequest = async (req, res) => {
             { 'students.zaloStudentId': studentId },
             { projection: { _id: 0 } }
         );
-
+        console.log(studentId);
         console.log(isStudentIdExistInZaloColl);
 
         if (isStudentIdExistInZaloColl !== null) {
