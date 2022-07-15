@@ -9,13 +9,14 @@ import * as MongoDB from './mongo.js';
 //         const tokenColl = db.collection('tokens');
 //         const zaloColl = db.collection('zaloUsers');
 
-//         const { accessToken, refreshToken } = await readTokenFromDB(tokenColl);
+//         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
 //         const followers = await ZaloAPI.getFollowers(accessToken);
 
 //         // console.log(followers);
+//         // return;
 
-//         await insertManyToDB(zaloColl, followers);
+//         await MongoDB.insertManyToDB(zaloColl, followers);
 
 //         console.log('Success!');
 //     } catch (err) {
@@ -140,6 +141,12 @@ export const userRequest = async (req, res) => {
             res.send('Done!');
         } else if (eventName === 'unfollow') {
             zaloUserId = webhook.follower.id;
+
+            MongoDB.updateOneUser(
+                zaloColl,
+                { zaloUserId: `${zaloUserId}` },
+                { $set: { status: 'unfollow' } }
+            );
             console.log('Người dùng bỏ quan tâm');
         }
     } catch (err) {

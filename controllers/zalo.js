@@ -72,6 +72,7 @@ async function getProfile(accessToken, zaloUserId) {
     const result = {
         zaloUserId: zaloUserId,
         displayName: displayName,
+        status: 'follow',
         userGender: userGender,
         userPhone: null,
         students: [],
