@@ -183,26 +183,23 @@ export const deleteStudentRequest = async (req, res) => {
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-
         const isStudentIdExistInZaloColl = await MongoDB.findOneUser(
             zaloColl,
-            { 'students.zaloStudentId': 2004098 },
+            { 'students.zaloStudentId': parseInt(studentId) },
             { projection: { _id: 0, students: 1 } }
         );
 
-        console.log(isStudentIdExistInZaloColl);
+        if (isStudentIdExistInZaloColl !== null) {
+            await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
+            await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
 
-        // if (isStudentIdExistInZaloColl !== null) {
-        //     await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
-        //     await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
-
-        //     // set trang thai nghi trong Zalo Coll
-        //     MongoDB.updateOneUser(
-        //         zaloColl,
-        //         { 'students.zaloStudentId': parseInt(studentId) },
-        //         { $set: { 'students.$.zaloClassId': `N${classId}` } }
-        //     );
-        // }
+            // set trang thai nghi trong Zalo Coll
+            MongoDB.updateOneUser(
+                zaloColl,
+                { 'students.zaloStudentId': parseInt(studentId) },
+                { $set: { 'students.$.zaloClassId': `N${classId}` } }
+            );
+        }
 
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
