@@ -183,20 +183,14 @@ export const deleteStudentRequest = async (req, res) => {
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-        // const isStudentIdExistInZaloColl = await zaloColl.findOne({
-        //     students: { zaloStudentId: studentId },
-        // });
-        const isStudentIdExistInZaloColl = await zaloColl.findOne({
-            'students.zaloStudentId': studentId,
-        });
 
-        console.log('----------------------------------');
+        const isStudentIdExistInZaloColl = await MongoDB.findOneUser(
+            zaloColl,
+            { 'students.zaloStudentId': studentId },
+            { projection: { _id: 0, students: 1 } }
+        );
+
         console.log(isStudentIdExistInZaloColl);
-        console.log('----------------------------------');
-        // console.log(isStudentIdExistInZaloColl);
-        // console.log('----------------------------------');
-        // console.log(await isStudentIdExistInZaloColl.toArray());
-        // console.log('----------------------------------');
 
         // if (isStudentIdExistInZaloColl !== null) {
         //     await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
