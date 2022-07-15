@@ -186,7 +186,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         const isStudentIdExistInZaloColl = await MongoDB.findOneUser(
             zaloColl,
-            { 'students.zaloStudentId': studentId },
+            { 'students.zaloStudentId': 2004098 },
             { projection: { _id: 0, students: 1 } }
         );
 
