@@ -62,10 +62,11 @@ async function signUp4Assistant(
     content,
     messageId
 ) {
-    const [syntax, classId, phone, name] = content.split(' ');
+    const [syntax, classId, phone, ...splitName] = content.split(' ');
+
+    const name = splitName.join(' ');
 
     console.log([syntax, classId, phone, name]);
-
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
         managerColl,
@@ -111,7 +112,7 @@ async function signUp4Assistant(
 
         if (isRegisterWithAssistant === null) {
             MongoDB.updateOneUser(
-                zaloColl,
+                managerColl,
                 { 'classes.classId': classId },
                 {
                     $push: {
