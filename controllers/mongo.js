@@ -74,7 +74,7 @@ async function insertManyToDB(coll, docs) {
 async function updateOneUser(coll, filter, updateDoc) {
     const result = await coll.updateOne(filter, updateDoc);
     console.log(
-        `${result.matchedCount} tài liệu match khớp với filter, cập nhật ${result.modifiedCount} tài liệu.`
+        `${result.matchedCount} tài liệu khớp với filter, cập nhật ${result.modifiedCount} tài liệu.`
     );
 }
 

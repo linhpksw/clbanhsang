@@ -55,12 +55,23 @@ export const userRequest = async (req, res) => {
             const messageId = webhook.message.msg_id;
             const content = webhook.message.text;
 
-            const formatSyntax = Tools.nomarlizeSyntax(content);
+            const formatContent = Tools.nomarlizeSyntax(content);
 
             // Check xem nguoi dung da follow OA chua
-            await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl);
+            if (
+                !(await Tools.isFollow(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    tokenColl
+                ))
+            ) {
+                return;
+            }
 
-            if (formatSyntax.includes('dkph')) {
+            if (formatContent.includes('dkph')) {
                 Tools.signUp(
                     res,
                     accessToken,
@@ -69,11 +80,11 @@ export const userRequest = async (req, res) => {
                     zaloColl,
                     classColl,
                     tokenColl,
-                    formatSyntax,
+                    formatContent,
                     messageId,
                     'Phụ huynh'
                 );
-            } else if (formatSyntax.includes('dkhs')) {
+            } else if (formatContent.includes('dkhs')) {
                 Tools.signUp(
                     res,
                     accessToken,
@@ -82,7 +93,7 @@ export const userRequest = async (req, res) => {
                     zaloColl,
                     classColl,
                     tokenColl,
-                    formatSyntax,
+                    formatContent,
                     messageId,
                     'Học sinh'
                 );
@@ -132,11 +143,19 @@ export const userRequest = async (req, res) => {
 
             if (isExistInZaloColl === null) {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
-                console.log(`${profileDoc.displayName} đã quan tâm OA`);
+                console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
 
                 MongoDB.updateTokenInDB(tokenColl, refreshToken);
+            } else {
+                MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: `${zaloUserId}` },
+                    { $set: { status: 'follow' } }
+                );
+
+                console.log('Nguời dùng quan tâm trở lại');
             }
 
             res.send('Done!');
@@ -148,7 +167,7 @@ export const userRequest = async (req, res) => {
                 { zaloUserId: `${zaloUserId}` },
                 { $set: { status: 'unfollow' } }
             );
-            console.log('Người dùng bỏ quan tâm');
+            console.log('Người dùng bỏ quan tâm OA');
         }
     } catch (err) {
         console.error(err);
