@@ -165,10 +165,10 @@ export const userRequest = async (req, res) => {
                             replyContent,
                             quoteMessageId
                         );
+                    } else {
+                        res.send('Done!');
+                        return;
                     }
-
-                    res.send('Done!');
-                    return;
                 }
             }
         }
