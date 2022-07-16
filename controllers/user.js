@@ -137,8 +137,7 @@ export const userRequest = async (req, res) => {
                 );
             } else if (!formatContent.includes('#')) {
                 // Check xem tin nhan den OA co tu phia Quan ly khong
-                if (Tools.isManager(res, zaloUserId, managerColl)) {
-                    console.log(Tools.isManager(res, zaloUserId, managerColl));
+                if (await Tools.isManager(res, zaloUserId, managerColl)) {
                     return;
                 }
 
