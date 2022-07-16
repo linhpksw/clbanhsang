@@ -186,7 +186,6 @@ async function signUp(
     const registerPhone = formatSyntax.slice(-10);
 
     // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
-
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         {
@@ -197,7 +196,7 @@ async function signUp(
     );
 
     if (isRegister !== null) {
-        const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}. ${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+        const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
         sendResponse2Client(
             res,
