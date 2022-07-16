@@ -159,17 +159,24 @@ export const userRequest = async (req, res) => {
                         { projection: { _id: 0, zaloUserId: 1 } }
                     );
 
-                    // chuyen tiep tin nhan den tro giang tuong ung
+                    let zaloAssistantIdArr = [];
                     await cursor.forEach((v) => {
-                        const zaloAssistantId = v.zaloUserId;
+                        zaloAssistantIdArr.push(v.zaloUserId);
+                    });
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    for (let i = 0; i < zaloAssistantIdArr.length; i++) {
+                        const zaloAssistantId = zaloAssistantIdArr[i];
+
                         const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
                         await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
 
                         MongoDB.updateTokenInDB(tokenColl, refreshToken);
-                    });
+                    }
 
                     res.send('Done');
+
                     return;
                 }
             }
