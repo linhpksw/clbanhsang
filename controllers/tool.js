@@ -57,7 +57,7 @@ async function forwardMessage2Assistant(
             // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            const cursor = await managerColl.find(
+            const cursor = managerColl.find(
                 { 'classes.classId': zaloClassId },
                 { projection: { _id: 0, zaloUserId: 1 } }
             );
@@ -93,7 +93,6 @@ async function isManager(res, zaloUserId, managerColl) {
     );
 
     if (result === null || result.status !== 'On') {
-        res.send('Done!');
         return false;
     }
 

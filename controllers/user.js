@@ -141,7 +141,7 @@ export const userRequest = async (req, res) => {
                     return;
                 }
 
-                await Tools.forwardMessage2Assistant(
+                Tools.forwardMessage2Assistant(
                     res,
                     accessToken,
                     refreshToken,
