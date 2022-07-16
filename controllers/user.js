@@ -168,7 +168,7 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < zaloAssistantIdArr.length; i++) {
                         const zaloAssistantId = zaloAssistantIdArr[i];
 
-                        const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+                        const forwardContent = `${aliasName}\nID HS: ${zaloStudentId})\nID Lớp: ${zaloClassId}\n\nThời gian gửi: ${localeTimeStamp}\nNội dung:\n${content}`;
 
                         await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
 
