@@ -37,7 +37,7 @@ export const createStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Thêm mới thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
+        const successContent = `✅ Thêm mới thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const newDoc = {
@@ -106,7 +106,7 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `🔄 Cập nhật thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
+        const successContent = `🔄 Cập nhật thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
@@ -198,7 +198,7 @@ export const deleteStudentRequest = async (req, res) => {
         const fullName = `${firstName} ${lastName}`;
 
         // Gui tin nhan ket qua den Zalo tro giang
-        const successContent = `🗑️ Xoá thành công!\n\nID Lớp: ${classId}\nID HS: ${studentId}\nTên HS: ${fullName}`;
+        const successContent = `🗑️ Xoá thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
 
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
@@ -239,11 +239,7 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-        MongoDB.updateOneUser(
-            classColl,
-            { studentId: parseInt(studentId) },
-            { $set: updateClassDoc }
-        );
+        MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
 
         MongoDB.updateTokenInDB(tokenColl, refreshToken);
 

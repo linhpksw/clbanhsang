@@ -187,7 +187,7 @@ async function signUp4Assistant(
             classes: [{ classId: classId }],
         });
 
-        const successContent = `✅ Đăng kí thành công cho trợ giảng!\n\nTên TG: ${name}\nID Lớp: ${classId}\nSĐT: ${phone}`;
+        const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
 
         await sendResponse2Client(
             res,
@@ -224,7 +224,7 @@ async function signUp4Assistant(
                     },
                 }
             );
-            const successContent = `✅ Đăng kí thành công cho trợ giảng!\n\nTên TG: ${name}\nID Lớp: ${classId}\nSĐT: ${phone}`;
+            const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
 
             await sendResponse2Client(
                 res,
@@ -241,7 +241,7 @@ async function signUp4Assistant(
         } else {
             // Neu dang ki roi thi gui message loi ve
 
-            const failContent = `❌ Đăng kí thất bại cho trợ giảng!\n\nTG ${name} đã liên kết với mã lớp ${classId}`;
+            const failContent = `❌ Đăng kí thất bại vì trợ giảng ${name} đã liên kết với mã lớp ${classId}.`;
 
             await sendResponse2Client(
                 res,
@@ -355,7 +355,7 @@ async function signUp(
     );
 
     if (classUserInfo === null) {
-        const failContent = `❌ Đăng kí thất bại!\n\nMã học sinh ${targetStudentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
+        const failContent = `❌ Đăng kí thất bại!\n\nID học sinh ${targetStudentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
         sendResponse2Client(
             res,
