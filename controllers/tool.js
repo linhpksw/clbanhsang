@@ -49,7 +49,7 @@ async function forwardMessage2Assistant(
 
     if (isRegister.students.length === 0) {
         // PHHS chua dang ki tai khoan
-        res.send('Done');
+        await res.send('Done');
         return;
     } else {
         // PHHS da dang ki tai khoan
@@ -78,7 +78,7 @@ async function forwardMessage2Assistant(
                 MongoDB.updateTokenInDB(tokenColl, refreshToken);
             }
 
-            res.send('Done');
+            await res.send('Done');
 
             return;
         }

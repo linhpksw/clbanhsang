@@ -141,17 +141,17 @@ export const userRequest = async (req, res) => {
                     return;
                 }
 
-                // Tools.forwardMessage2Assistant(
-                //     res,
-                //     accessToken,
-                //     refreshToken,
-                //     zaloUserId,
-                //     zaloColl,
-                //     managerColl,
-                //     tokenColl,
-                //     content,
-                //     localeTimeStamp
-                // );
+                await Tools.forwardMessage2Assistant(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    managerColl,
+                    tokenColl,
+                    content,
+                    localeTimeStamp
+                );
             }
         }
     } catch (err) {
