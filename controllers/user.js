@@ -88,8 +88,6 @@ export const userRequest = async (req, res) => {
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 
-            console.log(webhook);
-
             const messageId = webhook.message.msg_id;
             const content = webhook.message.text;
 
@@ -139,7 +137,10 @@ export const userRequest = async (req, res) => {
                 );
             } else if (!formatContent.includes('#')) {
                 // Check xem tin nhan den OA co tu phia Quan ly khong
-                if (Tools.isManager(res, zaloUserId, managerColl)) return;
+                if (Tools.isManager(res, zaloUserId, managerColl)) {
+                    console.log(Tools.isManager(res, zaloUserId, managerColl));
+                    return;
+                }
 
                 Tools.forwardMessage2Assistant(
                     res,

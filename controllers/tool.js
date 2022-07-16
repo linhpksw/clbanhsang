@@ -41,12 +41,13 @@ async function forwardMessage2Assistant(
     content,
     localeTimeStamp
 ) {
-    // Neu khong nam trong cu phap thi chuyen tiep tin nhan tu PHHS den tro giang
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
         { projection: { _id: 0, students: 1 } }
     );
+
+    console.log(isRegister);
 
     if (isRegister.students.length === 0) {
         // PHHS chua dang ki tai khoan
