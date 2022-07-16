@@ -137,39 +137,39 @@ export const userRequest = async (req, res) => {
                 );
             }
 
-            // chuyen tiep tin nhan tu PHHS den tro giang
-            // const isRegister = await MongoDB.findOneUser(
-            //     zaloColl,
-            //     { zaloUserId: `${zaloUserId}` },
-            //     { projection: { _id: 0, students: 1 } }
-            // );
-            // // console.log(isRegister.students);
+            // Neu khong nam trong phap thi chuyen tiep tin nhan tu PHHS den tro giang
+            const isRegister = await MongoDB.findOneUser(
+                zaloColl,
+                { zaloUserId: `${zaloUserId}` },
+                { projection: { _id: 0, students: 1 } }
+            );
 
-            // if (isRegister.students.length === 0) {
-            //     res.send('Done');
-            //     return;
-            // } else {
-            //     for (let i = 0; i < isRegister.students.length; i++) {
-            //         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+            if (isRegister.students.length === 0) {
+                res.send('Done');
+                return;
+            } else {
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            //         const cursor = managerColl.find({
-            //             classes: zaloClassId,
-            //         });
+                    const zaloIdAssistant = await MongoDB.findOneUser(
+                        managerColl,
+                        { 'classes.classId': `${zaloClassId}` },
+                        { projection: { _id: 0 } }
+                    );
 
-            //         console.log(cursor.toArray());
+                    console.log(zaloClassId);
+                    res.send('Done');
+                    return;
 
-            //         res.send('Done');
-            //         return;
+                    // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
-            //         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
 
-            //         // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
+                    // MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
-            //         // MongoDB.updateTokenInDB(tokenColl, refreshToken);
-
-            //         res.send('Done!');
-            //     }
-            // }
+                    res.send('Done!');
+                }
+            }
         }
     } catch (err) {
         console.error(err);
