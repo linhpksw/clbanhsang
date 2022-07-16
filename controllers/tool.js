@@ -75,6 +75,10 @@ async function signUp4Assistant(
 
     // Neu chua ton tai thi tao moi
     if (isAssistantExist === null) {
+        // Cap nhat tag tren Zalo OA Chat
+        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Trợ giảng');
+        await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
+
         MongoDB.insertOneUser(managerColl, {
             zaloUserId: zaloUserId,
             role: 'Trợ giảng',
@@ -109,6 +113,7 @@ async function signUp4Assistant(
 
         // Neu chua dang ki thi them vao
         if (isRegisterWithAssistant === null) {
+            await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
             MongoDB.updateOneUser(
                 managerColl,
                 { phone: phone },
