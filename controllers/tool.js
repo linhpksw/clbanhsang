@@ -47,8 +47,6 @@ async function forwardMessage2Assistant(
         { projection: { _id: 0, students: 1 } }
     );
 
-    console.log(isRegister);
-
     if (isRegister.students.length === 0) {
         // PHHS chua dang ki tai khoan
         res.send('Done');
@@ -59,7 +57,7 @@ async function forwardMessage2Assistant(
             // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            const cursor = managerColl.find(
+            const cursor = await managerColl.find(
                 { 'classes.classId': zaloClassId },
                 { projection: { _id: 0, zaloUserId: 1 } }
             );
