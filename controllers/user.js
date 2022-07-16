@@ -30,8 +30,8 @@ import * as MongoDB from './mongo.js';
 export const userRequest = async (req, res) => {
     const webhook = req.body;
     const eventName = webhook.event_name;
-    // const unixTimestamp = parseInt(webhook.timestamp);
-    // const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
+    const unixTimestamp = parseInt(webhook.timestamp);
+    const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
 
     try {
         await MongoDB.client.connect();
@@ -138,38 +138,41 @@ export const userRequest = async (req, res) => {
             }
 
             // Neu khong nam trong cu phap thi chuyen tiep tin nhan tu PHHS den tro giang
-            // const isRegister = await MongoDB.findOneUser(
-            //     zaloColl,
-            //     { zaloUserId: `${zaloUserId}` },
-            //     { projection: { _id: 0, students: 1 } }
-            // );
+            const isRegister = await MongoDB.findOneUser(
+                zaloColl,
+                { zaloUserId: `${zaloUserId}` },
+                { projection: { _id: 0, students: 1 } }
+            );
 
-            // if (isRegister.students.length === 0) {
-            //     res.send('Done');
-            //     return;
-            // } else {
-            //     for (let i = 0; i < isRegister.students.length; i++) {
-            //         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+            if (isRegister.students.length === 0) {
+                // PHHS chua dang ki tai khoan
+                res.send('Done');
+                return;
+            } else {
+                // PHHS da dang ki tai khoan
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            //         const zaloIdAssistant = await MongoDB.findOneUser(
-            //             managerColl,
-            //             { 'classes.classId': `${zaloClassId}` },
-            //             { projection: { _id: 0 } }
-            //         );
+                    const cursor = managerColl.find(
+                        { 'classes.classId': zaloClassId },
+                        { projection: { _id: 0, zaloUserId: 1 } }
+                    );
 
-            //         console.log(zaloClassId);
-            //         res.send('Done');
-            //         return;
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    await cursor.forEach((v) => {
+                        const zaloAssistantId = v.zaloUserId;
+                        const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
-            //         // const forwardContent = `${aliasName} (${zaloStudentId})\n\nID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+                        await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
 
-            //         // await ZaloAPI.sendMessage(accessToken, zaloUserId, forwardContent);
+                        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+                    });
 
-            //         // MongoDB.updateTokenInDB(tokenColl, refreshToken);
-
-            //         res.send('Done!');
-            //     }
-            // }
+                    res.send('Done');
+                    return;
+                }
+            }
         }
     } catch (err) {
         console.error(err);
