@@ -161,6 +161,7 @@ export const userRequest = async (req, res) => {
                     if (quoteMessageId !== null) {
                         const replyContent = webhook.message.text;
                         console.log(replyContent);
+                        console.log(zaloUserId);
 
                         await Tools.sendMessageBack2Parent(
                             res,
