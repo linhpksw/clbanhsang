@@ -30,6 +30,62 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
+async function forwardMessage2Assistant(
+    res,
+    accessToken,
+    refreshToken,
+    zaloUserId,
+    zaloColl,
+    managerColl,
+    tokenColl,
+    content,
+    localeTimeStamp
+) {
+    // Neu khong nam trong cu phap thi chuyen tiep tin nhan tu PHHS den tro giang
+    const isRegister = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, students: 1 } }
+    );
+
+    if (isRegister.students.length === 0) {
+        // PHHS chua dang ki tai khoan
+        res.send('Done');
+        return;
+    } else {
+        // PHHS da dang ki tai khoan
+        for (let i = 0; i < isRegister.students.length; i++) {
+            // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+            const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+            const cursor = managerColl.find(
+                { 'classes.classId': zaloClassId },
+                { projection: { _id: 0, zaloUserId: 1 } }
+            );
+
+            let zaloAssistantIdArr = [];
+            await cursor.forEach((v) => {
+                zaloAssistantIdArr.push(v.zaloUserId);
+            });
+
+            // chuyen tiep tin nhan den tro giang tuong ung
+            for (let i = 0; i < zaloAssistantIdArr.length; i++) {
+                const zaloAssistantId = zaloAssistantIdArr[i];
+
+                const forwardContent = `${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+
+                await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
+
+                MongoDB.updateTokenInDB(tokenColl, refreshToken);
+            }
+
+            res.send('Done');
+
+            return;
+        }
+    }
+}
+
 async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
@@ -362,4 +418,4 @@ async function signUp(
     return;
 }
 
-export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant };
+export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant, forwardMessage2Assistant };

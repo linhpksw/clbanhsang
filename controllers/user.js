@@ -88,6 +88,8 @@ export const userRequest = async (req, res) => {
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 
+            console.log(webhook);
+
             const messageId = webhook.message.msg_id;
             const content = webhook.message.text;
 
@@ -135,50 +137,18 @@ export const userRequest = async (req, res) => {
                     content,
                     messageId
                 );
-            }
-
-            // Neu khong nam trong cu phap thi chuyen tiep tin nhan tu PHHS den tro giang
-            const isRegister = await MongoDB.findOneUser(
-                zaloColl,
-                { zaloUserId: `${zaloUserId}` },
-                { projection: { _id: 0, students: 1 } }
-            );
-
-            if (isRegister.students.length === 0) {
-                // PHHS chua dang ki tai khoan
-                res.send('Done');
-                return;
-            } else {
-                // PHHS da dang ki tai khoan
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    const cursor = managerColl.find(
-                        { 'classes.classId': zaloClassId },
-                        { projection: { _id: 0, zaloUserId: 1 } }
-                    );
-
-                    let zaloAssistantIdArr = [];
-                    await cursor.forEach((v) => {
-                        zaloAssistantIdArr.push(v.zaloUserId);
-                    });
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    for (let i = 0; i < zaloAssistantIdArr.length; i++) {
-                        const zaloAssistantId = zaloAssistantIdArr[i];
-
-                        const forwardContent = `${aliasName}\nID HS: ${zaloStudentId} - ID Lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
-
-                        await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
-
-                        MongoDB.updateTokenInDB(tokenColl, refreshToken);
-                    }
-
-                    res.send('Done');
-
-                    return;
-                }
+            } else if (!formatContent.includes('#')) {
+                Tools.forwardMessage2Assistant(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    managerColl,
+                    tokenColl,
+                    content,
+                    localeTimeStamp
+                );
             }
         }
     } catch (err) {
