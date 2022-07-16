@@ -139,8 +139,6 @@ export const userRequest = async (req, res) => {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
 
                 if (!(await Tools.isManager(res, zaloUserId, managerColl))) {
-                    console.log('Tin nhắn từ phía phụ huynh');
-
                     Tools.forwardMessage2Assistant(
                         res,
                         accessToken,
@@ -153,15 +151,11 @@ export const userRequest = async (req, res) => {
                         localeTimeStamp
                     );
                 } else {
-                    console.log('Tin nhắn từ phía trợ giảng');
                     // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                     const quoteMessageId = webhook.message.quote_msg_id || null;
-                    console.log(quoteMessageId);
 
                     if (quoteMessageId !== null) {
                         const replyContent = webhook.message.text;
-                        console.log(replyContent);
-                        console.log(zaloUserId);
 
                         await Tools.sendMessageBack2Parent(
                             res,

@@ -139,7 +139,7 @@ async function getConversation(accessToken, zaloUserId) {
 
     const jsonResponse = await response.json();
 
-    return jsonResponse;
+    return jsonResponse.data;
 }
 
 async function sendMessage(accessToken, zaloUserId, message) {

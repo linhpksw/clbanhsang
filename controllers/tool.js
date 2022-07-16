@@ -40,17 +40,12 @@ async function sendMessageBack2Parent(
     quoteMessageId
 ) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
-    console.log(conversation);
 
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
 
-        console.log([message_id, message]);
-
         if (message_id === quoteMessageId) {
             const zaloParentId = message.split('\n\n')[0].split(' ')[1];
-            console.log(zaloParentId);
-            console.log(replyContent);
 
             await ZaloAPI.sendMessage(accessToken, zaloParentId, replyContent);
 
