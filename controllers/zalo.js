@@ -121,6 +121,27 @@ async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, ali
     console.log(jsonResponse);
 }
 
+async function getConversation(accessToken, zaloUserId) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+    const offset = 0;
+    const count = 10;
+    const userId = zaloUserId;
+
+    const URL = `https://openapi.zalo.me/v2.0/oa/conversation?data=%7B%22offset%22%3A${offset}%2C%22user_id%22%3A${userId}%2C%22count%22%3A${count}%7D`;
+
+    const response = await fetch(URL, {
+        method: 'get',
+        headers: headers,
+    });
+
+    const jsonResponse = await response.json();
+
+    return jsonResponse;
+}
+
 async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,
@@ -228,4 +249,5 @@ export {
     tagFollower,
     removeFollowerFromTag,
     sendReaction,
+    getConversation,
 };

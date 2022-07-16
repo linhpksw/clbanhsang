@@ -136,22 +136,40 @@ export const userRequest = async (req, res) => {
                     messageId
                 );
             } else if (!formatContent.includes('#')) {
-                // Check xem tin nhan den OA co tu phia Quan ly khong
-                if (await Tools.isManager(res, zaloUserId, managerColl)) {
-                    return;
-                }
+                // Check xem tin nhan den OA co tu phia Tro giang khong
+                if (!(await Tools.isManager(res, zaloUserId, managerColl))) {
+                    Tools.forwardMessage2Assistant(
+                        res,
+                        accessToken,
+                        refreshToken,
+                        zaloUserId,
+                        zaloColl,
+                        managerColl,
+                        tokenColl,
+                        content,
+                        localeTimeStamp
+                    );
+                } else {
+                    const isReply = webhook.message.quote_msg_id || null;
 
-                Tools.forwardMessage2Assistant(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    zaloColl,
-                    managerColl,
-                    tokenColl,
-                    content,
-                    localeTimeStamp
-                );
+                    if (isReply !== null) {
+                        const replyContent = webhook.message.text;
+
+                        console.log(replyContent);
+
+                        Tools.sendBackMessage2Parent(
+                            res,
+                            accessToken,
+                            refreshToken,
+                            zaloUserId,
+                            zaloColl,
+                            managerColl,
+                            tokenColl,
+                            content,
+                            localeTimeStamp
+                        );
+                    }
+                }
             }
         }
     } catch (err) {

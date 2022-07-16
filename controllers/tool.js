@@ -30,6 +30,24 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
+async function sendBackMessage2Parent(
+    res,
+    accessToken,
+    refreshToken,
+    zaloUserId,
+    zaloColl,
+    managerColl,
+    tokenColl,
+    content,
+    localeTimeStamp
+) {
+    const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
+
+    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+    console.log(conversation);
+}
+
 async function forwardMessage2Assistant(
     res,
     accessToken,
@@ -431,4 +449,12 @@ async function signUp(
     return;
 }
 
-export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant, forwardMessage2Assistant, isManager };
+export {
+    nomarlizeSyntax,
+    signUp,
+    isFollow,
+    signUp4Assistant,
+    forwardMessage2Assistant,
+    isManager,
+    sendBackMessage2Parent,
+};
