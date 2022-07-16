@@ -185,6 +185,34 @@ async function signUp(
     const targetStudentId = parseInt(formatSyntax.substring(4, 11));
     const registerPhone = formatSyntax.slice(-10);
 
+    // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
+
+    const isRegister = await MongoDB.findOneUser(
+        zaloColl,
+        {
+            userPhone: registerPhone,
+            'students.zaloStudentId': parseInt(targetStudentId),
+        },
+        { projection: { _id: 0 } }
+    );
+
+    if (isRegister !== null) {
+        const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}. ${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+
+        sendResponse2Client(
+            res,
+            accessToken,
+            refreshToken,
+            zaloUserId,
+            tokenColl,
+            messageId,
+            failContent,
+            'like'
+        );
+
+        return;
+    }
+
     const zaloUserInfo = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
@@ -204,23 +232,6 @@ async function signUp(
             zaloClassIdArr.push(zaloClassId);
             aliasNameArr.push(aliasName);
         });
-    }
-
-    if (zaloStudentIdArr.includes(targetStudentId)) {
-        const notifyContent = `⭐ Tài khoản đã có trên hệ thống!\n\n${zaloRole} có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
-
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            notifyContent,
-            'like'
-        );
-
-        return;
     }
 
     // kiem tra tren classes collection
@@ -257,7 +268,7 @@ async function signUp(
         return;
     }
 
-    let { firstParentPhone, secondParentPhone, studentPhone, fullName, classId } = classUserInfo;
+    const { firstParentPhone, secondParentPhone, studentPhone, fullName, classId } = classUserInfo;
 
     let registerPhoneList;
 
@@ -284,7 +295,7 @@ async function signUp(
         return;
     }
     // set up role cho zalo user
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được liên kết với học sinh ${fullName}.\n\nID HS: ${targetStudentId}\nID Lớp: ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName}.\n\nID HS: ${targetStudentId}\nID Lớp: ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(
         res,
