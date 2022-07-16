@@ -150,25 +150,25 @@ export const userRequest = async (req, res) => {
                         localeTimeStamp
                     );
                 } else {
-                    const isReply = webhook.message.quote_msg_id || null;
+                    // Neu tu phia tro giang thi phan hoi lai cho phu huynh
+                    const quoteMessageId = webhook.message.quote_msg_id || null;
 
-                    if (isReply !== null) {
+                    if (quoteMessageId !== null) {
                         const replyContent = webhook.message.text;
 
-                        console.log(replyContent);
-
-                        Tools.sendBackMessage2Parent(
+                        Tools.sendMessageBack2Parent(
                             res,
                             accessToken,
                             refreshToken,
                             zaloUserId,
-                            zaloColl,
-                            managerColl,
                             tokenColl,
-                            content,
-                            localeTimeStamp
+                            replyContent,
+                            quoteMessageId
                         );
                     }
+
+                    res.send('Done!');
+                    return;
                 }
             }
         }

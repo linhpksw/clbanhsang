@@ -30,22 +30,34 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
-async function sendBackMessage2Parent(
+async function sendMessageBack2Parent(
     res,
     accessToken,
     refreshToken,
     zaloUserId,
-    zaloColl,
-    managerColl,
     tokenColl,
-    content,
-    localeTimeStamp
+    replyContent,
+    quoteMessageId
 ) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
-    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+    for (let i = 0; i < conversation.length; i++) {
+        const { message_id, message } = conversation[i];
 
-    console.log(conversation);
+        if (message_id === quoteMessageId) {
+            const zaloParentId = message.split('\n\n')[0].split(' ')[1];
+
+            await ZaloAPI.sendMessage(accessToken, zaloParentId, replyContent);
+
+            MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+            break;
+        }
+    }
+
+    res.send('Done');
+
+    return;
 }
 
 async function forwardMessage2Assistant(
@@ -456,5 +468,5 @@ export {
     signUp4Assistant,
     forwardMessage2Assistant,
     isManager,
-    sendBackMessage2Parent,
+    sendMessageBack2Parent,
 };
