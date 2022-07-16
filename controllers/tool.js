@@ -72,7 +72,7 @@ async function forwardMessage2Assistant(
             for (let i = 0; i < zaloAssistantIdArr.length; i++) {
                 const zaloAssistantId = zaloAssistantIdArr[i];
 
-                const forwardContent = `UID: ${zaloUserId}\n${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+                const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
                 await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
 
@@ -84,6 +84,21 @@ async function forwardMessage2Assistant(
             return;
         }
     }
+}
+
+async function isManager(res, zaloUserId, managerColl) {
+    const result = await MongoDB.findOneUser(
+        managerColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, status: 1 } }
+    );
+
+    if (result === null || result.status !== 'On') {
+        res.send('Done!');
+        return false;
+    }
+
+    return true;
 }
 
 async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl) {
@@ -418,4 +433,4 @@ async function signUp(
     return;
 }
 
-export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant, forwardMessage2Assistant };
+export { nomarlizeSyntax, signUp, isFollow, signUp4Assistant, forwardMessage2Assistant, isManager };

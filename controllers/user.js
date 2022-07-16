@@ -138,6 +138,9 @@ export const userRequest = async (req, res) => {
                     messageId
                 );
             } else if (!formatContent.includes('#')) {
+                // Check xem tin nhan den OA co tu phia Quan ly khong
+                if (Tools.isManager(res, zaloUserId, managerColl)) return;
+
                 Tools.forwardMessage2Assistant(
                     res,
                     accessToken,
