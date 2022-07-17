@@ -177,8 +177,6 @@ export const userRequest = async (req, res) => {
                             replyContent,
                             quoteMessageId
                         );
-                        res.send('Done!');
-                        return;
                     } else {
                         res.send('Done!');
                         return;
