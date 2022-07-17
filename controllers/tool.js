@@ -112,17 +112,19 @@ async function sendMessageBack2Parent(
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
 
-        if (message_id === quoteMessageId) {
-            const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
+        if (typeof message === 'string') {
+            if (message_id === quoteMessageId) {
+                const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
-            const zaloId = UID.split(' ')[1];
-            const zaloMessageId = MID.split(' ')[1];
+                const zaloId = UID.split(' ')[1];
+                const zaloMessageId = MID.split(' ')[1];
 
-            await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
+                await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
 
-            MongoDB.updateTokenInDB(tokenColl, refreshToken);
+                MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
-            break;
+                break;
+            }
         }
     }
 
