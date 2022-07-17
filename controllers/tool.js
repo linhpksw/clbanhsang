@@ -134,7 +134,7 @@ async function forwardMessage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardContent = `${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
-            await sendMessage2Assistant(accessToken, managerColl, classId, forwardContent);
+            await sendMessage2Assistant(accessToken, managerColl, zaloClassId, forwardContent);
 
             await res.send('Done');
 
