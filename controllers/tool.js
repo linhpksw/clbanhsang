@@ -249,7 +249,16 @@ async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, conte
     }
 }
 
-async function deleteAccount(res, accessToken, zaloAssistantId, zaloColl, managerColl, messageId, zaloRole) {
+async function deleteAccount(
+    res,
+    formatContent,
+    accessToken,
+    zaloAssistantId,
+    zaloColl,
+    managerColl,
+    messageId,
+    zaloRole
+) {
     // Check xem co phai do Tro giang nhan khong
     if (!(await isManager(zaloAssistantId, managerColl))) {
         res.send('Done!');
@@ -287,6 +296,10 @@ async function deleteAccount(res, accessToken, zaloAssistantId, zaloColl, manage
         { userPhone: registerPhone },
         { $pull: { students: { zaloStudentId: parseInt(targetStudentId) } }, $set: { userPhone: null } }
     );
+
+    const successContent = `🗑️ Xoá thành công tài khoản ${registerPhone} được đăng kí với học sinh ${targetStudentId}.`;
+
+    await sendResponse2Client(res, accessToken, zaloAssistantId, messageId, successContent, 'heart');
 
     res.send('Done!');
     return;

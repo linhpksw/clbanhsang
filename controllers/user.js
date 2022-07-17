@@ -139,6 +139,7 @@ export const userRequest = async (req, res) => {
             } else if (formatContent.includes('xph')) {
                 Tools.deleteAccount(
                     res,
+                    formatContent,
                     accessToken,
                     zaloUserId,
                     zaloColl,
@@ -149,12 +150,13 @@ export const userRequest = async (req, res) => {
             } else if (formatContent.includes('xhs')) {
                 Tools.deleteAccount(
                     res,
+                    formatContent,
                     accessToken,
                     zaloUserId,
                     zaloColl,
                     managerColl,
                     messageId,
-                    'Phụ huynh'
+                    'Học sinh'
                 );
             } else if (formatContent.includes('dktg')) {
                 Tools.signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId);
