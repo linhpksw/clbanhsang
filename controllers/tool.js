@@ -74,7 +74,7 @@ async function sendResponse2Client(
 async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
-    if (typeof conversation === 'object') {
+    if (conversation !== undefined) {
         for (let i = 0; i < conversation.length; i++) {
             const { message_id, message } = conversation[i];
 
