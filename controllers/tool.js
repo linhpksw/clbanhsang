@@ -307,7 +307,6 @@ async function deleteAccount(
 
     await sendResponse2Client(res, accessToken, zaloAssistantId, messageId, successContent, 'heart');
 
-    res.send('Done!');
     return;
 }
 
