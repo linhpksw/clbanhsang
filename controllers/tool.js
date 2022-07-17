@@ -1,8 +1,6 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
-// Gioi han nhung ham can de update Token trong DB
-
 function nomarlizeSyntax(str) {
     return str
         .normalize('NFD')
@@ -49,8 +47,6 @@ async function sendMessage2Assistant(
         const zaloAssistantId = zaloAssistantIdArr[i];
 
         await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
-
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
     }
 }
 
@@ -69,8 +65,6 @@ async function sendResponse2Client(
     await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
 
     res.send('Done!');
-
-    MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
 async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
@@ -124,8 +118,6 @@ async function sendMessageBack2Parent(
                 const zaloMessageId = MID.split(' ')[1];
 
                 await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
-
-                MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
                 break;
             }
@@ -211,8 +203,6 @@ async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, to
         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
         res.send('Done!');
-
-        await MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         return false;
     }

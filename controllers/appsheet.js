@@ -61,8 +61,6 @@ export const createStudentRequest = async (req, res) => {
 
         MongoDB.insertOneUser(classColl, newDoc);
 
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
-
         res.send('Success');
     } catch (err) {
         console.error(err);
@@ -159,8 +157,6 @@ export const updateStudentRequest = async (req, res) => {
         };
 
         MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
-
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         res.send('Success');
     } catch (err) {
@@ -259,8 +255,6 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
         MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
-
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
         res.send('Success');
     } catch (err) {

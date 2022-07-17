@@ -63,8 +63,6 @@ export const userRequest = async (req, res) => {
                 console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
-
-                MongoDB.updateTokenInDB(tokenColl, refreshToken);
             } else {
                 MongoDB.updateOneUser(
                     zaloColl,
