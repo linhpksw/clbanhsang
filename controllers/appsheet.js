@@ -38,8 +38,8 @@ export const createStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `✅ Thêm mới thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
-        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
+        // const successContent = `✅ Thêm mới thành công học sinh ${fullName} ${studentId} mã lớp ${classId}.`;
+        // await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
         const newDoc = {
             studentId: parseInt(studentId),
@@ -108,19 +108,19 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const successContent = `🔄 Cập nhật thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
+        // const successContent = `🔄 Cập nhật thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
 
-        await Tools.sendMessage2Assistant(
-            accessToken,
-            refreshToken,
-            tokenColl,
-            managerColl,
-            classId,
-            successContent
-        );
+        // await Tools.sendMessage2Assistant(
+        //     accessToken,
+        //     refreshToken,
+        //     tokenColl,
+        //     managerColl,
+        //     classId,
+        //     successContent
+        // );
 
-        // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
         const zaloIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId);
+        // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
         // Dung vong lap de thay doi het tag cua PH & HS lien ket voi studentId
         if (zaloIdArr.length > 0) {
             for (let i = 0; i < zaloIdArr.length; i++) {
@@ -208,19 +208,20 @@ export const deleteStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        // Gui tin nhan ket qua den Zalo tro giang
-        const successContent = `🗑️ Xoá thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
+        // // Gui tin nhan ket qua den Zalo tro giang
+        // const successContent = `🗑️ Xoá thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
 
-        await Tools.sendMessage2Assistant(
-            accessToken,
-            refreshToken,
-            tokenColl,
-            managerColl,
-            classId.slice(-6),
-            successContent
-        );
+        // await Tools.sendMessage2Assistant(
+        //     accessToken,
+        //     refreshToken,
+        //     tokenColl,
+        //     managerColl,
+        //     classId.slice(-6),
+        //     successContent
+        // );
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
+
         const zaloIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId);
         // Dung vong lap de thay doi het tag cua PH & HS lien ket voi studentId
         if (zaloIdArr.length > 0) {
