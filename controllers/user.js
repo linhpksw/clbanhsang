@@ -85,6 +85,30 @@ export const userRequest = async (req, res) => {
                 { $set: { status: 'unfollow' } }
             );
             console.log('Người dùng bỏ quan tâm OA');
+        } else if (eventName === 'user_reacted_message') {
+            // Check xem tha tym den OA co tu phia Tro giang khong
+            zaloUserId = webhook.sender.id;
+
+            if (!(await Tools.isManager(res, zaloUserId, managerColl))) {
+                res.send('Done!');
+                return;
+            } else {
+                // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
+                const reactMessageId = webhook.message.msg_id;
+
+                const reactIcon = webhook.message.react_icon;
+
+                await Tools.sendReactBack2Parent(
+                    tokenColl,
+                    refreshToken,
+                    accessToken,
+                    zaloUserId,
+                    reactMessageId,
+                    reactIcon
+                );
+
+                return;
+            }
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 
@@ -144,6 +168,7 @@ export const userRequest = async (req, res) => {
                         accessToken,
                         refreshToken,
                         zaloUserId,
+                        messageId,
                         zaloColl,
                         managerColl,
                         tokenColl,

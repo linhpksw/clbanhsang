@@ -214,6 +214,14 @@ async function sendReaction(accessToken, zaloUserId, messageId, action) {
         heart: '/-heart',
         sad: ':-((',
         like: '/-strong',
+        ':>': ':>',
+        '–b': '–b',
+        ':-((': ':-((',
+        '/-strong': '/-strong',
+        '/-heart': '/-heart',
+        ':-h': ':-h',
+        ':o': ':o',
+        '/-remove': '/-remove',
     };
 
     const data = {

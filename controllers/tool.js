@@ -71,6 +71,30 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
+async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
+    const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
+
+    for (let i = 0; i < conversation.length; i++) {
+        const { message_id, message } = conversation[i];
+
+        if (message_id === messageId) {
+            MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+            return message;
+        }
+    }
+}
+
+async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
+    const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
+
+    const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
+
+    await ZaloAPI.sendReaction(accessToken, UID, MID, reactIcon);
+
+    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+}
+
 async function sendMessageBack2Parent(
     res,
     accessToken,
@@ -86,9 +110,9 @@ async function sendMessageBack2Parent(
         const { message_id, message } = conversation[i];
 
         if (message_id === quoteMessageId) {
-            const zaloParentId = message.split('\n\n')[0].split(' ')[1];
+            const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
-            await ZaloAPI.sendMessage(accessToken, zaloParentId, replyContent);
+            await ZaloAPI.sendMessage(accessToken, UID, replyContent);
 
             MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
@@ -106,6 +130,7 @@ async function forwardMessage2Assistant(
     accessToken,
     refreshToken,
     zaloUserId,
+    messageId,
     zaloColl,
     managerColl,
     tokenColl,
@@ -129,7 +154,7 @@ async function forwardMessage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+            const forwardContent = `${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(
                 accessToken,
@@ -503,4 +528,5 @@ export {
     sendMessageBack2Parent,
     sendMessage2Assistant,
     findZaloIdFromStudentId,
+    sendReactBack2Parent,
 };
