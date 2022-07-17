@@ -219,3 +219,20 @@ export const userRequest = async (req, res) => {
     } finally {
     }
 };
+
+export const tokenRequest = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        await MongoDB.updateTokenInDB(tokenColl, refreshToken);
+
+        res.send('Done');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};

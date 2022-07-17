@@ -1,6 +1,8 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+// Gioi han nhung ham can de update Token trong DB
+
 function nomarlizeSyntax(str) {
     return str
         .normalize('NFD')
