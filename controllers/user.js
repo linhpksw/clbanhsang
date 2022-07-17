@@ -150,6 +150,19 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Học sinh'
                 );
+            } else if (formatContent.includes('xph')) {
+                Tools.deleteParentAccount(
+                    res,
+                    accessToken,
+                    refreshToken,
+                    zaloUserId,
+                    zaloColl,
+                    classColl,
+                    tokenColl,
+                    formatContent,
+                    messageId,
+                    'Phụ huynh'
+                );
             } else if (formatContent.includes('dktg')) {
                 Tools.signUp4Assistant(
                     res,
@@ -193,6 +206,8 @@ export const userRequest = async (req, res) => {
                             replyContent,
                             quoteMessageId
                         );
+                        res.send('Done!');
+                        return;
                     } else {
                         res.send('Done!');
                         return;

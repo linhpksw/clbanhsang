@@ -86,18 +86,16 @@ async function getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUse
 async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
     const content = await getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId);
 
-    console.log(content);
-    const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
+    if (typeof content === 'string') {
+        const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
-    const zaloId = UID.split(' ')[1];
-    const zaloMessageId = MID.split(' ')[1];
+        const zaloId = UID.split(' ')[1];
+        const zaloMessageId = MID.split(' ')[1];
 
-    console.log(zaloId);
-    console.log(zaloMessageId);
+        await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
 
-    await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
-
-    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+    }
 }
 
 async function sendMessageBack2Parent(
@@ -324,6 +322,37 @@ async function signUp4Assistant(
     }
 }
 
+async function deleteParentAccount(
+    res,
+    accessToken,
+    refreshToken,
+    zaloUserId,
+    zaloColl,
+    classColl,
+    tokenColl,
+    formatContent,
+    messageId,
+    zaloRole
+) {
+    if (formatContent.length !== 20) {
+        const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
+        sendResponse2Client(
+            res,
+            accessToken,
+            refreshToken,
+            zaloUserId,
+            tokenColl,
+            messageId,
+            failContent,
+            'sad'
+        );
+        return;
+    }
+
+    const targetStudentId = parseInt(formatContent.substring(4, 11));
+    const registerPhone = formatContent.slice(-10);
+}
+
 async function signUp(
     res,
     accessToken,
@@ -332,11 +361,11 @@ async function signUp(
     zaloColl,
     classColl,
     tokenColl,
-    formatSyntax,
+    formatContent,
     messageId,
     zaloRole
 ) {
-    if (formatSyntax.length !== 21) {
+    if (formatContent.length !== 21) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
         sendResponse2Client(
             res,
@@ -351,8 +380,8 @@ async function signUp(
         return;
     }
 
-    const targetStudentId = parseInt(formatSyntax.substring(4, 11));
-    const registerPhone = formatSyntax.slice(-10);
+    const targetStudentId = parseInt(formatContent.substring(4, 11));
+    const registerPhone = formatContent.slice(-10);
 
     // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
     const isRegister = await MongoDB.findOneUser(
