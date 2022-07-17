@@ -110,8 +110,6 @@ export const updateStudentRequest = async (req, res) => {
 
         // await Tools.sendMessage2Assistant(
         //     accessToken,
-        //     refreshToken,
-        //     tokenColl,
         //     managerColl,
         //     classId,
         //     successContent
@@ -209,8 +207,6 @@ export const deleteStudentRequest = async (req, res) => {
 
         // await Tools.sendMessage2Assistant(
         //     accessToken,
-        //     refreshToken,
-        //     tokenColl,
         //     managerColl,
         //     classId.slice(-6),
         //     successContent

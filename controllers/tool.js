@@ -25,14 +25,7 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     return zaloIdArr;
 }
 
-async function sendMessage2Assistant(
-    accessToken,
-    refreshToken,
-    tokenColl,
-    managerColl,
-    classId,
-    forwardContent
-) {
+async function sendMessage2Assistant(accessToken, managerColl, classId, forwardContent) {
     const cursor = managerColl.find(
         { 'classes.classId': classId },
         { projection: { _id: 0, zaloUserId: 1 } }
@@ -50,16 +43,7 @@ async function sendMessage2Assistant(
     }
 }
 
-async function sendResponse2Client(
-    res,
-    accessToken,
-    refreshToken,
-    zaloUserId,
-    tokenColl,
-    messageId,
-    responseContent,
-    action
-) {
+async function sendResponse2Client(res, accessToken, zaloUserId, messageId, responseContent, action) {
     ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
     await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
@@ -83,7 +67,7 @@ async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     }
 }
 
-async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
+async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIcon) {
     const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
 
     if (content !== undefined) {
@@ -96,15 +80,7 @@ async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUs
     }
 }
 
-async function sendMessageBack2Parent(
-    res,
-    accessToken,
-    refreshToken,
-    zaloUserId,
-    tokenColl,
-    replyContent,
-    quoteMessageId
-) {
+async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
     for (let i = 0; i < conversation.length; i++) {
@@ -132,12 +108,10 @@ async function sendMessageBack2Parent(
 async function forwardMessage2Assistant(
     res,
     accessToken,
-    refreshToken,
     zaloUserId,
     messageId,
     zaloColl,
     managerColl,
-    tokenColl,
     content,
     localeTimeStamp
 ) {
@@ -160,14 +134,7 @@ async function forwardMessage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardContent = `${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
-            await sendMessage2Assistant(
-                accessToken,
-                refreshToken,
-                tokenColl,
-                managerColl,
-                zaloClassId,
-                forwardContent
-            );
+            await sendMessage2Assistant(accessToken, managerColl, classId, forwardContent);
 
             await res.send('Done');
 
@@ -210,16 +177,7 @@ async function isFollow(res, accessToken, zaloUserId, zaloColl) {
     return true;
 }
 
-async function signUp4Assistant(
-    res,
-    accessToken,
-    refreshToken,
-    zaloUserId,
-    managerColl,
-    tokenColl,
-    content,
-    messageId
-) {
+async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId) {
     const [syntax, classId, phone, ...splitName] = content.split(' ');
 
     const name = splitName.join(' ');
@@ -248,16 +206,7 @@ async function signUp4Assistant(
 
         const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
 
-        await sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            successContent,
-            'heart'
-        );
+        await sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
 
         return;
     } else {
@@ -285,16 +234,7 @@ async function signUp4Assistant(
             );
             const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
 
-            await sendResponse2Client(
-                res,
-                accessToken,
-                refreshToken,
-                zaloUserId,
-                tokenColl,
-                messageId,
-                successContent,
-                'heart'
-            );
+            await sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
 
             return;
         } else {
@@ -302,16 +242,7 @@ async function signUp4Assistant(
 
             const failContent = `❌ Đăng kí thất bại vì trợ giảng ${name} đã liên kết với mã lớp ${classId}.`;
 
-            await sendResponse2Client(
-                res,
-                accessToken,
-                refreshToken,
-                zaloUserId,
-                tokenColl,
-                messageId,
-                failContent,
-                'sad'
-            );
+            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
 
             return;
         }
@@ -321,27 +252,16 @@ async function signUp4Assistant(
 async function deleteParentAccount(
     res,
     accessToken,
-    refreshToken,
     zaloUserId,
     zaloColl,
     classColl,
-    tokenColl,
     formatContent,
     messageId,
     zaloRole
 ) {
     if (formatContent.length !== 20) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            failContent,
-            'sad'
-        );
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
         return;
     }
 
@@ -349,30 +269,10 @@ async function deleteParentAccount(
     const registerPhone = formatContent.slice(-10);
 }
 
-async function signUp(
-    res,
-    accessToken,
-    refreshToken,
-    zaloUserId,
-    zaloColl,
-    classColl,
-    tokenColl,
-    formatContent,
-    messageId,
-    zaloRole
-) {
+async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatContent, messageId, zaloRole) {
     if (formatContent.length !== 21) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            failContent,
-            'sad'
-        );
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
         return;
     }
 
@@ -392,16 +292,7 @@ async function signUp(
     if (isRegister !== null) {
         const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            failContent,
-            'like'
-        );
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
         return;
     }
@@ -447,16 +338,7 @@ async function signUp(
     if (classUserInfo === null) {
         const failContent = `❌ Đăng kí thất bại!\n\nID học sinh ${targetStudentId} không có trên hệ thống. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            failContent,
-            'sad'
-        );
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
 
         return;
     }
@@ -474,32 +356,14 @@ async function signUp(
     if (!registerPhoneList.includes(registerPhone)) {
         const failContent = `❌ Đăng kí thất bại!\n\nSố điện thoại ${registerPhone} chưa có trong danh sách đã đăng kí. ${zaloRole} hãy liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(
-            res,
-            accessToken,
-            refreshToken,
-            zaloUserId,
-            tokenColl,
-            messageId,
-            failContent,
-            'sad'
-        );
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
 
         return;
     }
     // set up role cho zalo user
     const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở mã lớp ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
-    sendResponse2Client(
-        res,
-        accessToken,
-        refreshToken,
-        zaloUserId,
-        tokenColl,
-        messageId,
-        successContent,
-        'heart'
-    );
+    sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
 
     const zaloRole2Short = {
         'Phụ huynh': 'PH',

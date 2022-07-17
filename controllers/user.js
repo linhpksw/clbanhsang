@@ -48,7 +48,7 @@ export const userRequest = async (req, res) => {
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;
 
-            await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl);
+            await Tools.isFollow(res, accessToken, zaloUserId, zaloColl);
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
 
@@ -96,14 +96,7 @@ export const userRequest = async (req, res) => {
 
                 const reactIcon = webhook.message.react_icon;
 
-                await Tools.sendReactBack2Parent(
-                    tokenColl,
-                    refreshToken,
-                    accessToken,
-                    zaloUserId,
-                    reactMessageId,
-                    reactIcon
-                );
+                await Tools.sendReactBack2Parent(accessToken, zaloUserId, reactMessageId, reactIcon);
 
                 res.send('Done!');
                 return;
@@ -125,11 +118,9 @@ export const userRequest = async (req, res) => {
                 Tools.signUp(
                     res,
                     accessToken,
-                    refreshToken,
                     zaloUserId,
                     zaloColl,
                     classColl,
-                    tokenColl,
                     formatContent,
                     messageId,
                     'Phụ huynh'
@@ -138,11 +129,9 @@ export const userRequest = async (req, res) => {
                 Tools.signUp(
                     res,
                     accessToken,
-                    refreshToken,
                     zaloUserId,
                     zaloColl,
                     classColl,
-                    tokenColl,
                     formatContent,
                     messageId,
                     'Học sinh'
@@ -151,39 +140,26 @@ export const userRequest = async (req, res) => {
                 Tools.deleteParentAccount(
                     res,
                     accessToken,
-                    refreshToken,
                     zaloUserId,
                     zaloColl,
                     classColl,
-                    tokenColl,
                     formatContent,
                     messageId,
                     'Phụ huynh'
                 );
             } else if (formatContent.includes('dktg')) {
-                Tools.signUp4Assistant(
-                    res,
-                    accessToken,
-                    refreshToken,
-                    zaloUserId,
-                    managerColl,
-                    tokenColl,
-                    content,
-                    messageId
-                );
+                Tools.signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId);
             } else if (!formatContent.includes('#')) {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
 
-                if (!(await Tools.isManager(res, zaloUserId, managerColl))) {
+                if (!(await Tools.isManager(zaloUserId, managerColl))) {
                     Tools.forwardMessage2Assistant(
                         res,
                         accessToken,
-                        refreshToken,
                         zaloUserId,
                         messageId,
                         zaloColl,
                         managerColl,
-                        tokenColl,
                         content,
                         localeTimeStamp
                     );
@@ -197,9 +173,7 @@ export const userRequest = async (req, res) => {
                         await Tools.sendMessageBack2Parent(
                             res,
                             accessToken,
-                            refreshToken,
                             zaloUserId,
-                            tokenColl,
                             replyContent,
                             quoteMessageId
                         );
