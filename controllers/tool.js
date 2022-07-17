@@ -278,7 +278,7 @@ async function deleteAccount(
     const { zaloUserId, students } = await MongoDB.findOneUser(
         zaloColl,
         { userPhone: registerPhone },
-        { projection: { _id: 0, zaloUserId: 1 } }
+        { projection: { _id: 0, zaloUserId: 1, students: 1 } }
     );
 
     for (let i = 0; i < students.length; i++) {
