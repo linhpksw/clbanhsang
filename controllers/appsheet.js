@@ -123,8 +123,8 @@ export const updateStudentRequest = async (req, res) => {
                 const [zaloId, classId] = zaloIdArr[i];
 
                 if (classId.includes('N')) {
-                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, `N${classId}`);
-                    await ZaloAPI.tagFollower(accessToken, zaloId, classId);
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, classId);
+                    await ZaloAPI.tagFollower(accessToken, zaloId, classId.slice(-6));
 
                     // set trang thai di hoc lai trong Zalo Coll
                     MongoDB.updateOneUser(
