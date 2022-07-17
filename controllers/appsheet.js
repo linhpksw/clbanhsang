@@ -235,7 +235,7 @@ export const deleteStudentRequest = async (req, res) => {
         // set trang thai nghi trong Class Coll
         const updateClassDoc = {
             studentId: parseInt(studentId),
-            classId: `N${classId}`,
+            classId: `N${classId.slice(-6)}`,
             enrollDate: enrollDate,
             status: 'Nghỉ',
             birthYear: birthYear,
