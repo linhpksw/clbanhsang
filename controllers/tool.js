@@ -190,7 +190,7 @@ async function isManager(zaloUserId, managerColl) {
     return true;
 }
 
-async function isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl) {
+async function isFollow(res, accessToken, zaloUserId, zaloColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },

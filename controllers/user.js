@@ -117,7 +117,7 @@ export const userRequest = async (req, res) => {
             const formatContent = Tools.nomarlizeSyntax(content);
 
             // Check xem nguoi dung da follow OA chua
-            if (!(await Tools.isFollow(res, accessToken, refreshToken, zaloUserId, zaloColl, tokenColl))) {
+            if (!(await Tools.isFollow(res, accessToken, zaloUserId, zaloColl))) {
                 return;
             }
 
