@@ -74,30 +74,34 @@ async function sendResponse2Client(
 async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
-    console.log(conversation);
+    if (conversation !== undefined) {
+        for (let i = 0; i < conversation.length; i++) {
+            const { message_id, message } = conversation[i];
 
-    for (let i = 0; i < conversation.length; i++) {
-        const { message_id, message } = conversation[i];
-
-        if (message_id === messageId) {
-            return message;
+            if (message_id === messageId) {
+                return message;
+            }
         }
+    } else {
+        return undefined;
     }
 }
 
 async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
     const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
 
-    console.log(content);
+    if (content !== undefined) {
+        const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
-    const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
+        const zaloId = UID.split(' ')[1];
+        const zaloMessageId = MID.split(' ')[1];
 
-    const zaloId = UID.split(' ')[1];
-    const zaloMessageId = MID.split(' ')[1];
+        await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
 
-    await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
-
-    MongoDB.updateTokenInDB(tokenColl, refreshToken);
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+    } else {
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+    }
 }
 
 async function sendMessageBack2Parent(
