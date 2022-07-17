@@ -71,7 +71,7 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
-async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
+async function getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
     for (let i = 0; i < conversation.length; i++) {
@@ -86,11 +86,14 @@ async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
 }
 
 async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
-    const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
+    const content = await getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId);
 
     const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
-    await ZaloAPI.sendReaction(accessToken, UID, MID, reactIcon);
+    const zaloUserId = UID.split(' ')[1];
+    const zaloMessageId = MID.split(' ')[1];
+
+    await ZaloAPI.sendReaction(accessToken, zaloUserId, zaloMessageId, reactIcon);
 
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
@@ -112,7 +115,10 @@ async function sendMessageBack2Parent(
         if (message_id === quoteMessageId) {
             const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
-            await ZaloAPI.sendMessage(accessToken, UID, replyContent);
+            const zaloUserId = UID.split(' ')[1];
+            const zaloMessageId = MID.split(' ')[1];
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, replyContent);
 
             MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
