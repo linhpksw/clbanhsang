@@ -71,14 +71,16 @@ async function sendResponse2Client(
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
 
-async function getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId) {
+async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
-    for (let i = 0; i < conversation.length; i++) {
-        const { message_id, message } = conversation[i];
+    if (typeof conversation === 'object') {
+        for (let i = 0; i < conversation.length; i++) {
+            const { message_id, message } = conversation[i];
 
-        if (message_id === messageId) {
-            return message;
+            if (message_id === messageId) {
+                return message;
+            }
         }
     }
 }
