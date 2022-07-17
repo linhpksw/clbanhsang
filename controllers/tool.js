@@ -97,10 +97,6 @@ async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUs
         const zaloMessageId = MID.split(' ')[1];
 
         await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
-
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
-    } else {
-        MongoDB.updateTokenInDB(tokenColl, refreshToken);
     }
 }
 
@@ -186,7 +182,7 @@ async function forwardMessage2Assistant(
     }
 }
 
-async function isManager(res, zaloUserId, managerColl) {
+async function isManager(zaloUserId, managerColl) {
     const result = await MongoDB.findOneUser(
         managerColl,
         { zaloUserId: `${zaloUserId}` },

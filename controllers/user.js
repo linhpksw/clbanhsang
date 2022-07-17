@@ -89,7 +89,7 @@ export const userRequest = async (req, res) => {
             // Check xem tha tym den OA co tu phia Tro giang khong
             zaloUserId = webhook.sender.id;
 
-            if (!(await Tools.isManager(res, zaloUserId, managerColl))) {
+            if (!(await Tools.isManager(zaloUserId, managerColl))) {
                 res.send('Done!');
                 return;
             } else {
@@ -98,16 +98,14 @@ export const userRequest = async (req, res) => {
 
                 const reactIcon = webhook.message.react_icon;
 
-                console.log(accessToken);
-
-                // await Tools.sendReactBack2Parent(
-                //     tokenColl,
-                //     refreshToken,
-                //     accessToken,
-                //     zaloUserId,
-                //     reactMessageId,
-                //     reactIcon
-                // );
+                await Tools.sendReactBack2Parent(
+                    tokenColl,
+                    refreshToken,
+                    accessToken,
+                    zaloUserId,
+                    reactMessageId,
+                    reactIcon
+                );
 
                 res.send('Done!');
                 return;
