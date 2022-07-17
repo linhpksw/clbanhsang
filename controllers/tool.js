@@ -90,10 +90,10 @@ async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUs
 
     const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
-    const zaloUserId = UID.split(' ')[1];
+    const zaloId = UID.split(' ')[1];
     const zaloMessageId = MID.split(' ')[1];
 
-    await ZaloAPI.sendReaction(accessToken, zaloUserId, zaloMessageId, reactIcon);
+    await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
 
     MongoDB.updateTokenInDB(tokenColl, refreshToken);
 }
@@ -115,10 +115,10 @@ async function sendMessageBack2Parent(
         if (message_id === quoteMessageId) {
             const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
-            const zaloUserId = UID.split(' ')[1];
+            const zaloId = UID.split(' ')[1];
             const zaloMessageId = MID.split(' ')[1];
 
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, replyContent);
+            await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
 
             MongoDB.updateTokenInDB(tokenColl, refreshToken);
 
