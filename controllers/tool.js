@@ -249,7 +249,13 @@ async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, conte
     }
 }
 
-async function deleteAccount(res, accessToken, zaloAssistantId, zaloColl, messageId, zaloRole) {
+async function deleteAccount(res, accessToken, zaloAssistantId, zaloColl, managerColl, messageId, zaloRole) {
+    // Check xem co phai do Tro giang nhan khong
+    if (!(await isManager(zaloAssistantId, managerColl))) {
+        res.send('Done!');
+        return;
+    }
+
     if (formatContent.length !== 20) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
         sendResponse2Client(res, accessToken, zaloAssistantId, messageId, failContent, 'sad');

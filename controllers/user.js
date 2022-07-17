@@ -137,9 +137,25 @@ export const userRequest = async (req, res) => {
                     'Học sinh'
                 );
             } else if (formatContent.includes('xph')) {
-                Tools.deleteAccount(res, accessToken, zaloUserId, zaloColl, messageId, 'Phụ huynh');
+                Tools.deleteAccount(
+                    res,
+                    accessToken,
+                    zaloUserId,
+                    zaloColl,
+                    managerColl,
+                    messageId,
+                    'Phụ huynh'
+                );
             } else if (formatContent.includes('xhs')) {
-                Tools.deleteAccount(res, accessToken, zaloUserId, zaloColl, messageId, 'Phụ huynh');
+                Tools.deleteAccount(
+                    res,
+                    accessToken,
+                    zaloUserId,
+                    zaloColl,
+                    managerColl,
+                    messageId,
+                    'Phụ huynh'
+                );
             } else if (formatContent.includes('dktg')) {
                 Tools.signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId);
             } else if (!formatContent.includes('#')) {
