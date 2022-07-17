@@ -220,8 +220,8 @@ export const deleteStudentRequest = async (req, res) => {
             for (let i = 0; i < zaloIdArr.length; i++) {
                 const [zaloId, zaloClass] = zaloIdArr[i];
 
-                await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
-                await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
+                ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
+                ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
 
                 // set trang thai nghi trong Zalo Coll
                 MongoDB.updateOneUser(
