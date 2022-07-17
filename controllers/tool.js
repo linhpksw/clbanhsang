@@ -129,7 +129,7 @@ async function forwardMessage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
+            const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} (${zaloStudentId}) ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
             await sendMessage2Assistant(
                 accessToken,
@@ -430,7 +430,7 @@ async function signUp(
         return;
     }
     // set up role cho zalo user
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName}.\n\nID HS: ${targetStudentId}\nID Lớp: ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở mã lớp ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(
         res,
