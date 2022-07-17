@@ -159,7 +159,15 @@ export const userRequest = async (req, res) => {
                     'Học sinh'
                 );
             } else if (formatContent.includes('dktg')) {
-                Tools.signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId);
+                Tools.signUp4Assistant(
+                    res,
+                    accessToken,
+                    zaloUserId,
+                    managerColl,
+                    zaloColl,
+                    content,
+                    messageId
+                );
             } else if (!formatContent.includes('#')) {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
 

@@ -177,7 +177,7 @@ async function isFollow(res, accessToken, zaloUserId, zaloColl) {
     return true;
 }
 
-async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId) {
+async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, zaloColl, content, messageId) {
     if (content.length < 24) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
         sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
@@ -209,6 +209,8 @@ async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, conte
             phone: phone,
             classes: [{ classId: classId }],
         });
+
+        MongoDB.updateOneUser(zaloColl, { zaloUserId: zaloUserId }, { $set: { userPhone: phone } });
 
         const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
 
