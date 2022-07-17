@@ -74,6 +74,8 @@ async function sendResponse2Client(
 async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
+    console.log(conversation);
+
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
 
@@ -84,7 +86,9 @@ async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
 }
 
 async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
-    const content = await getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId);
+    const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
+
+    console.log(content);
 
     const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
