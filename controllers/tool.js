@@ -249,24 +249,41 @@ async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, conte
     }
 }
 
-async function deleteParentAccount(
-    res,
-    accessToken,
-    zaloUserId,
-    zaloColl,
-    classColl,
-    formatContent,
-    messageId,
-    zaloRole
-) {
+async function deleteAccount(res, accessToken, zaloAssistantId, zaloColl, messageId, zaloRole) {
     if (formatContent.length !== 20) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
-        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
+        sendResponse2Client(res, accessToken, zaloAssistantId, messageId, failContent, 'sad');
         return;
     }
 
-    const targetStudentId = parseInt(formatContent.substring(4, 11));
+    const targetStudentId = parseInt(formatContent.substring(3, 10));
     const registerPhone = formatContent.slice(-10);
+
+    // Xoa tag va thong tin tren Zalo OA chat
+    const { zaloUserId, students } = await MongoDB.findOneUser(
+        zaloColl,
+        { userPhone: registerPhone },
+        { projection: { _id: 0, zaloUserId: 1 } }
+    );
+
+    for (let i = 0; i < students.length; i++) {
+        const removeTag = students[i].zaloClassId;
+
+        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
+    }
+    ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
+
+    ZaloAPI.updateFollowerInfo(accessToken, '', zaloUserId, '', '');
+
+    // Xoa dang ki tai khoan trong Zalo Coll
+    MongoDB.updateOneUser(
+        zaloColl,
+        { userPhone: registerPhone },
+        { $pull: { students: { zaloStudentId: parseInt(targetStudentId) } }, $set: { userPhone: null } }
+    );
+
+    res.send('Done!');
+    return;
 }
 
 async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatContent, messageId, zaloRole) {
@@ -361,7 +378,7 @@ async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatC
         return;
     }
     // set up role cho zalo user
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở mã lớp ${classId}\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở mã lớp ${classId}.\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
 
@@ -426,4 +443,5 @@ export {
     sendMessage2Assistant,
     findZaloIdFromStudentId,
     sendReactBack2Parent,
+    deleteAccount,
 };
