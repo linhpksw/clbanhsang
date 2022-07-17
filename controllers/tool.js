@@ -11,6 +11,47 @@ function nomarlizeSyntax(str) {
         .replace(/\s+/g, '');
 }
 
+async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
+    const cursor = zaloColl.find(
+        { 'students.zaloStudentId': parseInt(zaloStudentId) },
+        { projection: { _id: 0, zaloUserId: 1, 'students.zaloClassId': 1 } }
+    );
+
+    let zaloIdArr = [];
+    await cursor.forEach((v) => {
+        zaloIdArr.push([v.zaloUserId, v.students[0].zaloClassId]);
+    });
+
+    return zaloIdArr;
+}
+
+async function sendMessage2Assistant(
+    accessToken,
+    refreshToken,
+    tokenColl,
+    managerColl,
+    classId,
+    forwardContent
+) {
+    const cursor = managerColl.find(
+        { 'classes.classId': classId },
+        { projection: { _id: 0, zaloUserId: 1 } }
+    );
+
+    let zaloAssistantIdArr = [];
+    await cursor.forEach((v) => {
+        zaloAssistantIdArr.push(v.zaloUserId);
+    });
+
+    for (let i = 0; i < zaloAssistantIdArr.length; i++) {
+        const zaloAssistantId = zaloAssistantIdArr[i];
+
+        await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
+
+        MongoDB.updateTokenInDB(tokenColl, refreshToken);
+    }
+}
+
 async function sendResponse2Client(
     res,
     accessToken,
@@ -87,26 +128,17 @@ async function forwardMessage2Assistant(
             // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            const cursor = managerColl.find(
-                { 'classes.classId': zaloClassId },
-                { projection: { _id: 0, zaloUserId: 1 } }
-            );
-
-            let zaloAssistantIdArr = [];
-            await cursor.forEach((v) => {
-                zaloAssistantIdArr.push(v.zaloUserId);
-            });
-
             // chuyen tiep tin nhan den tro giang tuong ung
-            for (let i = 0; i < zaloAssistantIdArr.length; i++) {
-                const zaloAssistantId = zaloAssistantIdArr[i];
+            const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
 
-                const forwardContent = `UID: ${zaloUserId}\n\n${aliasName} (${zaloStudentId})\nMã lớp: ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}`;
-
-                await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
-
-                MongoDB.updateTokenInDB(tokenColl, refreshToken);
-            }
+            await sendMessage2Assistant(
+                accessToken,
+                refreshToken,
+                tokenColl,
+                managerColl,
+                zaloClassId,
+                forwardContent
+            );
 
             await res.send('Done');
 
@@ -469,4 +501,6 @@ export {
     forwardMessage2Assistant,
     isManager,
     sendMessageBack2Parent,
+    sendMessage2Assistant,
+    findZaloIdFromStudentId,
 };

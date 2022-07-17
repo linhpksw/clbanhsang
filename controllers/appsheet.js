@@ -1,5 +1,6 @@
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
+import * as Tools from './tool.js';
 
 export const createStudentRequest = async (req, res) => {
     try {
@@ -76,6 +77,7 @@ export const updateStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
+        const managerColl = db.collection('managers');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -87,7 +89,7 @@ export const updateStudentRequest = async (req, res) => {
             }
         }
 
-        let {
+        const {
             studentId,
             classId,
             enrollDate,
@@ -107,25 +109,35 @@ export const updateStudentRequest = async (req, res) => {
         const fullName = `${firstName} ${lastName}`;
 
         const successContent = `🔄 Cập nhật thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
-        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
 
-        // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
-        const isNghiHoc = await MongoDB.findOneUser(
-            zaloColl,
-            { 'students.zaloStudentId': parseInt(studentId) },
-            { projection: { _id: 0, students: 1 } }
+        await Tools.sendMessage2Assistant(
+            accessToken,
+            refreshToken,
+            tokenColl,
+            managerColl,
+            classId,
+            successContent
         );
 
-        if (isNghiHoc.students[0].zaloClassId.includes('N')) {
-            await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', `N${classId}`);
-            await ZaloAPI.tagFollower(accessToken, '4966494673333610309', classId);
+        // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
+        const zaloIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId);
+        // Dung vong lap de thay doi het tag cua PH & HS lien ket voi studentId
+        if (zaloIdArr.length > 0) {
+            for (let i = 0; i < zaloIdArr.length; i++) {
+                const [zaloId, classId] = zaloIdArr[i];
 
-            // set trang thai di hoc lai trong Zalo Coll
-            MongoDB.updateOneUser(
-                zaloColl,
-                { 'students.zaloStudentId': parseInt(studentId) },
-                { $set: { 'students.$.zaloClassId': `${classId}` } }
-            );
+                if (classId.includes('N')) {
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, `N${classId}`);
+                    await ZaloAPI.tagFollower(accessToken, zaloId, classId);
+
+                    // set trang thai di hoc lai trong Zalo Coll
+                    MongoDB.updateOneUser(
+                        zaloColl,
+                        { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
+                        { $set: { 'students.$.zaloClassId': `${classId}` } }
+                    );
+                }
+            }
         }
 
         const updateDoc = {
@@ -164,6 +176,7 @@ export const deleteStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
+        const managerColl = db.collection('managers');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -175,7 +188,7 @@ export const deleteStudentRequest = async (req, res) => {
             }
         }
 
-        let {
+        const {
             studentId,
             classId,
             enrollDate,
@@ -193,32 +206,37 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentPhone,
         } = webhook;
 
-        classId = classId.slice(-6);
-
         const fullName = `${firstName} ${lastName}`;
 
         // Gui tin nhan ket qua den Zalo tro giang
         const successContent = `🗑️ Xoá thành công học sinh ${fullName} (${studentId}) mã lớp ${classId}.`;
 
-        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', successContent);
-
-        // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
-        const isStudentIdExistInZaloColl = await MongoDB.findOneUser(
-            zaloColl,
-            { 'students.zaloStudentId': parseInt(studentId) },
-            { projection: { _id: 0, students: 1 } }
+        await Tools.sendMessage2Assistant(
+            accessToken,
+            refreshToken,
+            tokenColl,
+            managerColl,
+            classId.slice(-6),
+            successContent
         );
 
-        if (isStudentIdExistInZaloColl !== null) {
-            await ZaloAPI.removeFollowerFromTag(accessToken, '4966494673333610309', classId);
-            await ZaloAPI.tagFollower(accessToken, '4966494673333610309', `N${classId}`);
+        // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
+        const zaloIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId);
+        // Dung vong lap de thay doi het tag cua PH & HS lien ket voi studentId
+        if (zaloIdArr.length > 0) {
+            for (let i = 0; i < zaloIdArr.length; i++) {
+                const [zaloId, classId] = zaloIdArr[i];
 
-            // set trang thai nghi trong Zalo Coll
-            MongoDB.updateOneUser(
-                zaloColl,
-                { 'students.zaloStudentId': parseInt(studentId) },
-                { $set: { 'students.$.zaloClassId': `N${classId}` } }
-            );
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, classId);
+                await ZaloAPI.tagFollower(accessToken, zaloId, `N${classId}`);
+
+                // set trang thai nghi trong Zalo Coll
+                MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
+                    { $set: { 'students.$.zaloClassId': `N${classId}` } }
+                );
+            }
         }
 
         // set trang thai nghi trong Class Coll
