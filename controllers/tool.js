@@ -178,6 +178,12 @@ async function isFollow(res, accessToken, zaloUserId, zaloColl) {
 }
 
 async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, content, messageId) {
+    if (content.length < 24) {
+        const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
+        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
+        return;
+    }
+
     const [syntax, classId, phone, ...splitName] = content.split(' ');
 
     const name = splitName.join(' ');
