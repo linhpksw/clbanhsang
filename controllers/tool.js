@@ -78,8 +78,6 @@ async function getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUse
         const { message_id, message } = conversation[i];
 
         if (message_id === messageId) {
-            MongoDB.updateTokenInDB(tokenColl, refreshToken);
-
             return message;
         }
     }
@@ -88,10 +86,14 @@ async function getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUse
 async function sendReactBack2Parent(tokenColl, refreshToken, accessToken, zaloUserId, messageId, reactIcon) {
     const content = await getContentFromMsgId(tokenColl, refreshToken, accessToken, zaloUserId, messageId);
 
+    console.log(content);
     const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
     const zaloId = UID.split(' ')[1];
     const zaloMessageId = MID.split(' ')[1];
+
+    console.log(zaloId);
+    console.log(zaloMessageId);
 
     await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
 
