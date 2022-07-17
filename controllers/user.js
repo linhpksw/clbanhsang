@@ -107,6 +107,7 @@ export const userRequest = async (req, res) => {
                     reactIcon
                 );
 
+                res.send('Done!');
                 return;
             }
         } else if (eventName === 'user_send_text') {
