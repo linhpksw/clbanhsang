@@ -201,6 +201,26 @@ export const userRequest = async (req, res) => {
                         return;
                     }
                 }
+            } else if (formatContent.includes('#')) {
+                const attachMessage = {
+                    text: 'Vị trí cụ thể trên bản đồ.',
+                    attachment: {
+                        type: 'template',
+                        payload: {
+                            buttons: [
+                                {
+                                    title: 'Mở Google Maps',
+                                    payload: {
+                                        url: 'https://goo.gl/maps/PoghpFpVtydccEYL6',
+                                    },
+                                    type: 'oa.open.url',
+                                },
+                            ],
+                        },
+                    },
+                };
+
+                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
             }
         }
     } catch (err) {

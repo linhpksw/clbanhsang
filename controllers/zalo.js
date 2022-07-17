@@ -141,6 +141,32 @@ async function getConversation(accessToken, zaloUserId) {
     return jsonResponse.data;
 }
 
+async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const URL = `https://openapi.zalo.me/v2.0/oa/message?`;
+
+    const content = {
+        recipient: {
+            user_id: zaloUserId,
+        },
+        message: attachMessage,
+    };
+
+    const response = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(content),
+    });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
+}
+
 async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,
@@ -257,4 +283,5 @@ export {
     removeFollowerFromTag,
     sendReaction,
     getConversation,
+    sendMessageWithButton,
 };
