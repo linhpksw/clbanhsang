@@ -81,12 +81,11 @@ async function getProfile(accessToken, zaloUserId) {
 }
 
 // async function test() {
-//     const accessToken =
-//         'A3NA1g2YH44kDC08fgX7GIGsnmMcjpKYAMlO0_E7B4CvJTrSjBqU7s5Dx5cUssX_JYAARA7d26qgBzTuuzWgPMmGrbcWpW9QTLVpHBo-SdLqHVKpbuOICqKOt3cwsZW7QmNTF-Vj6NeF1FuyxF5y9cGrc3U7hdrqHNQTLB6TPcndMUX6aQC51sO-WY2lydqy8oNx8gpQ1pD01yKJhvapBN53rHQkZWSj9K_x2iwq0W8WK-4_puqLAq5dq0s-y0e7I1ln0CFi3X8BS_WNyueGDXzfupFEdZeWB7Jh8zZs1JSXTFmHyUi44Ya3zIsct24dMH-W8AR1S3vCEQuiblL6Q7uzm4cIo3XnIxkljt2dj4z4';
-//     const zaloStudentId = '2004001';
+//     const accessToken = 'D7A95A-AlsSoSuCQgO2yPpXnX1UfdxyrSoUTHFRUmcC_BgXKvw_cU2u9fmZgXUzqD2E_GAZQzdvkVefEgj-pHqaiqakdsenaPbBD4upQZXDUSTPacuYJOMTzotoTpuPW343mQCFuoMadTV5ZoV6mPG1PqMd9u8fRL4toAhdwp5XMI9eheVpSFZ5sXYB6ZhfVEJhSBw2Yb2vOFS9Vd8wOAmmf-GBXgg0J6I3jEiMte3e7GzuvrhgKBXC0y2FfgP4XDZhf3VEelnyw4VWKqRYwEYywWZJKlECI5HgV5EgHr0WoV8akwkFg8G5AhX2TkkSLMXIh6Ok5mp9eShmweT6B77n_iMsZtFfTDAZ03qIedBHY'
+//     const zaloStudentId = '';
 //     const zaloUserId = '4966494673333610309';
-//     const registerPhone = '0915806944';
-//     const aliasName = 'PH Nguyen Van A';
+//     const registerPhone = '';
+//     const aliasName = '';
 
 //     await updateFollowerInfo(accessToken, zaloStudentId, zaloUserId, registerPhone, aliasName);
 // }

@@ -288,13 +288,11 @@ async function deleteAccount(
     }
     ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
 
-    ZaloAPI.updateFollowerInfo(accessToken, '', zaloUserId, '', '');
-
     // Xoa dang ki tai khoan trong Zalo Coll
     MongoDB.updateOneUser(
         zaloColl,
         { userPhone: registerPhone },
-        { $pull: { students: { zaloStudentId: parseInt(targetStudentId) } }, $set: { userPhone: null } }
+        { $set: { userPhone: null, students: [] } }
     );
 
     const successContent = `🗑️ Xoá thành công tài khoản ${registerPhone} được đăng kí với học sinh ${targetStudentId}.`;
