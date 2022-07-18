@@ -202,25 +202,30 @@ export const userRequest = async (req, res) => {
                     }
                 }
             } else if (formatContent.includes('#')) {
-                const attachMessage = {
-                    text: 'Vị trí cụ thể trên bản đồ.',
-                    attachment: {
-                        type: 'template',
-                        payload: {
-                            buttons: [
-                                {
-                                    title: 'Mở Google Maps',
-                                    payload: {
-                                        url: 'https://goo.gl/maps/PoghpFpVtydccEYL6',
+                if (formatContent === '#dk') {
+                    const attachMessage = {
+                        text: 'Vui lòng chọn vai trò đăng kí:',
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Tôi là phụ huynh',
+                                        payload: '#dkph',
+                                        type: 'oa.query.hide',
                                     },
-                                    type: 'oa.open.url',
-                                },
-                            ],
+                                    {
+                                        title: 'Con là học sinh',
+                                        payload: '#dkph',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
                         },
-                    },
-                };
+                    };
 
-                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                }
             }
         }
     } catch (err) {
