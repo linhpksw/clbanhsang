@@ -25,21 +25,18 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     return zaloIdArr;
 }
 
-async function sendMessage2Assistant(accessToken, managerColl, classId, forwardContent) {
-    const cursor = managerColl.find(
-        { 'classes.classId': classId },
-        { projection: { _id: 0, zaloUserId: 1 } }
+async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
+    const { assistants } = await classInfoColl.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0, assistants: 1 } }
     );
 
-    let zaloAssistantIdArr = [];
-    await cursor.forEach((v) => {
-        zaloAssistantIdArr.push(v.zaloUserId);
-    });
+    for (let i = 0; i < assistants.length; i++) {
+        const assistant = assistants[i];
+        const { taZaloId } = assistant;
 
-    for (let i = 0; i < zaloAssistantIdArr.length; i++) {
-        const zaloAssistantId = zaloAssistantIdArr[i];
-
-        await ZaloAPI.sendMessage(accessToken, zaloAssistantId, forwardContent);
+        await ZaloAPI.sendMessage(accessToken, taZaloId, forwardContent);
     }
 }
 
@@ -111,7 +108,7 @@ async function forwardMessage2Assistant(
     zaloUserId,
     messageId,
     zaloColl,
-    managerColl,
+    classInfoColl,
     content,
     localeTimeStamp
 ) {
@@ -134,7 +131,7 @@ async function forwardMessage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardContent = `${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
-            await sendMessage2Assistant(accessToken, managerColl, zaloClassId, forwardContent);
+            await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
             await res.send('Done');
 
@@ -143,14 +140,14 @@ async function forwardMessage2Assistant(
     }
 }
 
-async function isManager(zaloUserId, managerColl) {
+async function isManager(zaloUserId, classInfoColl) {
     const result = await MongoDB.findOneUser(
-        managerColl,
-        { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, status: 1 } }
+        classInfoColl,
+        { 'assistants.taZaloId': `${zaloUserId}` },
+        { projection: { _id: 0 } }
     );
 
-    if (result === null || result.status !== 'On') {
+    if (result === null) {
         return false;
     }
 
@@ -177,83 +174,62 @@ async function isFollow(res, accessToken, zaloUserId, zaloColl) {
     return true;
 }
 
-async function signUp4Assistant(res, accessToken, zaloUserId, managerColl, zaloColl, content, messageId) {
+async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloColl, content, messageId) {
     if (content.length < 24) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
-        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
+        sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
         return;
     }
 
-    const [syntax, classId, phone, ...splitName] = content.split(' ');
+    const [syntax, classId, taPhone, ...splitName] = content.split(' ');
 
-    const name = splitName.join(' ');
+    const taName = splitName.join(' ');
 
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
-        managerColl,
-        { phone: phone },
-        { projection: { _id: 0 } }
+        classInfoColl,
+        { 'assistants.phone': taPhone, classId: classId },
+        { projection: { _id: 0, assistants: 1 } }
     );
 
+    console.log(isAssistantExist);
+
     // Neu chua ton tai thi tao moi
+
     if (isAssistantExist === null) {
         // Cap nhat tag tren Zalo OA Chat
         await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Trợ giảng');
         await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
 
-        MongoDB.insertOneUser(managerColl, {
-            zaloUserId: zaloUserId,
-            role: 'Trợ giảng',
-            status: 'On',
-            name: name,
-            phone: phone,
-            classes: [{ classId: classId }],
-        });
+        MongoDB.updateOneUser(
+            classInfoColl,
+            { 'assistants.phone': taPhone, classId: classId },
+            {
+                $push: {
+                    assistants: {
+                        taName: taName,
+                        taPhone: taPhone,
+                        taZaloId: taZaloId,
+                    },
+                },
+            }
+        );
 
-        MongoDB.updateOneUser(zaloColl, { zaloUserId: zaloUserId }, { $set: { userPhone: phone } });
+        MongoDB.updateOneUser(zaloColl, { zaloUserId: taZaloId }, { $set: { userPhone: taPhone } });
 
-        const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
+        const successContent = `✅ Đăng kí thành công cho trợ giảng ${taName} với mã lớp ${classId} và số điện thoại ${taPhone}.`;
 
-        await sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
+        await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
 
         return;
     } else {
         // Neu ton tai roi thi:
-        // check xem tro giang da dang ki voi lop nay chua
-        const isRegisterWithAssistant = await MongoDB.findOneUser(
-            managerColl,
-            { phone: phone, 'classes.classId': classId },
-            { projection: { _id: 0 } }
-        );
 
-        // Neu chua dang ki thi them vao
-        if (isRegisterWithAssistant === null) {
-            await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
-            MongoDB.updateOneUser(
-                managerColl,
-                { phone: phone },
-                {
-                    $push: {
-                        classes: {
-                            classId: classId,
-                        },
-                    },
-                }
-            );
-            const successContent = `✅ Đăng kí thành công cho trợ giảng ${name} với mã lớp ${classId} và số điện thoại ${phone}.`;
+        const failContent = `❌ Đăng kí thất bại vì trợ giảng ${taName} đã liên kết với mã lớp ${classId}.`;
 
-            await sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
+        await sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
 
-            return;
-        } else {
-            // Neu dang ki roi thi gui message loi ve
-
-            const failContent = `❌ Đăng kí thất bại vì trợ giảng ${name} đã liên kết với mã lớp ${classId}.`;
-
-            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
-
-            return;
-        }
+        return;
     }
 }
 
@@ -261,21 +237,21 @@ async function deleteAccount(
     res,
     formatContent,
     accessToken,
-    zaloAssistantId,
+    taZaloId,
     zaloColl,
-    managerColl,
+    classInfoColl,
     messageId,
     zaloRole
 ) {
     // Check xem co phai do Tro giang nhan khong
-    if (!(await isManager(zaloAssistantId, managerColl))) {
+    if (!(await isManager(taZaloId, classInfoColl))) {
         res.send('Done!');
         return;
     }
 
     if (formatContent.length !== 20) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
-        sendResponse2Client(res, accessToken, zaloAssistantId, messageId, failContent, 'sad');
+        sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
         return;
     }
 
@@ -305,7 +281,7 @@ async function deleteAccount(
 
     const successContent = `🗑️ Xoá thành công tài khoản ${registerPhone} được đăng kí với học sinh ${targetStudentId}.`;
 
-    await sendResponse2Client(res, accessToken, zaloAssistantId, messageId, successContent, 'heart');
+    await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
 
     return;
 }

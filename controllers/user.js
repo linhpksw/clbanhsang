@@ -39,7 +39,7 @@ export const userRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
-        const managerColl = db.collection('managers');
+        const classInfoColl = db.collection('classInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -87,7 +87,7 @@ export const userRequest = async (req, res) => {
             // Check xem tha tym den OA co tu phia Tro giang khong
             zaloUserId = webhook.sender.id;
 
-            if (!(await Tools.isManager(zaloUserId, managerColl))) {
+            if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
                 res.send('Done!');
                 return;
             } else {
@@ -143,7 +143,7 @@ export const userRequest = async (req, res) => {
                     accessToken,
                     zaloUserId,
                     zaloColl,
-                    managerColl,
+                    classInfoColl,
                     messageId,
                     'Phụ huynh'
                 );
@@ -154,7 +154,7 @@ export const userRequest = async (req, res) => {
                     accessToken,
                     zaloUserId,
                     zaloColl,
-                    managerColl,
+                    classInfoColl,
                     messageId,
                     'Học sinh'
                 );
@@ -163,7 +163,7 @@ export const userRequest = async (req, res) => {
                     res,
                     accessToken,
                     zaloUserId,
-                    managerColl,
+                    classInfoColl,
                     zaloColl,
                     content,
                     messageId
@@ -171,14 +171,14 @@ export const userRequest = async (req, res) => {
             } else if (!formatContent.includes('#')) {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
 
-                if (!(await Tools.isManager(zaloUserId, managerColl))) {
+                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
                     Tools.forwardMessage2Assistant(
                         res,
                         accessToken,
                         zaloUserId,
                         messageId,
                         zaloColl,
-                        managerColl,
+                        classInfoColl,
                         content,
                         localeTimeStamp
                     );

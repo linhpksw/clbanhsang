@@ -75,7 +75,7 @@ export const updateStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
-        const managerColl = db.collection('managers');
+        const classInfoColl = db.collection('classInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -110,7 +110,7 @@ export const updateStudentRequest = async (req, res) => {
 
         // await Tools.sendMessage2Assistant(
         //     accessToken,
-        //     managerColl,
+        //     classInfoColl,
         //     classId,
         //     successContent
         // );
@@ -170,7 +170,7 @@ export const deleteStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
-        const managerColl = db.collection('managers');
+        const classInfoColl = db.collection('classInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -207,7 +207,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         // await Tools.sendMessage2Assistant(
         //     accessToken,
-        //     managerColl,
+        //     classInfoColl,
         //     classId.slice(-6),
         //     successContent
         // );
@@ -263,10 +263,7 @@ export const updateClassRequest = async (req, res) => {
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
-        const tokenColl = db.collection('tokens');
         const classInfoColl = db.collection('classInfo');
-
-        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
@@ -292,11 +289,7 @@ export const updateClassRequest = async (req, res) => {
             subjects,
         } = webhook;
 
-        console.log(webhook);
-
         const totalSubject = subjects.split(' ,'); // loi format tu appsheet
-
-        console.log(totalSubject);
 
         const shortNameSubject2Full = {
             HH: 'Hình học',
@@ -308,20 +301,14 @@ export const updateClassRequest = async (req, res) => {
         const [subjectAbsentDay1, absentDates1] = absentSubject1.split('-');
         const [subjectAbsentDay2, absentDates2] = absentSubject2.split('-');
 
-        console.log([subjectAbsentDay1, absentDates1]);
-        console.log([subjectAbsentDay2, absentDates2]);
-
         const absentDay = {
             [subjectAbsentDay1]: absentDates1 === '' ? null : absentDates1.split(', '),
             [subjectAbsentDay2]: absentDates2 === '' ? null : absentDates2.split(', '),
         };
 
-        console.log(absentDay);
-
         const newSubjects = totalSubject.map((subject) => {
             const [subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd] = subject.split('-');
 
-            console.log([subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd]);
             const subjectAbsent = absentDay[subjectDay];
 
             return {
