@@ -272,13 +272,32 @@ export const updateClassRequest = async (req, res) => {
 
         const webhook = req.body;
 
-        console.log(webhook);
+        for (const property in webhook) {
+            if (webhook[property] == '') {
+                webhook[property] = null;
+            }
+        }
 
-        // for (const property in webhook) {
-        //     if (webhook[property] == '') {
-        //         webhook[property] = null;
-        //     }
-        // }
+        const {
+            classId,
+            className,
+            room,
+            description,
+            status,
+            currentTerm,
+            totalDate,
+            tuition,
+            startTerm,
+            endTerm,
+            absentSubject1,
+            absentSubject2,
+            taEmail,
+            subjects,
+            assistants,
+        } = webhook;
+
+        console.log(subjects);
+        console.log(assistants);
 
         res.send('Success');
     } catch (err) {

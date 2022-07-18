@@ -7,6 +7,5 @@ router.put('/update', AppSheet.updateStudentRequest);
 router.put('/delete', AppSheet.deleteStudentRequest);
 
 router.put('/updateClass', AppSheet.updateClassRequest);
-router.put('/updateTeacher', AppSheet.updateClassRequest);
 
 export default router;
