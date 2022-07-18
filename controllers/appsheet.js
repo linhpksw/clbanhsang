@@ -294,6 +294,8 @@ export const updateClassRequest = async (req, res) => {
             assistants,
         } = webhook;
 
+        console.log(webhook);
+
         const totalSubject = subjects.split(', ');
 
         const shortNameSubject2Full = {
@@ -340,6 +342,7 @@ export const updateClassRequest = async (req, res) => {
         };
 
         const newDoc = {
+            className: className,
             room: room,
             description: description,
             status: status,
