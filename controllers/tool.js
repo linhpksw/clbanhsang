@@ -26,7 +26,7 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
 }
 
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
-    const { assistants } = await classInfoColl.findOneUser(
+    const { assistants } = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },
         { projection: { _id: 0, assistants: 1 } }
