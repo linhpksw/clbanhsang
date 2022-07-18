@@ -188,11 +188,9 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
         classInfoColl,
-        { 'assistants.phone': taPhone, classId: classId },
+        { 'assistants.taPhone': taPhone, classId: classId },
         { projection: { _id: 0, assistants: 1 } }
     );
-
-    console.log(isAssistantExist);
 
     // Neu chua ton tai thi tao moi
 
