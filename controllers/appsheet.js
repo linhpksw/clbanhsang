@@ -289,9 +289,7 @@ export const updateClassRequest = async (req, res) => {
             endTerm,
             absentSubject1,
             absentSubject2,
-            taEmail,
             subjects,
-            assistants,
         } = webhook;
 
         console.log(webhook);
@@ -304,9 +302,6 @@ export const updateClassRequest = async (req, res) => {
             SH: 'Số học',
             GT: 'Giải tích',
         };
-
-        console.log(absentSubject1);
-        console.log(absentSubject2);
 
         const [subjectAbsentDay1, absentDates1] = absentSubject1.split('-');
         const [subjectAbsentDay2, absentDates2] = absentSubject2.split('-');
@@ -331,16 +326,6 @@ export const updateClassRequest = async (req, res) => {
             };
         });
 
-        const [taName, taPhone, taStatus] = assistants.split('-');
-
-        const newAssistants = {
-            name: taName,
-            email: taEmail,
-            phone: taPhone,
-            status: taStatus,
-            zaloId: null,
-        };
-
         const newDoc = {
             className: className,
             room: room,
@@ -351,7 +336,6 @@ export const updateClassRequest = async (req, res) => {
             tuition: tuition,
             startTerm: startTerm,
             endTerm: endTerm,
-            assistants: newAssistants,
             subjects: newSubjects,
         };
 
