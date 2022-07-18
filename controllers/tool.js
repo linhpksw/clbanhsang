@@ -201,9 +201,9 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
         await ZaloAPI.tagFollower(accessToken, taZaloId, 'Trợ giảng');
         await ZaloAPI.tagFollower(accessToken, taZaloId, classId);
 
-        MongoDB.updateOneUser(
+        await MongoDB.updateOneUser(
             classInfoColl,
-            { 'assistants.phone': taPhone, classId: classId },
+            { classId: classId },
             {
                 $push: {
                     assistants: {
