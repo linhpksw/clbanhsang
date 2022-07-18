@@ -294,7 +294,9 @@ export const updateClassRequest = async (req, res) => {
 
         console.log(webhook);
 
-        const totalSubject = subjects.split(', ');
+        const totalSubject = subjects.split(' ,'); // loi format tu appsheet
+
+        console.log(totalSubject);
 
         const shortNameSubject2Full = {
             HH: 'Hình học',
@@ -306,14 +308,20 @@ export const updateClassRequest = async (req, res) => {
         const [subjectAbsentDay1, absentDates1] = absentSubject1.split('-');
         const [subjectAbsentDay2, absentDates2] = absentSubject2.split('-');
 
+        console.log([subjectAbsentDay1, absentDates1]);
+        console.log([subjectAbsentDay2, absentDates2]);
+
         const absentDay = {
             [subjectAbsentDay1]: absentDates1 === '' ? null : absentDates1.split(', '),
             [subjectAbsentDay2]: absentDates2 === '' ? null : absentDates2.split(', '),
         };
 
+        console.log(absentDay);
+
         const newSubjects = totalSubject.map((subject) => {
             const [subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd] = subject.split('-');
 
+            console.log([subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd]);
             const subjectAbsent = absentDay[subjectDay];
 
             return {
