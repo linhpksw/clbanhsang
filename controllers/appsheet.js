@@ -303,6 +303,9 @@ export const updateClassRequest = async (req, res) => {
             GT: 'Giải tích',
         };
 
+        console.log(absentSubject1);
+        console.log(absentSubject2);
+
         const [subjectAbsentDay1, absentDates1] = absentSubject1.split('-');
         const [subjectAbsentDay2, absentDates2] = absentSubject2.split('-');
 
