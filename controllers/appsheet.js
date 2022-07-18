@@ -258,3 +258,31 @@ export const deleteStudentRequest = async (req, res) => {
     } finally {
     }
 };
+
+export const updateClassRequest = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
+        const zaloColl = db.collection('zaloUsers');
+        const managerColl = db.collection('managers');
+
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        const webhook = req.body;
+
+        console.log(webhook);
+
+        // for (const property in webhook) {
+        //     if (webhook[property] == '') {
+        //         webhook[property] = null;
+        //     }
+        // }
+
+        res.send('Success');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
