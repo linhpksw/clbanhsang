@@ -264,9 +264,7 @@ export const updateClassRequest = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
-        const classColl = db.collection('classUsers');
-        const zaloColl = db.collection('zaloUsers');
-        const managerColl = db.collection('managers');
+        const classInfoColl = db.collection('classInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -296,8 +294,62 @@ export const updateClassRequest = async (req, res) => {
             assistants,
         } = webhook;
 
-        console.log(subjects);
-        console.log(assistants);
+        const totalSubject = subjects.split(', ');
+
+        const shortNameSubject2Full = {
+            HH: 'Hình học',
+            ĐS: 'Đại số',
+            SH: 'Số học',
+            GT: 'Giải tích',
+        };
+
+        const [subjectAbsentDay1, absentDates1] = absentSubject1.split('-');
+        const [subjectAbsentDay2, absentDates2] = absentSubject2.split('-');
+
+        const absentDay = {
+            [subjectAbsentDay1]: absentDates1 === '' ? null : absentDates1.split(', '),
+            [subjectAbsentDay2]: absentDates2 === '' ? null : absentDates2.split(', '),
+        };
+
+        const newSubjects = totalSubject.map((subject) => {
+            const [subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd] = subject.split('-');
+
+            const subjectAbsent = absentDay[subjectDay];
+
+            return {
+                name: shortNameSubject2Full[subjectName],
+                teacher: subjectTeacher,
+                day: subjectDay,
+                start: subjectStart,
+                end: subjectEnd,
+                absent: subjectAbsent,
+            };
+        });
+
+        const [taName, taPhone, taStatus] = assistants.split('-');
+
+        const newAssistants = {
+            name: taName,
+            email: taEmail,
+            phone: taPhone,
+            status: taStatus,
+            zaloId: null,
+        };
+
+        const newDoc = {
+            room: room,
+            description: description,
+            status: status,
+            currentTerm: currentTerm,
+            totalDate: totalDate,
+            tuition: tuition,
+            startTerm: startTerm,
+            endTerm: endTerm,
+            assistants: newAssistants,
+            subjects: newSubjects,
+        };
+
+        MongoDB.updateOneUser(classInfoColl, { classId: classId }, { $set: newDoc });
 
         res.send('Success');
     } catch (err) {
