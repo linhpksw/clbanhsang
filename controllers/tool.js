@@ -198,8 +198,8 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
 
     if (isAssistantExist === null) {
         // Cap nhat tag tren Zalo OA Chat
-        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Trợ giảng');
-        await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
+        await ZaloAPI.tagFollower(accessToken, taZaloId, 'Trợ giảng');
+        await ZaloAPI.tagFollower(accessToken, taZaloId, classId);
 
         MongoDB.updateOneUser(
             classInfoColl,
