@@ -115,8 +115,12 @@ export const userRequest = async (req, res) => {
 
                 // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+
                 res.send('Done!');
                 return;
+            } else {
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
             }
 
             if (formatContent.includes('dkph')) {

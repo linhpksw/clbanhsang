@@ -143,7 +143,7 @@ async function forwardMessage2Assistant(
 async function isManager(zaloUserId, classInfoColl) {
     const result = await MongoDB.findOneUser(
         classInfoColl,
-        { 'assistants.taZaloId': `${zaloUserId}` },
+        { 'assistants.taZaloId': zaloUserId },
         { projection: { _id: 0 } }
     );
 
