@@ -224,7 +224,7 @@ export const userRequest = async (req, res) => {
                     }
                 }
             } else if (formatContent.includes('#')) {
-                if (formatContent === '#ttcl') {
+                if (content === '#TTCL') {
                     const attachMessage = {
                         text: 'Hiện tại lớp toán đang mở cả 3 khối 10, 11 và 12. Phụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
@@ -252,9 +252,9 @@ export const userRequest = async (req, res) => {
                     };
 
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-                } else if (formatContent === '#k10') {
+                } else if (formatContent === '#K10') {
                     const attachMessage = {
-                        text: `Năm học 2022-2023 CLB Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
                             type: 'template',
                             payload: {
@@ -275,6 +275,35 @@ export const userRequest = async (req, res) => {
                     };
 
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                } else if (content.substring(0, 4) === '#TT20' && content.length === 9) {
+                    // #TT2007A0
+                    const classId = content.substring(-6);
+
+                    const classInfo = await MongoDB.findOneUser(
+                        classInfoColl,
+                        { classId: classId },
+                        { projection: { _id: 0 } }
+                    );
+
+                    const {
+                        className,
+                        room,
+                        description,
+                        status,
+                        currentTerm,
+                        totalDate,
+                        tuition,
+                        startTerm,
+                        endTerm,
+                        assistants,
+                        subjects,
+                    } = classInfo;
+
+                    console.log(classInfo);
+
+                    // const message = `Mã lớp: `;
+
+                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
                 }
             }
         }
