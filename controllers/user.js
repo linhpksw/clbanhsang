@@ -224,21 +224,26 @@ export const userRequest = async (req, res) => {
                     }
                 }
             } else if (formatContent.includes('#')) {
-                if (formatContent === '#dk') {
+                if (formatContent === '#TTCL') {
                     const attachMessage = {
-                        text: 'Vui lòng chọn vai trò đăng kí:',
+                        text: 'Hiện tại lớp toán đang mở cả 3 khối 10, 11 và 12. Phụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
-                                        title: 'Tôi là phụ huynh',
-                                        payload: '#dkph',
+                                        title: 'Khối 12',
+                                        payload: '#k12',
                                         type: 'oa.query.hide',
                                     },
                                     {
-                                        title: 'Con là học sinh',
-                                        payload: '#dkph',
+                                        title: 'Khối 11',
+                                        payload: '#k11',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Khối 10',
+                                        payload: '#k10',
                                         type: 'oa.query.hide',
                                     },
                                 ],
