@@ -314,7 +314,7 @@ export const userRequest = async (req, res) => {
 
                               return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
                           })
-                        : `Trợ giảng:\nĐiện thoại:`;
+                        : [`Trợ giảng:\nĐiện thoại:`];
 
                     const subjectInfo = subjects.map((v, i) => {
                         const { name, teacher, day, start, end, absent } = v;
