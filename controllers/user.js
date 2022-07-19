@@ -329,11 +329,9 @@ ${assistantInfo.join(`\n`)}
 ${subjectInfo.join(`\n`)}
 ---------------
 Đợt hiện tại: ${currentTerm}
+Tổng số buổi: ${totalDate}
 Bắt đầu đợt: ${startTerm}
 Kết thúc đợt: ${endTerm}
----------------
-Tổng số buổi: ${totalDate}
-Số buổi hiện tại: ??
 ---------------
 Học phí mỗi buổi: ${tuition}`;
 
