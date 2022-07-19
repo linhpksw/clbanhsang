@@ -83,6 +83,7 @@ export const userRequest = async (req, res) => {
         } else if (eventName === 'unfollow') {
             zaloUserId = webhook.follower.id;
 
+            await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
             await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
             MongoDB.updateOneUser(
