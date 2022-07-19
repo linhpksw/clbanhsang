@@ -282,6 +282,10 @@ export const userRequest = async (req, res) => {
                     const classId = content.substring(-6);
                     console.log(classId);
 
+                    res.send('Done!');
+
+                    return;
+
                     const classInfo = await MongoDB.findOneUser(
                         classInfoColl,
                         { classId: classId },
