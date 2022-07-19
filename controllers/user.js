@@ -57,10 +57,10 @@ export const userRequest = async (req, res) => {
             const isExistInZaloColl = await MongoDB.findOneUser(
                 zaloColl,
                 { zaloUserId: `${zaloUserId}` },
-                { projection: { _id: 0, displayName: 1 } }
+                { projection: { _id: 0, userPhone: 1 } }
             );
 
-            if (isExistInZaloColl === null) {
+            if (isExistInZaloColl.userPhone === null) {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
                 console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
