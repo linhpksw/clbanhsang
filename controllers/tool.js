@@ -154,7 +154,7 @@ async function isManager(zaloUserId, classInfoColl) {
     return true;
 }
 
-async function isFollow(res, accessToken, zaloUserId, zaloColl) {
+async function isFollow(zaloUserId, zaloColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
@@ -162,12 +162,6 @@ async function isFollow(res, accessToken, zaloUserId, zaloColl) {
     );
 
     if (result === null || result.status === 'unfollow') {
-        const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
-
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-        res.send('Done!');
-
         return false;
     }
 

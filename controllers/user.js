@@ -48,7 +48,7 @@ export const userRequest = async (req, res) => {
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;
 
-            await Tools.isFollow(res, accessToken, zaloUserId, zaloColl);
+            await Tools.isFollow(zaloUserId, zaloColl);
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
 
@@ -111,6 +111,11 @@ export const userRequest = async (req, res) => {
 
             // Check xem nguoi dung da follow OA chua
             if (!(await Tools.isFollow(res, accessToken, zaloUserId, zaloColl))) {
+                // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+
+                // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                res.send('Done!');
                 return;
             }
 
