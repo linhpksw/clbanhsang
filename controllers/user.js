@@ -277,7 +277,7 @@ export const userRequest = async (req, res) => {
                     };
 
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-                } else if (content.substring(0, 4) === '#TT20' && content.length === 9) {
+                } else if (content.substring(0, 5) === '#TT20' && content.length === 9) {
                     // #TT2007A0
                     const classId = content.substring(-6);
                     console.log(classId);
