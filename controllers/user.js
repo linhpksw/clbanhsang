@@ -308,27 +308,29 @@ export const userRequest = async (req, res) => {
                         subjects,
                     } = classInfo;
 
-                    const assistantInfo = assistants.length
-                        ? assistants.map((v) => {
-                              const { taName, taPhone, taZaloId } = v;
+                    const assistantInfo = assistants
+                        .map((v) => {
+                            const { taName, taPhone, taZaloId } = v;
 
-                              return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
-                          })
-                        : [`Trợ giảng:\nĐiện thoại:`];
+                            return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
+                        })
+                        .join(`\n`);
 
-                    const subjectInfo = subjects.map((v, i) => {
-                        const { name, teacher, day, start, end, absent } = v;
+                    const subjectInfo = subjects
+                        .map((v, i) => {
+                            const { name, teacher, day, start, end, absent } = v;
 
-                        return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
-                    });
+                            return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
+                        })
+                        .join(`\n`);
 
                     const message = `Mã lớp: ${classId}
 Tên lớp: ${className}
 Phòng học: ${room}
 ------------------------------
-${assistantInfo.join(`\n`)}
+${assistants.length ? assistantInfo : `Trợ giảng:\nĐiện thoại:`}
 ------------------------------
-${subjectInfo.join(`\n`)}
+${subjectInfo}
 ------------------------------
 Đợt hiện tại: ${currentTerm}
 Tổng số buổi: ${totalDate}
