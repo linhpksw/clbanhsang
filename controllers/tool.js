@@ -157,7 +157,7 @@ async function isManager(zaloUserId, classInfoColl) {
 async function isFollow(zaloUserId, zaloColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
-        { zaloUserId: `${zaloUserId}` },
+        { zaloUserId: zaloUserId },
         { projection: { _id: 0, status: 1 } }
     );
 

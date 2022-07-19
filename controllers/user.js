@@ -110,7 +110,7 @@ export const userRequest = async (req, res) => {
             const formatContent = Tools.nomarlizeSyntax(content);
 
             // Check xem nguoi dung da follow OA chua
-            if (!(await Tools.isFollow(res, accessToken, zaloUserId, zaloColl))) {
+            if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
                 // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
                 // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
