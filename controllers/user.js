@@ -60,7 +60,7 @@ export const userRequest = async (req, res) => {
                 { projection: { _id: 0, userPhone: 1 } }
             );
 
-            if (isExistInZaloColl.userPhone === null) {
+            if (isExistInZaloColl === null) {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
                 console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
@@ -74,7 +74,13 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { $set: { status: 'follow' } }
                 );
-                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+
+                if (isExistInZaloColl.userPhone === null) {
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+                } else {
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+                }
 
                 console.log('Nguời dùng quan tâm trở lại');
             }
