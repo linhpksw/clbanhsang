@@ -254,10 +254,7 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
                 } else if (formatContent === '#k10') {
                     const attachMessage = {
-                        text: `Năm học 2022-2023 CLB Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả
-                        thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên
-                        tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp
-                        10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        text: `Năm học 2022-2023 CLB Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
                             type: 'template',
                             payload: {
