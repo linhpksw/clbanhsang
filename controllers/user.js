@@ -64,6 +64,7 @@ export const userRequest = async (req, res) => {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
                 console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                 await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
@@ -73,6 +74,7 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { $set: { status: 'follow' } }
                 );
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
 
                 console.log('Nguời dùng quan tâm trở lại');
             }
