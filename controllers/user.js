@@ -308,11 +308,13 @@ export const userRequest = async (req, res) => {
                         subjects,
                     } = classInfo;
 
-                    const assistantInfo = assistants.map((v) => {
-                        const { taName, taPhone, taZaloId } = v;
+                    const assistantInfo = assistants.length
+                        ? assistants.map((v) => {
+                              const { taName, taPhone, taZaloId } = v;
 
-                        return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
-                    });
+                              return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
+                          })
+                        : `Trợ giảng:\nĐiện thoại:`;
 
                     const subjectInfo = subjects.map((v, i) => {
                         const { name, teacher, day, start, end, absent } = v;
@@ -323,16 +325,16 @@ export const userRequest = async (req, res) => {
                     const message = `Mã lớp: ${classId}
 Tên lớp: ${className}
 Phòng học: ${room}
----------------
+------------------------------
 ${assistantInfo.join(`\n`)}
----------------
+------------------------------
 ${subjectInfo.join(`\n`)}
----------------
+------------------------------
 Đợt hiện tại: ${currentTerm}
 Tổng số buổi: ${totalDate}
 Bắt đầu đợt: ${startTerm}
 Kết thúc đợt: ${endTerm}
----------------
+------------------------------
 Học phí mỗi buổi: ${tuition}`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
