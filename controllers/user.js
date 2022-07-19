@@ -48,7 +48,9 @@ export const userRequest = async (req, res) => {
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;
 
-            await Tools.isFollow(zaloUserId, zaloColl);
+            if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
+                ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+            }
         } else if (eventName === 'follow') {
             zaloUserId = webhook.follower.id;
 
@@ -61,6 +63,8 @@ export const userRequest = async (req, res) => {
             if (isExistInZaloColl === null) {
                 const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
                 console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
+
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
                 MongoDB.insertOneUser(zaloColl, profileDoc);
             } else {
@@ -76,6 +80,8 @@ export const userRequest = async (req, res) => {
             res.send('Done!');
         } else if (eventName === 'unfollow') {
             zaloUserId = webhook.follower.id;
+
+            await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
             MongoDB.updateOneUser(
                 zaloColl,
@@ -119,8 +125,6 @@ export const userRequest = async (req, res) => {
 
                 res.send('Done!');
                 return;
-            } else {
-                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
             }
 
             if (formatContent.includes('dkph')) {
