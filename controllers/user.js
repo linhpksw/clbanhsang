@@ -323,22 +323,21 @@ export const userRequest = async (req, res) => {
                     });
 
                     const message = `Mã lớp: ${classId}
-                    Tên lớp: ${className}
-                    Phòng học: ${room}
-                    ---------------
-                    ${assistantInfo.join(`\n`)}
-                    ---------------
-                    ${subjectInfo.join(`\n`)}
-                    ---------------
-                    Đợt hiện tại: ${currentTerm}
-                    Bắt đầu đợt: ${startTerm}
-                    Kết thúc đợt: ${endTerm}
-                    ---------------
-                    Tổng số buổi: ${totalDate}
-                    Số buổi hiện tại: ??
-                    ---------------
-                    Học phí mỗi buổi: ${tuition}
-                    `;
+Tên lớp: ${className}
+Phòng học: ${room}
+---------------
+${assistantInfo.join(`\n`)}
+---------------
+${subjectInfo.join(`\n`)}
+---------------
+Đợt hiện tại: ${currentTerm}
+Bắt đầu đợt: ${startTerm}
+Kết thúc đợt: ${endTerm}
+---------------
+Tổng số buổi: ${totalDate}
+Số buổi hiện tại: ??
+---------------
+Học phí mỗi buổi: ${tuition}`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 
