@@ -224,7 +224,7 @@ export const userRequest = async (req, res) => {
                     }
                 }
             } else if (formatContent.includes('#')) {
-                if (formatContent === '#TTCL') {
+                if (formatContent === '#ttcl') {
                     const attachMessage = {
                         text: 'Hiện tại lớp toán đang mở cả 3 khối 10, 11 và 12. Phụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
