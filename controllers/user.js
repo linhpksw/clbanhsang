@@ -311,15 +311,13 @@ export const userRequest = async (req, res) => {
                     const assistantInfo = assistants.map((v) => {
                         const { taName, taPhone, taZaloId } = v;
 
-                        return `Trợ giảng: ${taName}
-                        Điện thoại: ${taPhone}`;
+                        return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
                     });
 
                     const subjectInfo = subjects.map((v, i) => {
                         const { name, teacher, day, start, end, absent } = v;
 
-                        return `${i}) ${name}: ${teacher}
-                        - ${day}: ${start}-${end}`;
+                        return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
                     });
 
                     const message = `Mã lớp: ${classId}
