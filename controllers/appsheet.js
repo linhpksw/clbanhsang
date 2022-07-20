@@ -325,11 +325,11 @@ export const updateClassRequest = async (req, res) => {
 
         const newDoc = {
             className: className,
-            room: room,
+            room: parseInt(room),
             description: description,
             status: status,
             currentTerm: term,
-            totalDate: totalDate,
+            totalDate: parseInt(totalDate),
             tuition: tuition,
             startTerm: startTerm,
             endTerm: endTerm,
