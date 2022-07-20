@@ -7,21 +7,18 @@
         "terms": [
             {
                 "term": 1,
-                "tuitions": [
-                    {
-                        "term": 1,
-                        "start": "01/07/2022",
-                        "end": "30/07/2022",
-                        "total": 10,
-                        "study": 5,
-                        "absent": 5,
-                        "subject": "Đủ",
-                        "billing": 1000000,
-                        "payment": 900000,
-                        "remainder": -100000,
-                        "discount": null
-                    }
-                ],
+                "start": "01/07/2022",
+                "end": "30/07/2022",
+                "total": 10,
+                "study": 5,
+                "absent": 5,
+                "subject": "Đủ",
+                "billing": 1000000,
+                "payment": 900000,
+                "type": "CK",
+                "paidDate": "11/07/2022",
+                "remainder": -100000,
+                "alarm": 0,
                 "attendances": [
                     { "no": "Buổi 1", "date": "01/07/2022", "teacher": "Thầy Lâm" },
                     { "no": "Buổi 2", "date": "06/07/2022", "teacher": "Thầy Phương" }
