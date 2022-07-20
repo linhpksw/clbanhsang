@@ -277,7 +277,7 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                     res.send('Done!');
-                } else if (content.substring(0, 2) === '#K8') {
+                } else if (content === '#K8') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -304,7 +304,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content.substring(0, 2) === '#K9') {
+                } else if (content === '#K9') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -366,7 +366,7 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                     res.send('Done!');
-                } else if (content.substring(0, 2) === '#K10') {
+                } else if (content === '#K10') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -393,7 +393,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content.substring(0, 2) === '#K11') {
+                } else if (content === '#K11') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -420,7 +420,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content.substring(0, 2) === '#K12') {
+                } else if (content === '#K12') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
