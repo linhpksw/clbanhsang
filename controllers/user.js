@@ -433,7 +433,7 @@ export const userRequest = async (req, res) => {
                                         type: 'oa.query.hide',
                                     },
                                     {
-                                        title: 'Lớp 11A1 nâng cao',
+                                        title: 'Lớp 12A1 nâng cao',
                                         payload: '#TT2005A1',
                                         type: 'oa.query.hide',
                                     },
