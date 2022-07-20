@@ -162,7 +162,7 @@ async function notifyRole(res, accessToken, zaloUserId, zaloColl) {
     );
 
     if (result === null || result.students.length === 0) {
-        const message = 'Tính năng này chỉ dành cho PHHS đã đăng kí tài khoản tại lớp toán.';
+        const message = 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.';
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 
         res.send('Done!');

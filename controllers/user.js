@@ -190,22 +190,31 @@ export const userRequest = async (req, res) => {
                     content,
                     messageId
                 );
-            } else if (!formatContent.includes('#')) {
-                // Check xem tin nhan den OA co tu phia Tro giang khong
+            }
 
+            // Meu cu phap khong phai tra cuu
+            else if (!formatContent.includes('#')) {
+                // Check xem tin nhan den OA co tu phia Tro giang khong
+                // Neu tu phia phu huynh thi phan hoi lai cho tro giang
                 if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    Tools.forwardMessage2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        messageId,
-                        zaloColl,
-                        classInfoColl,
-                        content,
-                        localeTimeStamp
-                    );
-                } else {
-                    // Neu tu phia tro giang thi phan hoi lai cho phu huynh
+                    const keywords = ['DK'];
+
+                    // Kiem tra tin nhan khong nam trong Keyword moi phan hoi lai
+                    if (!keywords.includes(content)) {
+                        Tools.forwardMessage2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            messageId,
+                            zaloColl,
+                            classInfoColl,
+                            content,
+                            localeTimeStamp
+                        );
+                    }
+                }
+                // Neu tu phia tro giang thi phan hoi lai cho phu huynh
+                else {
                     const quoteMessageId = webhook.message.quote_msg_id || null;
 
                     if (quoteMessageId !== null) {
@@ -223,10 +232,16 @@ export const userRequest = async (req, res) => {
                         return;
                     }
                 }
-            } else if (formatContent.includes('#')) {
+            }
+
+            // Neu cu phap la tra cuu
+            else if (formatContent.includes('#')) {
                 /*  Cac tinh nang tra cuu */
+                // 1) Dang ki tai khoan
+                if (content === '#DK') {
+                }
                 // 1) Thong tin cac lop
-                if (content === '#TTCL') {
+                else if (content === '#TTCL') {
                     const attachMessage = {
                         text: 'Hiện tại lớp toán đang mở cả 2 khối THCS và THPT. Cụ thể khối THCS ôn luyện từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
