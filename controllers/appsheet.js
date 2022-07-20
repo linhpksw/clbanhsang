@@ -321,12 +321,14 @@ export const updateClassRequest = async (req, res) => {
             };
         });
 
+        const term = parseInt(currentTerm.split('D')[1]);
+
         const newDoc = {
             className: className,
             room: room,
             description: description,
             status: status,
-            currentTerm: currentTerm,
+            currentTerm: term,
             totalDate: totalDate,
             tuition: tuition,
             startTerm: startTerm,
