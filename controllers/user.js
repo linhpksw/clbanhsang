@@ -227,24 +227,19 @@ export const userRequest = async (req, res) => {
                 // Cac tinh nang tra cuu
                 if (content === '#TTCL') {
                     const attachMessage = {
-                        text: 'Hiện tại lớp toán đang mở cả 3 khối 10, 11 và 12. Phụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
+                        text: 'Hiện tại lớp toán đang mở cả 2 khối THCS và THPT. Cụ thể khối THCS ôn luyện từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
-                                        title: 'Khối 12',
-                                        payload: '#K12',
+                                        title: 'Khối THCS',
+                                        payload: '#THCS',
                                         type: 'oa.query.hide',
                                     },
                                     {
-                                        title: 'Khối 11',
-                                        payload: '#K11',
-                                        type: 'oa.query.hide',
-                                    },
-                                    {
-                                        title: 'Khối 10',
-                                        payload: '#K10',
+                                        title: 'Khối THPT',
+                                        payload: '#THPT',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -257,7 +252,121 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#K10') {
+                } else if (content === '#THCS') {
+                    const attachMessage = {
+                        text: 'Phụ huynh hãy chọn khối con muốn theo học?',
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Khối 8',
+                                        payload: '#K8',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Khối 9',
+                                        payload: '#K9',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+                } else if (content.substring(0, 2) === '#K8') {
+                    const attachMessage = {
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Lớp 8A0',
+                                        payload: '#TT2009A0',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Lớp 8A1',
+                                        payload: '#TT2009A1',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+
+                    return;
+                } else if (content.substring(0, 2) === '#K9') {
+                    const attachMessage = {
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Lớp 9A0 chuyên toán + chuyên tin',
+                                        payload: '#TT2008A0',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Lớp 9A1 chuyên toán + chuyên tin',
+                                        payload: '#TT2008A1',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Lớp 9A2 toán điều kiện và nâng cao',
+                                        payload: '#TT2008A2',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+
+                    return;
+                } else if (content === '#THPT') {
+                    const attachMessage = {
+                        text: 'Phụ huynh hãy chọn khối con muốn theo học?',
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Khối 10',
+                                        payload: '#K10',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Khối 11',
+                                        payload: '#K11',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Khối 12',
+                                        payload: '#K12',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+                } else if (content.substring(0, 2) === '#K10') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -266,12 +375,66 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Lớp 10A0 vận dụng cao',
-                                        payload: '#2007A0',
+                                        payload: '#TT2007A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Lớp 10A1 nâng cao',
-                                        payload: '#2007A1',
+                                        payload: '#TT2007A1',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+
+                    return;
+                } else if (content.substring(0, 2) === '#K11') {
+                    const attachMessage = {
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Lớp 11A0 vận dụng cao',
+                                        payload: '#TT2006A0',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Lớp 11A1 nâng cao',
+                                        payload: '#TT2006A1',
+                                        type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+
+                    return;
+                } else if (content.substring(0, 2) === '#K12') {
+                    const attachMessage = {
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Lớp 12A0 vận dụng cao',
+                                        payload: '#TT2005A0',
+                                        type: 'oa.query.hide',
+                                    },
+                                    {
+                                        title: 'Lớp 11A1 nâng cao',
+                                        payload: '#TT2005A1',
                                         type: 'oa.query.hide',
                                     },
                                 ],

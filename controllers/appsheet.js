@@ -289,8 +289,6 @@ export const updateClassRequest = async (req, res) => {
             subjects,
         } = webhook;
 
-        console.log(subjects);
-
         const totalSubject = subjects.split(' ,'); // loi format tu appsheet
 
         const shortNameSubject2Full = {
