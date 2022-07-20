@@ -459,7 +459,7 @@ export const userRequest = async (req, res) => {
                 else if (content === '#LDH') {
                     await Tools.notifyRole(res, accessToken, zaloUserId, zaloColl);
 
-                    const { students } = MongoDB.findOneUser(
+                    const { students } = await MongoDB.findOneUser(
                         zaloColl,
                         { zaloUserId: zaloUserId },
                         { projection: { _id: 0, students: 1 } }
