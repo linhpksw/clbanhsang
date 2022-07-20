@@ -497,8 +497,8 @@ ${subjectInfo}
 ------------------------------
 Đợt hiện tại: ${currentTerm}
 Tổng số buổi: ${totalDate}
-Bắt đầu đợt: ${startTerm}
-Kết thúc đợt: ${endTerm}
+Bắt đầu đợt: ${startTerm === null ? '' : startTerm}
+Kết thúc đợt: ${endTerm === null ? '' : endTerm}
 ------------------------------
 Học phí mỗi buổi: ${tuition}`;
 
