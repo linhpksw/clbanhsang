@@ -472,7 +472,7 @@ export const userRequest = async (req, res) => {
                     await Tools.sendClassInfo(res, accessToken, zaloUserId, classId);
                 } // 2) Thong tin lop đang hoc
                 else if (content === '#LDH') {
-                    await Tools.notifyRole(res, accessToken, zaloUserId, zaloColl);
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
                     const { students } = await MongoDB.findOneUser(
                         zaloColl,

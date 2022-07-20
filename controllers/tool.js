@@ -154,7 +154,7 @@ async function isManager(zaloUserId, classInfoColl) {
     return true;
 }
 
-async function notifyRole(res, accessToken, zaloUserId, zaloColl) {
+async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
@@ -162,8 +162,23 @@ async function notifyRole(res, accessToken, zaloUserId, zaloColl) {
     );
 
     if (result === null || result.students.length === 0) {
-        const message = 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.';
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+        const attachMessage = {
+            text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: 'Đăng kí tài khoản',
+                            payload: 'DKTK',
+                            type: 'oa.query.hide',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
         res.send('Done!');
 
@@ -512,6 +527,6 @@ export {
     findZaloIdFromStudentId,
     sendReactBack2Parent,
     deleteAccount,
-    notifyRole,
+    notifyRegister,
     sendClassInfo,
 };
