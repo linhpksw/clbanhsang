@@ -224,7 +224,8 @@ export const userRequest = async (req, res) => {
                     }
                 }
             } else if (formatContent.includes('#')) {
-                // Cac tinh nang tra cuu
+                /*  Cac tinh nang tra cuu */
+                // 1) Thong tin cac lop
                 if (content === '#TTCL') {
                     const attachMessage = {
                         text: 'Hiện tại lớp toán đang mở cả 2 khối THCS và THPT. Cụ thể khối THCS ôn luyện từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
@@ -252,7 +253,8 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#THCS') {
+                } // Thong tin khoi THCS
+                else if (content === '#THCS') {
                     const attachMessage = {
                         text: 'Phụ huynh hãy chọn khối con muốn theo học?',
                         attachment: {
@@ -336,7 +338,8 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#THPT') {
+                } // Thong tin khoi THPT
+                else if (content === '#THPT') {
                     const attachMessage = {
                         text: 'Phụ huynh hãy chọn khối con muốn theo học?',
                         attachment: {
@@ -451,62 +454,22 @@ export const userRequest = async (req, res) => {
                     // #TT2007A0
                     const classId = content.slice(-6);
 
-                    const classInfo = await MongoDB.findOneUser(
-                        classInfoColl,
-                        { classId: classId },
-                        { projection: { _id: 0 } }
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId);
+                } // 2) Thong tin lop đang hoc
+                else if (content === '#LDH') {
+                    await Tools.notifyRole(res, accessToken, zaloUserId, zaloColl);
+
+                    const { students } = MongoDB.findOneUser(
+                        zaloColl,
+                        { zaloUserId: zaloUserId },
+                        { projection: { _id: 0, students: 1 } }
                     );
 
-                    const {
-                        className,
-                        room,
-                        description,
-                        status,
-                        currentTerm,
-                        totalDate,
-                        tuition,
-                        startTerm,
-                        endTerm,
-                        assistants,
-                        subjects,
-                    } = classInfo;
+                    for (let i = 0; i < students.length; i++) {
+                        const { zaloStudentId, zaloClassId, alisaName, role } = students[i];
 
-                    const assistantInfo = assistants
-                        .map((v) => {
-                            const { taName, taPhone, taZaloId } = v;
-
-                            return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
-                        })
-                        .join(`\n`);
-
-                    const subjectInfo = subjects
-                        .map((v, i) => {
-                            const { name, teacher, day, start, end, absent } = v;
-
-                            return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
-                        })
-                        .join(`\n`);
-
-                    const message = `Mã lớp: ${classId}
-Tên lớp: ${className}
-Phòng học: ${room}
-------------------------------
-${assistants.length ? assistantInfo : `Trợ giảng:\nĐiện thoại:`}
-------------------------------
-${subjectInfo}
-------------------------------
-Đợt hiện tại: ${currentTerm}
-Tổng số buổi: ${totalDate}
-Bắt đầu đợt: ${startTerm === null ? '' : startTerm}
-Kết thúc đợt: ${endTerm === null ? '' : endTerm}
-------------------------------
-Học phí mỗi buổi: ${tuition}`;
-
-                    await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
-
-                    res.send('Done!');
-
-                    return;
+                        await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId);
+                    }
                 }
             }
         }

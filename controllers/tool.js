@@ -154,6 +154,82 @@ async function isManager(zaloUserId, classInfoColl) {
     return true;
 }
 
+async function notifyRole(res, accessToken, zaloUserId, zaloColl) {
+    const result = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: zaloUserId },
+        { projection: { _id: 0, students: 1 } }
+    );
+
+    if (result === null || result.students.length === 0) {
+        const message = 'Tính năng này chỉ dành cho PHHS đã đăng kí tài khoản tại lớp toán.';
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+        res.send('Done!');
+
+        return;
+    }
+}
+
+async function sendClassInfo(res, accessToken, zaloUserId, classId) {
+    const classInfo = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0 } }
+    );
+
+    const {
+        className,
+        room,
+        description,
+        status,
+        currentTerm,
+        totalDate,
+        tuition,
+        startTerm,
+        endTerm,
+        assistants,
+        subjects,
+    } = classInfo;
+
+    const assistantInfo = assistants
+        .map((v) => {
+            const { taName, taPhone, taZaloId } = v;
+
+            return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
+        })
+        .join(`\n`);
+
+    const subjectInfo = subjects
+        .map((v, i) => {
+            const { name, teacher, day, start, end, absent } = v;
+
+            return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
+        })
+        .join(`\n`);
+
+    const message = `Mã lớp: ${classId}
+Tên lớp: ${className}
+Phòng học: ${room}
+------------------------------
+${assistants.length ? assistantInfo : `Trợ giảng:\nĐiện thoại:`}
+------------------------------
+${subjectInfo}
+------------------------------
+Đợt hiện tại: ${currentTerm}
+Tổng số buổi: ${totalDate}
+Bắt đầu đợt: ${startTerm === null ? '' : startTerm}
+Kết thúc đợt: ${endTerm === null ? '' : endTerm}
+------------------------------
+Học phí mỗi buổi: ${tuition}`;
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+    res.send('Done!');
+
+    return;
+}
+
 async function isFollow(zaloUserId, zaloColl) {
     const result = await MongoDB.findOneUser(
         zaloColl,
@@ -436,4 +512,6 @@ export {
     findZaloIdFromStudentId,
     sendReactBack2Parent,
     deleteAccount,
+    notifyRole,
+    sendClassInfo,
 };
