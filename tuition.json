@@ -2,6 +2,32 @@
     {
         "studentId": 2004001,
         "classId": "2004A1",
-        "tuitions": [{ "term": 1 }]
+        "studentName": "Nguyễn Văn A",
+
+        "terms": [
+            {
+                "term": 1,
+                "tuitions": [
+                    {
+                        "term": 1,
+                        "start": "01/07/2022",
+                        "end": "30/07/2022",
+                        "total": 10,
+                        "study": 5,
+                        "absent": 5,
+                        "subject": "Đủ",
+                        "billing": 1000000,
+                        "payment": 900000,
+                        "remainder": -100000,
+                        "discount": null
+                    }
+                ],
+                "attendances": [
+                    { "no": "Buổi 1", "date": "01/07/2022", "teacher": "Thầy Lâm" },
+                    { "no": "Buổi 2", "date": "06/07/2022", "teacher": "Thầy Phương" }
+                ],
+                "absences": [{ "no": "Buổi 3", "date": "13/07/2022", "teacher": "Thầy Lâm" }]
+            }
+        ]
     }
 ]

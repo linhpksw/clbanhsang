@@ -469,7 +469,7 @@ export const userRequest = async (req, res) => {
                     // #TT2007A0
                     const classId = content.slice(-6);
 
-                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId);
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl);
                 } // 2) Thong tin lop đang hoc
                 else if (content === '#LDH') {
                     await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
