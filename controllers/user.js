@@ -197,7 +197,7 @@ export const userRequest = async (req, res) => {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
                 // Neu tu phia phu huynh thi phan hoi lai cho tro giang
                 if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const keywords = ['DKTK'];
+                    const keywords = ['DKTK', 'DC'];
 
                     // Kiem tra tin nhan khong nam trong Keyword moi phan hoi lai
                     if (!keywords.includes(content)) {
