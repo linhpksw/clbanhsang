@@ -171,7 +171,7 @@ async function notifyRole(res, accessToken, zaloUserId, zaloColl) {
     }
 }
 
-async function sendClassInfo(res, accessToken, zaloUserId, classId) {
+async function sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl) {
     const classInfo = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },

@@ -468,7 +468,7 @@ export const userRequest = async (req, res) => {
                     for (let i = 0; i < students.length; i++) {
                         const { zaloStudentId, zaloClassId, alisaName, role } = students[i];
 
-                        await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId);
+                        await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId, classInfoColl);
                     }
                 }
             }
