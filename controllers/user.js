@@ -519,6 +519,11 @@ export const updateRequest = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const studentInfoColl = db.collection('studentInfo');
 
+        console.log(typeof webhook);
+        console.log(webhook.length);
+
+        res.send('Done');
+        return;
         const {
             studentId,
             classId,
@@ -566,7 +571,13 @@ export const updateRequest = async (req, res) => {
             ],
         };
 
-        await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
+        // tim kiem tat ca du lieu dot x lop y
+        const cursor = studentInfoColl.find(
+            { classId: classId, 'terms.term': parseInt(term) },
+            { projection: { _id: 0 } }
+        );
+
+        // await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
 
         res.send('Done');
     } catch (err) {

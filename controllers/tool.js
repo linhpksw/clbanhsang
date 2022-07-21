@@ -129,7 +129,7 @@ async function forwardMessage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} ${zaloStudentId} ở lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
