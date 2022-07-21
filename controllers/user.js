@@ -586,15 +586,20 @@ export const updateRequest = async (req, res) => {
             return updateDoc;
         });
 
-        await MongoDB.insertManyToDB(studentInfoColl, updateStudentDocs);
+        const classId = updateStudentDocs[0].classId;
+        const term = updateStudentDocs[0].terms[0].term;
+
+        // await MongoDB.insertManyToDB(studentInfoColl, updateStudentDocs);
 
         // tim kiem tat ca du lieu dot x lop y
-        // const cursor = studentInfoColl.find(
-        //     { classId: classId, 'terms.term': parseInt(term) },
-        //     { projection: { _id: 0 } }
-        // );
+        const cursor = studentInfoColl.find(
+            { classId: classId, 'terms.term': parseInt(term) },
+            { projection: { _id: 0, studentId: 1 } }
+        );
 
-        // let studentTermData = await cursor.toArray();
+        let studentTermData = await cursor.toArray();
+
+        console.log(studentTermData);
 
         // await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
 
