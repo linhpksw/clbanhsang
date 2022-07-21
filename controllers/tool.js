@@ -1,6 +1,14 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+function removeVietNam(str) {
+    return str
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/Đ/g, 'D');
+}
+
 function formatDate(dateStr) {
     const date = new Date(dateStr);
 
@@ -556,4 +564,5 @@ export {
     createDate,
     formatDate,
     formatCurrency,
+    removeVietNam,
 };

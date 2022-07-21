@@ -539,7 +539,7 @@ export const userRequest = async (req, res) => {
                             absences,
                         } = terms[0];
 
-                        const content = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
+                        const tuitionInfoContent = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
 
 Bắt đầu đợt: ${Tools.formatDate(start)}
 Kết thúc đợt: ${Tools.formatDate(end)}
@@ -556,9 +556,34 @@ Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
 
 Hình thức nộp: ${type !== null ? type : ''}
 Ngày nộp: ${paidDate !== null ? paidDate : ''}
-Học phí thừa: ${remainder > 0 ? Tools.formatCurrency(remainder) : ''}`;
+Học phí thừa: ${remainder >= 0 ? Tools.formatCurrency(remainder) : ''}`;
 
-                        await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, tuitionInfoContent);
+
+                        const startTerm = new Date(term);
+                        const today = new Date();
+
+                        const difference = Math.round((today - startTerm) / 86400 / 1000);
+
+                        if (difference > 3 && payment === null) {
+                            const alarmPaymentContent = `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${Tools.formatCurrency(
+                                billing
+                            )} cho lớp toán ạ.
+
+Có 2 hình thức nộp học phí bao gồm:
+1) Nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng
+2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793
+
+* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} gửi biên lai ảnh xác nhận vào lại trang OA của lớp toán.`;
+
+                            await ZaloAPI.sendMessage(accessToken, zaloUserId, alarmPaymentContent);
+
+                            const syntaxPayment = `${Tools.removeVietNam(
+                                studentName
+                            )} ${studentId} HPD${term}}`;
+
+                            await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
+                        }
 
                         res.send('Done!');
 
