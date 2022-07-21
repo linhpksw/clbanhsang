@@ -510,7 +510,7 @@ export const userRequest = async (req, res) => {
                         const { currentTerm, className } = await MongoDB.findOneUser(
                             classInfoColl,
                             { classId: classId },
-                            { projection: { _id: 0, currentTerm: 1 } }
+                            { projection: { _id: 0, currentTerm: 1, className: 1 } }
                         );
 
                         const studentTermInfo = await MongoDB.findOneUser(
@@ -542,22 +542,20 @@ export const userRequest = async (req, res) => {
                         const content = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} thông tin học phí đợt ${term} như sau:
 
 Tình trạng: ${payment !== null ? '✅ Đã thu' : '❌ Chưa thu'}
-
-Học phí phải nộp: ${billing}
-${remainderBefore >= 0 ? 'Học phí thừa từ đợt trước' : 'Học phí thiếu từ đợt trước'}: ${remainderBefore}
-Học phí đã nộp: ${payment !== null ? payment : ''}
-Hình thức nộp tiền: ${type !== null ? type : ''}
-Ngày nộp tiền: ${paidDate !== null ? paidDate : ''}
-Học phí còn thừa: ${remainder > 0 ? remainder : ''}
-
-Đợt hiện tại: ${term}
-Bắt đầu đợt: ${start}
-Kết thúc đợt: ${end}
+Bắt đầu đợt: ${Tools.formatDate(start)}
+Kết thúc đợt: ${Tools.formatDate(end)}
 
 Buổi học: ${subject}
 Tổng số buổi trong đợt: ${total}
 Số buổi đi học: ${study}
-Số buổi vắng mặt: ${absent}`;
+Số buổi vắng mặt: ${absent}
+
+Học phí phải nộp: ${Tools.formatCurrency(billing)}
+Học phí thừa từ đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
+Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
+Hình thức nộp tiền: ${type !== null ? type : ''}
+Ngày nộp tiền: ${paidDate !== null ? paidDate : ''}
+Học phí còn thừa: ${remainder > 0 ? Tools.formatCurrency(remainder) : ''}`;
 
                         await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 

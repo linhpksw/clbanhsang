@@ -1,6 +1,16 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+function formatDate(dateStr) {
+    const date = new Date(dateStr);
+
+    return date.toLocaleDateString('vi-VN');
+}
+
+function formatCurrency(money) {
+    return `${Math.abs(money).toLocaleString('vi-VN')} đ`;
+}
+
 function nomarlizeSyntax(str) {
     return str
         .normalize('NFD')
@@ -544,4 +554,6 @@ export {
     notifyRegister,
     sendClassInfo,
     createDate,
+    formatDate,
+    formatCurrency,
 };
