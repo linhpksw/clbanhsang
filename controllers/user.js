@@ -630,7 +630,7 @@ export const updateRequest = async (req, res) => {
                     bulkWriteStudentInfo.push({
                         updateOne: {
                             filter: { studentId: studentId },
-                            update: { $push: doc.terms[0] }, // chi push dot dau tien
+                            update: { $push: { terms: doc.terms[0] } }, // chi push dot dau tien
                         },
                     });
                 }
