@@ -585,11 +585,15 @@ export const updateRequest = async (req, res) => {
             return updateDoc;
         });
 
+        console.log(updateStudentDocs);
+
         const classId = updateStudentDocs[0].classId;
         const term = updateStudentDocs[0].terms[0].term;
 
-        // await MongoDB.insertManyToDB(studentInfoColl, updateStudentDocs);
-        // tim kiem tat ca du lieu dot x lop y
+        console.log(classId);
+        console.log(term);
+
+        // tim kiem tat ca du lieu lop x dot y
         const cursor = studentInfoColl.find(
             { classId: classId, 'terms.term': parseInt(term) },
             { projection: { _id: 0, studentId: 1 } }
@@ -598,6 +602,8 @@ export const updateRequest = async (req, res) => {
         const studentTermData = (await cursor.toArray()).map((v) => {
             return v.studentId;
         });
+
+        console.log(studentTermData);
 
         let bulkWriteStudentInfo = [];
 
@@ -619,6 +625,8 @@ export const updateRequest = async (req, res) => {
                     { studentId: studentId },
                     { _id: 0, terms: 1 }
                 );
+
+                console.log(isExistTerm);
 
                 // Neu chua co dot nao thi tao dot moi
                 if (isExistTerm === null) {
