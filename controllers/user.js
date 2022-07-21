@@ -580,7 +580,7 @@ Có 2 hình thức nộp học phí bao gồm:
 
                             const syntaxPayment = `${Tools.removeVietNam(
                                 studentName
-                            )} ${studentId} HPD${term}}`;
+                            )} ${studentId} HPD${term}`;
 
                             await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
                         }
