@@ -541,6 +541,22 @@ export const updateRequest = async (req, res) => {
                 absences,
             } = v;
 
+            const newAttendances = attendances.map((v) => {
+                const { no, date, teacher } = v;
+
+                const newDate = Tools.createDate(date);
+
+                return { no, newDate, teacher };
+            });
+
+            const newAbsences = absences.map((v) => {
+                const { no, date, teacher } = v;
+
+                const newDate = Tools.createDate(date);
+
+                return { no, newDate, teacher };
+            });
+
             const updateDoc = {
                 studentId: studentId,
                 classId: classId,
@@ -549,8 +565,8 @@ export const updateRequest = async (req, res) => {
                 terms: [
                     {
                         term: parseInt(term),
-                        start: start,
-                        end: end,
+                        start: Tools.createDate(start),
+                        end: Tools.createDate(end),
                         total: total,
                         study: study,
                         absent: absent,
@@ -561,8 +577,8 @@ export const updateRequest = async (req, res) => {
                         type: type,
                         paidDate: paidDate,
                         remainder: remainder,
-                        attendances: attendances,
-                        absences: absences,
+                        attendances: newAttendances,
+                        absences: newAbsences,
                     },
                 ],
             };

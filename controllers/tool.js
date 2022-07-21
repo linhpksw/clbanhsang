@@ -11,6 +11,12 @@ function nomarlizeSyntax(str) {
         .replace(/\s+/g, '');
 }
 
+function createDate(dateStr) {
+    const [day, month, year] = dateStr.split('/');
+
+    return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+}
+
 async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     const cursor = zaloColl.find(
         { 'students.zaloStudentId': parseInt(zaloStudentId) },
@@ -529,4 +535,5 @@ export {
     deleteAccount,
     notifyRegister,
     sendClassInfo,
+    createDate,
 };
