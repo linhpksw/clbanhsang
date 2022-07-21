@@ -614,7 +614,7 @@ export const updateRequest = async (req, res) => {
             }
             // Neu chua thi kiem tra da co dot nao chua
             else {
-                const isExistTerm = await MongoDB.findOneUser(
+                const isExistTerm = MongoDB.findOneUser(
                     studentInfoColl,
                     { studentId: studentId },
                     { _id: 0, terms: 1 }
