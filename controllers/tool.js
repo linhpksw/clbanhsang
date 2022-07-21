@@ -31,6 +31,18 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     return zaloIdArr;
 }
 
+async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
+    const result = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: zaloUserId },
+        { projection: { _id: 0, students: 1 } }
+    );
+
+    const studentAndClassIdArr = result.map((v) => [v.zaloStudentId, v.zaloClassId]);
+
+    return studentAndClassIdArr;
+}
+
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
     const { assistants } = await MongoDB.findOneUser(
         classInfoColl,
@@ -531,6 +543,7 @@ export {
     sendMessageBack2Parent,
     sendMessage2Assistant,
     findZaloIdFromStudentId,
+    findStudentIdFromZaloId,
     sendReactBack2Parent,
     deleteAccount,
     notifyRegister,

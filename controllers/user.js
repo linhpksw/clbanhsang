@@ -40,6 +40,7 @@ export const userRequest = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
         const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -197,7 +198,7 @@ export const userRequest = async (req, res) => {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
                 // Neu tu phia phu huynh thi phan hoi lai cho tro giang
                 if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const keywords = ['DKTK', 'DC'];
+                    const keywords = ['dktk', 'dc'];
 
                     // Kiem tra tin nhan khong nam trong Keyword moi phan hoi lai
                     if (!keywords.includes(content)) {
@@ -238,10 +239,11 @@ export const userRequest = async (req, res) => {
             else if (formatContent.includes('#')) {
                 /*  Cac tinh nang tra cuu */
                 // 1) Dang ki tai khoan
-                if (content === '#DK') {
+                if (formatContent === '#dk') {
                 }
+
                 // 1) Thong tin cac lop
-                else if (content === '#TTCL') {
+                else if (formatContent === '#ttcl') {
                     const attachMessage = {
                         text: 'Hiện tại lớp toán đang mở cả 2 khối THCS và THPT. Cụ thể khối THCS ôn luyện từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
@@ -250,12 +252,12 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Khối THCS',
-                                        payload: '#THCS',
+                                        payload: '#thcs',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Khối THPT',
-                                        payload: '#THPT',
+                                        payload: '#thpt',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -268,22 +270,24 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } // Thong tin khoi THCS
-                else if (content === '#THCS') {
+                }
+
+                // Thong tin khoi THCS
+                else if (formatContent === '#thcs') {
                     const attachMessage = {
-                        text: 'Phụ huynh hãy chọn khối con muốn theo học?',
+                        text: 'Phụ huynh chọn khối con muốn theo học?',
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
                                         title: 'Khối 8',
-                                        payload: '#K8',
+                                        payload: '#k8',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Khối 9',
-                                        payload: '#K9',
+                                        payload: '#k9',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -294,7 +298,7 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                     res.send('Done!');
-                } else if (content === '#K8') {
+                } else if (formatContent === '#k8') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -303,12 +307,12 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Lớp 8A0',
-                                        payload: '#TT2009A0',
+                                        payload: '#tt2009A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Lớp 8A1',
-                                        payload: '#TT2009A1',
+                                        payload: '#tt2009A1',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -321,7 +325,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#K9') {
+                } else if (formatContent === '#K9') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -353,27 +357,29 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } // Thong tin khoi THPT
-                else if (content === '#THPT') {
+                }
+
+                // Thong tin khoi THPT
+                else if (formatContent === '#thpt') {
                     const attachMessage = {
-                        text: 'Phụ huynh hãy chọn khối con muốn theo học?',
+                        text: 'Phụ huynh chọn khối con muốn theo học?',
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
                                         title: 'Khối 10',
-                                        payload: '#K10',
+                                        payload: '#k10',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Khối 11',
-                                        payload: '#K11',
+                                        payload: '#k11',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Khối 12',
-                                        payload: '#K12',
+                                        payload: '#k12',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -384,7 +390,7 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                     res.send('Done!');
-                } else if (content === '#K10') {
+                } else if (formatContent === '#k10') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -393,12 +399,12 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Lớp 10A0 vận dụng cao',
-                                        payload: '#TT2007A0',
+                                        payload: '#tt2007A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Lớp 10A1 nâng cao',
-                                        payload: '#TT2007A1',
+                                        payload: '#tt2007A1',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -411,7 +417,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#K11') {
+                } else if (formatContent === '#k11') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -420,12 +426,12 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Lớp 11A0 vận dụng cao',
-                                        payload: '#TT2006A0',
+                                        payload: '#tt2006A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Lớp 11A1 nâng cao',
-                                        payload: '#TT2006A1',
+                                        payload: '#tt2006A1',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -438,7 +444,7 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content === '#K12') {
+                } else if (formatContent === '#k12') {
                     const attachMessage = {
                         text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
                         attachment: {
@@ -447,12 +453,12 @@ export const userRequest = async (req, res) => {
                                 buttons: [
                                     {
                                         title: 'Lớp 12A0 vận dụng cao',
-                                        payload: '#TT2005A0',
+                                        payload: '#tt2005A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
                                         title: 'Lớp 12A1 nâng cao',
-                                        payload: '#TT2005A1',
+                                        payload: '#tt2005A1',
                                         type: 'oa.query.hide',
                                     },
                                 ],
@@ -465,13 +471,15 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
 
                     return;
-                } else if (content.substring(0, 5) === '#TT20' && content.length === 9) {
+                } else if (formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9) {
                     // #TT2007A0
                     const classId = content.slice(-6);
 
                     await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl);
-                } // 2) Thong tin lop đang hoc
-                else if (content === '#LDH') {
+                }
+
+                // 2) Thong tin lop đang hoc
+                else if (formatContent === '#ldh') {
                     await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
                     const { students } = await MongoDB.findOneUser(
@@ -484,6 +492,31 @@ export const userRequest = async (req, res) => {
                         const { zaloStudentId, zaloClassId, alisaName, role } = students[i];
 
                         await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId, classInfoColl);
+                    }
+                }
+
+                // 3) Hoc phi dot hien tai
+                else if (formatContent === '#hpht') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+                    const studentAndClassIdArr = await Tools.findStudentIdFromZaloId(zaloColl, zaloUserId);
+
+                    for (let i = 0; i < studentAndClassIdArr.length; i++) {
+                        const [studentId, classId] = studentAndClassIdArr[i];
+
+                        const { currentTerm } = await MongoDB.findOneUser(
+                            classInfoColl,
+                            { classId: classId },
+                            { projection: { _id: 0, currentTerm: 1 } }
+                        );
+
+                        const studentTermInfo = await MongoDB.findOneUser(
+                            studentInfoColl,
+                            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
+                            { projection: { _id: 0, studentName: 1, 'terms.term': 1 } }
+                        );
+
+                        console.log(studentTermInfo);
                     }
                 }
             }
