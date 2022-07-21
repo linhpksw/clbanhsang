@@ -519,63 +519,66 @@ export const updateRequest = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const studentInfoColl = db.collection('studentInfo');
 
-        console.log(typeof webhook);
-        console.log(webhook.length);
+        const updateStudentDocs = webhook.map((v) => {
+            const {
+                studentId,
+                classId,
+                studentName,
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = v;
 
-        res.send('Done');
-        return;
-        const {
-            studentId,
-            classId,
-            studentName,
-            term, // dot hien tai
-            start, // bat dau dot
-            end, // ket thuc dot
-            total, // so buoi trong dot
-            study, // so buoi hoc
-            absent, // so buoi nghi
-            subject, // mon hoc
-            remainderBefore, // du dot truoc
-            billing, // phai nop
-            payment, // da nop
-            type, // hinh thuc nop
-            paidDate, // ngay nop
-            remainder, // con thua
-            attendances,
-            absences,
-        } = webhook;
+            const updateDoc = {
+                studentId: studentId,
+                classId: classId,
+                studentName: studentName,
 
-        const updateDoc = {
-            studentId: studentId,
-            classId: classId,
-            studentName: studentName,
+                terms: [
+                    {
+                        term: parseInt(term),
+                        start: start,
+                        end: end,
+                        total: total,
+                        study: study,
+                        absent: absent,
+                        subject: subject,
+                        remainderBefore: remainderBefore,
+                        billing: billing,
+                        payment: payment,
+                        type: type,
+                        paidDate: paidDate,
+                        remainder: remainder,
+                        attendances: attendances,
+                        absences: absences,
+                    },
+                ],
+            };
 
-            terms: [
-                {
-                    term: parseInt(term),
-                    start: start,
-                    end: end,
-                    total: total,
-                    study: study,
-                    absent: absent,
-                    subject: subject,
-                    remainderBefore: remainderBefore,
-                    billing: billing,
-                    payment: payment,
-                    type: type,
-                    paidDate: paidDate,
-                    remainder: remainder,
-                    attendances: attendances,
-                    absences: absences,
-                },
-            ],
-        };
+            return updateDoc;
+        });
+
+        await MongoDB.insertManyToDB(studentInfoColl, updateStudentDocs);
 
         // tim kiem tat ca du lieu dot x lop y
-        const cursor = studentInfoColl.find(
-            { classId: classId, 'terms.term': parseInt(term) },
-            { projection: { _id: 0 } }
-        );
+        // const cursor = studentInfoColl.find(
+        //     { classId: classId, 'terms.term': parseInt(term) },
+        //     { projection: { _id: 0 } }
+        // );
+
+        // let studentTermData = await cursor.toArray();
 
         // await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
 
