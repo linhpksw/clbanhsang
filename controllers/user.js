@@ -609,7 +609,7 @@ export const updateRequest = async (req, res) => {
                 bulkWriteStudentInfo.push({
                     updateOne: {
                         filter: { studentId: studentId, 'terms.term': parseInt(term) },
-                        update: { $set: doc.terms[0] }, // cap nhat dot dau tien
+                        update: { $set: { 'terms.$': doc.terms[0] } }, // cap nhat dot dau tien
                     },
                 });
             }
