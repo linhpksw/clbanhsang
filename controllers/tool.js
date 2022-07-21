@@ -38,6 +38,10 @@ async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
         { projection: { _id: 0, students: 1 } }
     );
 
+    console.log(result);
+
+    return;
+
     const studentAndClassIdArr = result.map((v) => [v.zaloStudentId, v.zaloClassId]);
 
     return studentAndClassIdArr;
