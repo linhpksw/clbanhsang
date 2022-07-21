@@ -614,14 +614,14 @@ export const updateRequest = async (req, res) => {
             }
             // Neu chua thi kiem tra da co dot nao chua
             else {
-                const isExistTerm = MongoDB.findOneUser(
+                const isExistTerm = await MongoDB.findOneUser(
                     studentInfoColl,
                     { studentId: studentId },
                     { _id: 0, terms: 1 }
                 );
 
                 // Neu chua co dot nao thi tao dot moi
-                if (isExistTerm.terms.length === 0) {
+                if (isExistTerm === null) {
                     bulkWriteStudentInfo.push({ insertOne: { document: doc } });
                 }
                 // Neu da co dot roi thi day them dot moi vao
