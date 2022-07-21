@@ -585,13 +585,8 @@ export const updateRequest = async (req, res) => {
             return updateDoc;
         });
 
-        console.log(updateStudentDocs);
-
         const classId = updateStudentDocs[0].classId;
         const term = updateStudentDocs[0].terms[0].term;
-
-        console.log(classId);
-        console.log(term);
 
         // tim kiem tat ca du lieu lop x dot y
         const cursor = studentInfoColl.find(
@@ -603,14 +598,13 @@ export const updateRequest = async (req, res) => {
             return v.studentId;
         });
 
-        console.log(studentTermData);
-
         let bulkWriteStudentInfo = [];
 
         updateStudentDocs.forEach((doc) => {
             const { studentId } = doc;
             // Neu da ton tai dot tuong ung thi update
             if (studentTermData.includes(studentId)) {
+                console.log('Da ton tai dot tuong ung');
                 bulkWriteStudentInfo.push({
                     updateOne: {
                         filter: { studentId: studentId, 'terms.term': parseInt(term) },
@@ -626,14 +620,14 @@ export const updateRequest = async (req, res) => {
                     { _id: 0, terms: 1 }
                 );
 
-                console.log(isExistTerm);
-
                 // Neu chua co dot nao thi tao dot moi
                 if (isExistTerm === null) {
+                    console.log('Chua co dot nao, tao du lieu tu dau');
                     bulkWriteStudentInfo.push({ insertOne: { document: doc } });
                 }
                 // Neu da co dot roi thi day them dot moi vao
                 else {
+                    console.log('Da co du lieu dot cu, day them vao');
                     bulkWriteStudentInfo.push({
                         updateOne: {
                             filter: { studentId: studentId },
