@@ -539,23 +539,24 @@ export const userRequest = async (req, res) => {
                             absences,
                         } = terms[0];
 
-                        const content = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} thông tin học phí đợt ${term} như sau:
+                        const content = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
 
-Tình trạng: ${payment !== null ? '✅ Đã thu' : '❌ Chưa thu'}
 Bắt đầu đợt: ${Tools.formatDate(start)}
 Kết thúc đợt: ${Tools.formatDate(end)}
 
 Buổi học: ${subject}
-Tổng số buổi trong đợt: ${total}
-Số buổi đi học: ${study}
+Tổng số buổi: ${total}
+Số buổi đã học: ${study}
 Số buổi vắng mặt: ${absent}
 
 Học phí phải nộp: ${Tools.formatCurrency(billing)}
-Học phí từ đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
+Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}
+Học phí đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
 Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
-Hình thức nộp tiền: ${type !== null ? type : ''}
-Ngày nộp tiền: ${paidDate !== null ? paidDate : ''}
-Học phí còn thừa: ${remainder > 0 ? Tools.formatCurrency(remainder) : ''}`;
+
+Hình thức nộp: ${type !== null ? type : ''}
+Ngày nộp: ${paidDate !== null ? paidDate : ''}
+Học phí thừa: ${remainder > 0 ? Tools.formatCurrency(remainder) : ''}`;
 
                         await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 
