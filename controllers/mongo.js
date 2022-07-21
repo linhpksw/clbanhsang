@@ -79,7 +79,7 @@ async function updateOneUser(coll, filter, updateDoc) {
 }
 
 async function upsertOneUser(coll, filter, updateDoc) {
-    const result = await coll.updateOne(filter, updateDoc, { upsert: true });
+    const result = await coll.updateOne(filter, { $set: updateDoc }, { upsert: true });
     console.log(`${result.matchedCount} tài liệu khớp với query, cập nhật ${result.modifiedCount} tài liệu.`);
 }
 
