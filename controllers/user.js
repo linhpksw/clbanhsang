@@ -635,10 +635,11 @@ export const updateRequest = async (req, res) => {
                 }
             }
         });
+        console.log(bulkWriteStudentInfo);
 
-        const result = await studentInfoColl.bulkWrite(bulkWriteStudentInfo);
+        // const result = await studentInfoColl.bulkWrite(bulkWriteStudentInfo);
 
-        console.log(result);
+        // console.log(result);
 
         res.send('Done');
     } catch (err) {
