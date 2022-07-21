@@ -561,7 +561,6 @@ export const updateRequest = async (req, res) => {
                 studentId: studentId,
                 classId: classId,
                 studentName: studentName,
-
                 terms: [
                     {
                         term: parseInt(term),
@@ -590,7 +589,6 @@ export const updateRequest = async (req, res) => {
         const term = updateStudentDocs[0].terms[0].term;
 
         // await MongoDB.insertManyToDB(studentInfoColl, updateStudentDocs);
-
         // tim kiem tat ca du lieu dot x lop y
         const cursor = studentInfoColl.find(
             { classId: classId, 'terms.term': parseInt(term) },
@@ -601,17 +599,44 @@ export const updateRequest = async (req, res) => {
             return v.studentId;
         });
 
-        updateStudentDocs.forEach((v) => {
-            const { studentId } = v;
+        let bulkWriteStudentInfo = [];
 
+        updateStudentDocs.forEach((doc) => {
+            const { studentId } = doc;
+            // Neu da ton tai dot tuong ung thi update
             if (studentTermData.includes(studentId)) {
-                console.log('Đã có trong DB đợt 1');
-            } else {
-                console.log('Chưa có trong DB đợt 1');
+                bulkWriteStudentInfo.push({
+                    updateOne: {
+                        filter: { studentId: studentId, 'terms.term': parseInt(term) },
+                        update: { $set: doc.terms[0] }, // cap nhat dot dau tien
+                    },
+                });
+            }
+            // Neu chua thi kiem tra da co dot nao chua
+            else {
+                const isExistTerm = MongoDB.findOneUser(
+                    studentInfoColl,
+                    { studentId: studentId },
+                    { _id: 0, terms: 1 }
+                );
+
+                // Neu chua co dot nao thi tao dot moi
+                if (isExistTerm.terms.length === 0) {
+                    bulkWriteStudentInfo.push({ insertOne: { document: doc } });
+                }
+                // Neu da co dot roi thi day them dot moi vao
+                else {
+                    bulkWriteStudentInfo.push({
+                        updateOne: {
+                            filter: { studentId: studentId },
+                            update: { $push: doc.terms[0] }, // chi push dot dau tien
+                        },
+                    });
+                }
             }
         });
 
-        // await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
+        console.log(bulkWriteStudentInfo);
 
         res.send('Done');
     } catch (err) {
