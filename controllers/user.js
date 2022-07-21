@@ -551,7 +551,7 @@ Số buổi đi học: ${study}
 Số buổi vắng mặt: ${absent}
 
 Học phí phải nộp: ${Tools.formatCurrency(billing)}
-Học phí thừa từ đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
+Học phí từ đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
 Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
 Hình thức nộp tiền: ${type !== null ? type : ''}
 Ngày nộp tiền: ${paidDate !== null ? paidDate : ''}
