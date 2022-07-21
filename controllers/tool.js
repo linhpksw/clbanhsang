@@ -32,7 +32,7 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
 }
 
 async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
-    const { result } = await MongoDB.findOneUser(
+    const result = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
         { projection: { _id: 0, students: 1 } }
