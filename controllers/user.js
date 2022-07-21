@@ -513,7 +513,7 @@ export const userRequest = async (req, res) => {
                         const studentTermInfo = await MongoDB.findOneUser(
                             studentInfoColl,
                             { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
-                            { projection: { _id: 0, studentName: 1, 'terms.term': 1 } }
+                            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
                         );
 
                         console.log(studentTermInfo);
