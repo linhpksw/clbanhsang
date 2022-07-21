@@ -499,10 +499,10 @@ export const userRequest = async (req, res) => {
                 else if (formatContent === '#hpht') {
                     await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-                    const studentAndClassIdArr = await Tools.findStudentIdFromZaloId(zaloColl, zaloUserId);
+                    const zaloStudentInfo = await Tools.findStudentIdFromZaloId(zaloColl, zaloUserId);
 
-                    for (let i = 0; i < studentAndClassIdArr.length; i++) {
-                        const [studentId, classId] = studentAndClassIdArr[i];
+                    for (let i = 0; i < zaloStudentInfo.length; i++) {
+                        const [studentId, classId] = zaloStudentInfo[i];
 
                         const { currentTerm } = await MongoDB.findOneUser(
                             classInfoColl,

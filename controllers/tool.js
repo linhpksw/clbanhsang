@@ -32,19 +32,17 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
 }
 
 async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
-    const result = await MongoDB.findOneUser(
+    const { students } = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
         { projection: { _id: 0, students: 1 } }
     );
 
-    console.log(result);
+    const studentZaloInfo = students.map((v) => {
+        return [v.zaloStudentId, v.zaloClassId];
+    });
 
-    return;
-
-    const studentAndClassIdArr = result.map((v) => [v.zaloStudentId, v.zaloClassId]);
-
-    return studentAndClassIdArr;
+    return studentZaloInfo;
 }
 
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
