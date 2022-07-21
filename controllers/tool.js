@@ -32,7 +32,7 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
 }
 
 async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
-    const result = await MongoDB.findOneUser(
+    const { result } = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
         { projection: { _id: 0, students: 1 } }
@@ -372,6 +372,7 @@ async function deleteAccount(
         await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
     }
     ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
+    ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
     // Xoa dang ki tai khoan trong Zalo Coll
     MongoDB.updateOneUser(
@@ -498,6 +499,7 @@ async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatC
     // Cap nhat tag tren Zalo OA Chat
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassIdArr.at(-1));
+    ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
 
     // cap nhat role cho PHHS trong Zalo Collection
     const filter = { zaloUserId: `${zaloUserId}` };
