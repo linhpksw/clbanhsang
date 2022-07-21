@@ -597,9 +597,19 @@ export const updateRequest = async (req, res) => {
             { projection: { _id: 0, studentId: 1 } }
         );
 
-        let studentTermData = await cursor.toArray();
+        const studentTermData = (await cursor.toArray()).map((v) => {
+            return v.studentId;
+        });
 
-        console.log(studentTermData);
+        updateStudentDocs.forEach((v) => {
+            const { studentId } = v;
+
+            if (studentTermData.includes(studentId)) {
+                console.log('Đã có trong DB đợt 1');
+            } else {
+                console.log('Chưa có trong DB đợt 1');
+            }
+        });
 
         // await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
 
