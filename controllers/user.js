@@ -497,14 +497,17 @@ export const userRequest = async (req, res) => {
 
                 // 3) Hoc phi dot hien tai
                 else if (formatContent === '#hpht') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
-                    const zaloStudentInfo = await Tools.findStudentIdFromZaloId(zaloColl, zaloUserId);
+                    const zaloStudentInfo = await Tools.notifyRegister(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        zaloColl
+                    );
 
                     for (let i = 0; i < zaloStudentInfo.length; i++) {
-                        const [studentId, classId] = zaloStudentInfo[i];
+                        const [studentId, classId, role] = zaloStudentInfo[i];
 
-                        const { currentTerm } = await MongoDB.findOneUser(
+                        const { currentTerm, className } = await MongoDB.findOneUser(
                             classInfoColl,
                             { classId: classId },
                             { projection: { _id: 0, currentTerm: 1 } }
@@ -516,7 +519,51 @@ export const userRequest = async (req, res) => {
                             { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
                         );
 
-                        console.log(studentTermInfo);
+                        const { studentName, terms } = studentTermInfo;
+
+                        const {
+                            term, // dot hien tai
+                            start, // bat dau dot
+                            end, // ket thuc dot
+                            total, // so buoi trong dot
+                            study, // so buoi hoc
+                            absent, // so buoi nghi
+                            subject, // mon hoc
+                            remainderBefore, // du dot truoc
+                            billing, // phai nop
+                            payment, // da nop
+                            type, // hinh thuc nop
+                            paidDate, // ngay nop
+                            remainder, // con thua
+                            attendances,
+                            absences,
+                        } = terms[0];
+
+                        const content = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} thông tin học phí đợt ${term} như sau:
+
+Tình trạng: ${payment !== null ? '✅ Đã thu' : '❌ Chưa thu'}
+
+Học phí phải nộp: ${billing}
+${remainderBefore >= 0 ? 'Học phí thừa từ đợt trước' : 'Học phí thiếu từ đợt trước'}: ${remainderBefore}
+Học phí đã nộp: ${payment !== null ? payment : ''}
+Hình thức nộp tiền: ${type !== null ? type : ''}
+Ngày nộp tiền: ${paidDate !== null ? paidDate : ''}
+Học phí còn thừa: ${remainder > 0 ? remainder : ''}
+
+Đợt hiện tại: ${term}
+Bắt đầu đợt: ${start}
+Kết thúc đợt: ${end}
+
+Buổi học: ${subject}
+Tổng số buổi trong đợt: ${total}
+Số buổi đi học: ${study}
+Số buổi vắng mặt: ${absent}`;
+
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+
+                        res.send('Done!');
+
+                        return;
                     }
                 }
             }

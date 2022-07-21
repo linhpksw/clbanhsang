@@ -31,20 +31,6 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     return zaloIdArr;
 }
 
-async function findStudentIdFromZaloId(zaloColl, zaloUserId) {
-    const { students } = await MongoDB.findOneUser(
-        zaloColl,
-        { zaloUserId: zaloUserId },
-        { projection: { _id: 0, students: 1 } }
-    );
-
-    const studentZaloInfo = students.map((v) => {
-        return [v.zaloStudentId, v.zaloClassId];
-    });
-
-    return studentZaloInfo;
-}
-
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
     const { assistants } = await MongoDB.findOneUser(
         classInfoColl,
@@ -175,13 +161,13 @@ async function isManager(zaloUserId, classInfoColl) {
 }
 
 async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
-    const result = await MongoDB.findOneUser(
+    const { students } = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
         { projection: { _id: 0, students: 1 } }
     );
 
-    if (result === null || result.students.length === 0) {
+    if (students === null || students.length === 0) {
         const attachMessage = {
             text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
             attachment: {
@@ -203,6 +189,12 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
         res.send('Done!');
 
         return;
+    } else {
+        const studentZaloInfo = students.map((v) => {
+            return [v.zaloStudentId, v.zaloClassId, v.role];
+        });
+
+        return studentZaloInfo;
     }
 }
 
@@ -547,7 +539,6 @@ export {
     sendMessageBack2Parent,
     sendMessage2Assistant,
     findZaloIdFromStudentId,
-    findStudentIdFromZaloId,
     sendReactBack2Parent,
     deleteAccount,
     notifyRegister,
