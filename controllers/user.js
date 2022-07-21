@@ -512,18 +512,61 @@ export const tokenRequest = async (req, res) => {
 };
 
 export const updateRequest = async (req, res) => {
+    const webhook = req.body;
+
     try {
-        const webhook = req.body;
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const studentInfoColl = db.collection('studentInfo');
 
-        console.log(webhook);
+        const {
+            studentId,
+            classId,
+            studentName,
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = webhook;
 
-        // await MongoDB.client.connect();
-        // const db = MongoDB.client.db('zalo_servers');
-        // const tokenColl = db.collection('tokens');
+        const updateDoc = {
+            studentId: studentId,
+            classId: classId,
+            studentName: studentName,
 
-        // const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+            terms: [
+                {
+                    term: parseInt(term),
+                    start: start,
+                    end: end,
+                    total: total,
+                    study: study,
+                    absent: absent,
+                    subject: subject,
+                    remainderBefore: remainderBefore,
+                    billing: billing,
+                    payment: payment,
+                    type: type,
+                    paidDate: paidDate,
+                    remainder: remainder,
+                    attendances: attendances,
+                    absences: absences,
+                },
+            ],
+        };
 
-        // await MongoDB.updateTokenInDB(tokenColl, refreshToken);
+        await MongoDB.upsertOneUser(studentInfoColl, { 'terms.term': parseInt(term) }, updateDoc);
 
         res.send('Done');
     } catch (err) {
