@@ -55,15 +55,15 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
             return `- ${no}: ${teacher} - ${beautifyDate}`;
         });
 
-        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} kết quả chuyên cần ${term} như sau:
+        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} kết quả chuyên cần đợt ${term} như sau:
 ------------------------
-Tổng số buổi đợt ${term}: ${total}
+Tổng số buổi đợt ${term}: ${total}b
 ------------------------
-Số buổi đã học: ${study}/${total}
+Số buổi đã học: ${study}/${total}b
 ${attendanceInfo.join(`\n`)}
 ------------------------
-Số buổi đã nghỉ: ${absent}/${total}
-${attendanceInfo.join(`\n`)}`;
+Số buổi đã nghỉ: ${absent}/${total}b
+${absenceInfo.join(`\n`)}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 
