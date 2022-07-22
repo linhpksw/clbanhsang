@@ -76,7 +76,7 @@ Phụ huynh có muốn đăng kí thêm cho học sinh khác không?
     }
     // Neu chua thi hien thong bao chon vai tro dang ki
     else {
-        await signUpRole(accessToken, zaloUserId);
+        await signUpRole(res, accessToken, zaloUserId);
     }
 }
 
