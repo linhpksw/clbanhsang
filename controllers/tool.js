@@ -568,7 +568,7 @@ async function forwardImage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn hình vào lúc ${localeTimeStamp}${
                 content === undefined ? '.' : ` với nội dung là: ${content}.`
-            }\n\nUID: ${zaloUserId}`;
+            }\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
             await sendImage2Assistant(
                 res,
