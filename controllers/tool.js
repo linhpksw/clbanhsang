@@ -566,8 +566,8 @@ async function forwardImage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn vào lúc ${localeTimeStamp} với caption là: ${
-                content === undefined ? 'trống' : content
+            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn hình vào lúc ${localeTimeStamp} ${
+                content === undefined ? '.' : ` với nội dung là: ${content}.`
             }\n\nUID: ${zaloUserId}`;
 
             await sendImage2Assistant(
