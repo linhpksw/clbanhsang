@@ -523,6 +523,18 @@ export const userRequest = async (req, res) => {
                 else if (formatContent === '#cpck') {
                     await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                 }
+
+                // 6) Diem danh dot hien tai
+                else if (formatContent === '#ddht') {
+                    await Tools.sendAttendanceInfo(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        zaloColl,
+                        classInfoColl,
+                        studentInfoColl
+                    );
+                }
             }
         }
     } catch (err) {

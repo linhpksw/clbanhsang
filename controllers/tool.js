@@ -1,6 +1,78 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+    for (let i = 0; i < zaloStudentInfo.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+
+        const { currentTerm, className } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1, className: 1 } }
+        );
+
+        const studentTermInfo = await MongoDB.findOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
+            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
+        );
+
+        const { studentName, terms } = studentTermInfo;
+
+        const {
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = terms[0];
+
+        const attendanceInfo = attendances.map((v) => {
+            const { no, newDate, teacher } = v;
+
+            const beautifyDate = formatDate(newDate);
+
+            return `- ${no}: ${teacher} - ${beautifyDate}`;
+        });
+
+        const absenceInfo = absences.map((v) => {
+            const { no, newDate, teacher } = v;
+
+            const beautifyDate = formatDate(newDate);
+
+            return `- ${no}: ${teacher} - ${beautifyDate}`;
+        });
+
+        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} kết quả chuyên cần ${term} như sau:
+------------------------
+Tổng số buổi đợt ${term}: ${total}
+------------------------
+Số buổi đã học: ${study}/${total}
+${attendanceInfo.join(`\n`)}
+------------------------
+Số buổi đã nghỉ: ${absent}/${total}
+${attendanceInfo.join(`\n`)}`;
+
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+        res.send('Done!');
+
+        return;
+    }
+}
+
 async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
@@ -751,4 +823,5 @@ export {
     sendSyntaxPayment,
     sendPaymentTypeInfo,
     sendPaymentInfo,
+    sendAttendanceInfo,
 };
