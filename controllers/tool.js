@@ -564,7 +564,7 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
                     buttons: [
                         {
                             title: 'Đăng kí tài khoản',
-                            payload: 'DKTK',
+                            payload: '#dktk',
                             type: 'oa.query.hide',
                         },
                     ],
