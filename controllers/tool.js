@@ -46,7 +46,10 @@ async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
 
         const studentRegister = students.map((v) => {
             const { zaloStudentId, zaloClassId, alisaName, role } = v;
+            console.log(alisaName);
             const studentName = alisaName.substring(3);
+
+            console.log(studentName);
             return `${studentName} có ID là ${zaloStudentId}`;
         });
 
