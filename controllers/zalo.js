@@ -167,6 +167,44 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
     console.log(jsonResponse);
 }
 
+async function sendImage(accessToken, zaloUserId, message, imageIdUrl) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const URL = `https://openapi.zalo.me/v2.0/oa/message`;
+
+    const content = {
+        recipient: { user_id: `${zaloUserId}` },
+        message: {
+            text: message,
+            attachment: {
+                type: 'template',
+                payload: {
+                    template_type: 'media',
+                    elements: [
+                        {
+                            media_type: 'image',
+                            attachment_id: imageIdUrl,
+                        },
+                    ],
+                },
+            },
+        },
+    };
+
+    const response = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(content),
+    });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
+}
+
 async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,

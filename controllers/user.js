@@ -117,6 +117,61 @@ export const userRequest = async (req, res) => {
                 res.send('Done!');
                 return;
             }
+        } else if (eventName === 'user_send_image') {
+            console.log(webhook);
+
+            res.send('Done!');
+
+            return;
+            zaloUserId = webhook.sender.id;
+            const messageId = webhook.message.msg_id;
+            const { attachments } = webhook.message;
+
+            // Check xem nguoi dung da follow OA chua
+            if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
+                // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+
+                // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+
+                res.send('Done!');
+                return;
+            }
+
+            // Check xem tin nhan hinh anh den OA co tu phia Tro giang khong
+            // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+            if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
+                await Tools.forwardMessage2Assistant(
+                    res,
+                    accessToken,
+                    zaloUserId,
+                    messageId,
+                    zaloColl,
+                    classInfoColl,
+                    attachments,
+                    localeTimeStamp
+                );
+            }
+            // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+            else {
+                const quoteMessageId = webhook.message.quote_msg_id || null;
+
+                if (quoteMessageId !== null) {
+                    const replyContent = webhook.message.text;
+
+                    await Tools.sendMessageBack2Parent(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        replyContent,
+                        quoteMessageId
+                    );
+                } else {
+                    res.send('Done!');
+                    return;
+                }
+            }
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 

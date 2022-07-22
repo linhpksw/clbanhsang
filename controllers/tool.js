@@ -436,6 +436,21 @@ async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwar
     }
 }
 
+async function sendImage2Assistant(accessToken, classInfoColl, classId, attachments) {
+    const { assistants } = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0, assistants: 1 } }
+    );
+
+    for (let i = 0; i < assistants.length; i++) {
+        const assistant = assistants[i];
+        const { taZaloId } = assistant;
+
+        await ZaloAPI.sendMessage(accessToken, taZaloId, forwardContent);
+    }
+}
+
 async function sendResponse2Client(res, accessToken, zaloUserId, messageId, responseContent, action) {
     ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
@@ -496,6 +511,44 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
     res.send('Done');
 
     return;
+}
+
+async function forwardImage2Assistant(
+    res,
+    accessToken,
+    zaloUserId,
+    messageId,
+    zaloColl,
+    classInfoColl,
+    attachments,
+    localeTimeStamp
+) {
+    const isRegister = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, students: 1 } }
+    );
+    // PHHS chua dang ki tai khoan
+    if (isRegister.students.length === 0) {
+        await res.send('Done');
+        return;
+    }
+    // PHHS da dang ki tai khoan
+    else {
+        // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+        for (let i = 0; i < isRegister.students.length; i++) {
+            const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+            // chuyen tiep tin nhan den tro giang tuong ung
+            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+
+            await sendImage2Assistant(accessToken, classInfoColl, zaloClassId, attachments);
+
+            await res.send('Done');
+
+            return;
+        }
+    }
 }
 
 async function forwardMessage2Assistant(
