@@ -67,6 +67,7 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
             text: `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${formatCurrency(
                 billing
             )} cho lớp toán ạ.
+
 Có 2 hình thức nộp học phí bao gồm:
 1) Nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng
 2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793
@@ -159,7 +160,7 @@ Học phí thừa: ${remainder >= 0 ? formatCurrency(remainder) : ''}`,
                             type: 'oa.query.hide',
                         },
                         {
-                            title: 'Cú pháp chuyển khoản',
+                            title: 'Sao chép cú pháp chuyển khoản này',
                             payload: '#cpck',
                             type: 'oa.query.hide',
                         },
