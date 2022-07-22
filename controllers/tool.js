@@ -92,7 +92,7 @@ Có 2 hình thức nộp học phí bao gồm:
 }
 
 async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
