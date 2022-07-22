@@ -559,7 +559,7 @@ async function forwardImage2Assistant(
     }
     // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
     else {
-        const { attachments, text: content } = imageInfo;
+        const { attachments, text: content, msg_id: messageId } = imageInfo;
 
         // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
         for (let i = 0; i < isRegister.students.length; i++) {
