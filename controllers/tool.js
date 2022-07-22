@@ -160,7 +160,7 @@ Học phí thừa: ${remainder >= 0 ? formatCurrency(remainder) : ''}`,
                             type: 'oa.query.hide',
                         },
                         {
-                            title: 'Sao chép cú pháp chuyển khoản này',
+                            title: 'Cú pháp chuyển khoản',
                             payload: '#cpck',
                             type: 'oa.query.hide',
                         },
