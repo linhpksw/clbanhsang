@@ -540,6 +540,8 @@ async function forwardImage2Assistant(
         { zaloUserId: `${zaloUserId}` },
         { projection: { _id: 0, students: 1 } }
     );
+
+    console.log(isRegister);
     // PHHS chua dang ki tai khoan thi khong nhan lai
     if (isRegister.students.length === 0) {
         await res.send('Done');
