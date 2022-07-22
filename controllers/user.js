@@ -245,18 +245,18 @@ export const userRequest = async (req, res) => {
                 // 1) Thong tin cac lop
                 else if (formatContent === '#ttcl') {
                     const attachMessage = {
-                        text: 'Hiện tại lớp toán đang mở cả 2 khối THCS và THPT. Cụ thể khối THCS ôn luyện từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
+                        text: 'Hiện tại lớp toán đang tổ chức cả 2 khối THCS và THPT. Cụ thể, khối THCS ôn luyện toán từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
-                                        title: 'Khối THCS',
+                                        title: 'Tôi muốn đăng kí khối THCS',
                                         payload: '#thcs',
                                         type: 'oa.query.hide',
                                     },
                                     {
-                                        title: 'Khối THPT',
+                                        title: 'Tôi muốn đăng kí khối THPT',
                                         payload: '#thpt',
                                         type: 'oa.query.hide',
                                     },
@@ -306,12 +306,12 @@ export const userRequest = async (req, res) => {
                             payload: {
                                 buttons: [
                                     {
-                                        title: 'Lớp 8A0',
+                                        title: 'Lớp 8A0 chuyên toán',
                                         payload: '#tt2009A0',
                                         type: 'oa.query.hide',
                                     },
                                     {
-                                        title: 'Lớp 8A1',
+                                        title: 'Lớp 8A1 chuyên toán',
                                         payload: '#tt2009A1',
                                         type: 'oa.query.hide',
                                     },
@@ -392,16 +392,11 @@ export const userRequest = async (req, res) => {
                     res.send('Done!');
                 } else if (formatContent === '#k10') {
                     const attachMessage = {
-                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 10 ôn thi THPTQG, xếp lớp dựa trên kết quả thi vào 10 của các con. \n\nLớp 10A0 vận dụng cao dành cho các học sinh đỗ chuyên toán, chuyên tin các trường chuyên; hoặc điểm thi toán điều kiện từ 9,5 trở lên. Các con được xếp vào lớp 10A1 nếu điểm thi toán điều kiện từ 8 trở lên. \n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                        text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 1 lớp 10 ôn thi THPTQG. Phụ huynh nhấn vào lớp bên dưới để tìm hiểu thông tin cụ thể ạ.`,
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
-                                    {
-                                        title: 'Lớp 10A0 vận dụng cao',
-                                        payload: '#tt2007A0',
-                                        type: 'oa.query.hide',
-                                    },
                                     {
                                         title: 'Lớp 10A1 nâng cao',
                                         payload: '#tt2007A1',

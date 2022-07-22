@@ -506,16 +506,17 @@ async function sendClassInfo(res, accessToken, zaloUserId, classId, classInfoCol
         })
         .join(`\n`);
 
-    const message = `Mã lớp: ${classId}
-Tên lớp: ${className}
+    const message = `Câu lạc bộ Toán Ánh Sáng xin gửi thông tin lớp ${className} như sau:
+------------------------------   
 Phòng học: ${room}
 ------------------------------
 ${assistants.length ? assistantInfo : `Trợ giảng:\nĐiện thoại:`}
 ------------------------------
+Giáo viên giảng dạy
 ${subjectInfo}
 ------------------------------
 Đợt hiện tại: ${currentTerm}
-Tổng số buổi: ${totalDate}
+Tổng số buổi: ${totalDate} buổi
 Bắt đầu đợt: ${startTerm === null ? '' : startTerm}
 Kết thúc đợt: ${endTerm === null ? '' : endTerm}
 ------------------------------
