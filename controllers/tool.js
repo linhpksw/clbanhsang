@@ -487,6 +487,8 @@ async function sendImageBack2Parent(res, accessToken, imageInfo) {
 async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
+    console.log(conversation);
+
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
 

@@ -245,10 +245,13 @@ export const userRequest = async (req, res) => {
                 }
                 // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                 else {
+                    console.log('Tin nhan tu phia tro giang');
                     const quoteMessageId = webhook.message.quote_msg_id || null;
 
                     if (quoteMessageId !== null) {
                         const replyContent = webhook.message.text;
+
+                        console.log(replyContent);
 
                         await Tools.sendMessageBack2Parent(
                             res,
