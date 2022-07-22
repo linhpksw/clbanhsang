@@ -151,6 +151,7 @@ export const userRequest = async (req, res) => {
                 await Tools.sendImageBack2Parent(res, accessToken, imageInfo);
             }
         } else if (eventName === 'user_send_text') {
+            console.log(webhook);
             zaloUserId = webhook.sender.id;
 
             const messageId = webhook.message.msg_id;
@@ -231,21 +232,16 @@ export const userRequest = async (req, res) => {
                 // Check xem tin nhan den OA co tu phia Tro giang khong
                 // Neu tu phia phu huynh thi phan hoi lai cho tro giang
                 if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const keywords = ['dktk', 'dc'];
-
-                    // Kiem tra tin nhan khong nam trong Keyword moi phan hoi lai
-                    if (!keywords.includes(content)) {
-                        Tools.forwardMessage2Assistant(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            messageId,
-                            zaloColl,
-                            classInfoColl,
-                            content,
-                            localeTimeStamp
-                        );
-                    }
+                    await Tools.forwardMessage2Assistant(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        messageId,
+                        zaloColl,
+                        classInfoColl,
+                        content,
+                        localeTimeStamp
+                    );
                 }
                 // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                 else {
