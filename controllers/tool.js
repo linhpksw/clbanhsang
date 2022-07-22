@@ -447,7 +447,7 @@ async function sendImage2Assistant(accessToken, classInfoColl, classId, attachme
         const assistant = assistants[i];
         const { taZaloId } = assistant;
 
-        await ZaloAPI.sendMessage(accessToken, taZaloId, forwardContent);
+        await ZaloAPI.sendImage(accessToken, taZaloId, forwardContent);
     }
 }
 
@@ -999,4 +999,5 @@ export {
     signUpRole,
     signUp4Parent,
     signUp4Student,
+    forwardImage2Assistant,
 };

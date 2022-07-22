@@ -120,14 +120,12 @@ export const userRequest = async (req, res) => {
         } else if (eventName === 'user_send_image') {
             console.log(webhook);
 
-            console.log(webhook.message.attachments);
-
-            res.send('Done!');
+            res.send('Done');
 
             return;
+
             zaloUserId = webhook.sender.id;
-            const messageId = webhook.message.msg_id;
-            const { attachments } = webhook.message;
+            const imageInfo = webhook.message;
 
             // Check xem nguoi dung da follow OA chua
             if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
@@ -144,14 +142,13 @@ export const userRequest = async (req, res) => {
             // Check xem tin nhan hinh anh den OA co tu phia Tro giang khong
             // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
             if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                await Tools.forwardMessage2Assistant(
+                await Tools.forwardImage2Assistant(
                     res,
                     accessToken,
                     zaloUserId,
-                    messageId,
                     zaloColl,
                     classInfoColl,
-                    attachments,
+                    imageInfo,
                     localeTimeStamp
                 );
             }

@@ -322,4 +322,5 @@ export {
     sendReaction,
     getConversation,
     sendMessageWithButton,
+    sendImage,
 };
