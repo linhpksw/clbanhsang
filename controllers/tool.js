@@ -59,11 +59,9 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
 ------------------------
 Tổng số buổi đợt ${term}: ${total} buổi
 ------------------------
-Số buổi đã học: ${study} buổi
-${attendanceInfo.length ? attendanceInfo.join(`\n`) : ''}
+Số buổi đã học: ${study} buổi${attendanceInfo.length ? `\n${attendanceInfo.join(`\n`)}` : ''}
 ------------------------
-Số buổi đã nghỉ: ${absent} buổi
-${absenceInfo.length ? absenceInfo.join(`\n`) : ''}`;
+Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo.join(`\n`)}` : ''}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 
