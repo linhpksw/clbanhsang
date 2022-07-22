@@ -566,9 +566,6 @@ async function forwardImage2Assistant(
                 forwardImageContent
             );
         }
-        res.send('Done');
-
-        return;
     }
 }
 
