@@ -136,7 +136,6 @@ export const userRequest = async (req, res) => {
             // Check xem tin nhan hinh anh den OA co tu phia Tro giang khong
             // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
             if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                console.log('Tin nhan tu phia phu huynh');
                 await Tools.forwardImage2Assistant(
                     res,
                     accessToken,
@@ -149,7 +148,6 @@ export const userRequest = async (req, res) => {
             }
             // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
             else {
-                console.log('Tin nhan tu phia tro giang');
                 // khong co che do quote anh
                 const quoteMessageId = webhook.message.quote_msg_id || null;
 
