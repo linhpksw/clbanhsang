@@ -51,9 +51,9 @@ async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
         });
 
         const attachMessage = {
-            text: `Zalo ${displayName} đã đăng kí số điện thoại ${userPhone} với học sinh ${studentRegister.join(
-                ', '
-            )}. Phụ huynh có muốn đăng kí thêm không ạ? (Nhấn nút bên dưới để xác nhận đăng kí thêm)`,
+            text: `Zalo ${displayName} đã đăng kí số ${userPhone} với học sinh ${studentRegister.join(', ')}. 
+Phụ huynh có muốn đăng kí thêm không?
+(Nhấn nút bên dưới để xác nhận đăng kí thêm)`,
             attachment: {
                 type: 'template',
                 payload: {
