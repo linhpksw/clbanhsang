@@ -251,8 +251,6 @@ export const userRequest = async (req, res) => {
                     if (quoteMessageId !== null) {
                         const replyContent = webhook.message.text;
 
-                        console.log(replyContent);
-
                         await Tools.sendMessageBack2Parent(
                             res,
                             accessToken,

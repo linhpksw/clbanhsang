@@ -490,14 +490,11 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
 
+        console.log(conversation[i]);
+
         if (typeof message === 'string') {
             if (message_id === quoteMessageId) {
-                console.log(`messageId: ${message_id}`);
-                console.log(`message: ${message}`);
-
                 const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
-
-                console.log([UID, MID]);
 
                 const zaloId = UID.split(' ')[1];
                 const zaloMessageId = MID.split(' ')[1];
