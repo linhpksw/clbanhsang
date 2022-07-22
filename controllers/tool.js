@@ -284,8 +284,6 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
 
     if (zaloStudentInfo === undefined) return;
 
-    console.log(zaloStudentInfo);
-
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
