@@ -1,6 +1,121 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+async function signUpRole(res, accessToken, zaloUserId) {
+    const attachMessage = {
+        text: `Vui lòng chọn vai trò đăng kí:`,
+        attachment: {
+            type: 'template',
+            payload: {
+                buttons: [
+                    {
+                        title: 'Tôi là phụ huynh',
+                        payload: '#dkph',
+                        type: 'oa.query.hide',
+                    },
+                    {
+                        title: 'Con là học sinh',
+                        payload: '#dkhs',
+                        type: 'oa.query.hide',
+                    },
+                ],
+            },
+        },
+    };
+
+    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+    res.send('Done!');
+
+    return;
+}
+
+async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
+    // Check xem tai khoan da dang ki tren he thong chua
+    const isRegister = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: zaloUserId },
+        { projection: { _id: 0 } }
+    );
+
+    // Neu dang ki roi thi hien thong bao cho PHHS
+    if (isRegister.userPhone !== null) {
+        const { displayName, userPhone, students } = isRegister;
+
+        const studentRegister = students.map((v) => {
+            const { zaloStudentId, zaloClassId, alisaName, role } = v;
+            const studentName = alisaName.substring(3);
+            return `${studentName} có ID là ${zaloStudentId}`;
+        });
+
+        const attachMessage = {
+            text: `Zalo ${displayName} đã đăng kí số điện thoại ${userPhone} với học sinh ${studentRegister.join(
+                ', '
+            )}. Phụ huynh có muốn đăng kí thêm không ạ? (Nhấn nút bên dưới để xác nhận đăng kí thêm)`,
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: 'Tôi muốn đăng kí thêm cho học sinh khác',
+                            payload: '#vtdk',
+                            type: 'oa.query.hide',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+        res.send('Done!');
+
+        return;
+    }
+    // Neu chua thi hien thong bao chon vai tro dang ki
+    else {
+        await signUpRole(accessToken, zaloUserId);
+    }
+}
+
+async function signUp4Parent(res, accessToken, zaloUserId) {
+    const message = `👉 Để xác nhận đăng kí tài khoản trên Zalo này, phụ huynh hãy nhập theo đúng cú pháp sau:
+dkph IDHS SĐT PH(Đã đăng kí)
+---------------------------------------------
+👉 Ví dụ: 
+dkph 2005xxx 0912345678
+---------------------------------------------
+👉 Chú ý: 
+- SĐT trong cú pháp phải là SĐT đã được đăng kí với lớp toán.
+- Tài khoản không nhất thiết phải được đăng kí bằng SĐT đã tạo tài khoản Zalo.
+- Mỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã đăng kí.`;
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+    res.send('Done!');
+
+    return;
+}
+
+async function signUp4Student(res, accessToken, zaloUserId) {
+    const message = `👉 Để xác nhận đăng kí tài khoản trên Zalo này, con hãy nhập theo đúng cú pháp sau:
+dkhs IDHS SĐT HS (Đã đăng kí)
+---------------------------------------------
+👉 Ví dụ: 
+dkhs 2005xxx 0912345678
+---------------------------------------------
+👉 Chú ý: 
+- SĐT trong cú pháp phải là SĐT đã được đăng kí với lớp toán.
+- Tài khoản không nhất thiết phải được đăng kí bằng SĐT đã tạo tài khoản Zalo.
+- Mỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã đăng kí.`;
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+    res.send('Done!');
+
+    return;
+}
+
 async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
@@ -77,7 +192,7 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, alisaName] = zaloStudentInfo[i];
 
-        const studentName = alisaName.split('PH ')[1];
+        const studentName = alisaName.substring(3);
 
         const { currentTerm, className } = await MongoDB.findOneUser(
             classInfoColl,
@@ -823,4 +938,8 @@ export {
     sendPaymentTypeInfo,
     sendPaymentInfo,
     sendAttendanceInfo,
+    signUpAlert,
+    signUpRole,
+    signUp4Parent,
+    signUp4Student,
 };
