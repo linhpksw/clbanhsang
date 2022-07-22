@@ -387,6 +387,26 @@ function formatDate(dateStr) {
     return date.toLocaleDateString('vi-VN');
 }
 
+function formatDateTime(dateStr) {
+    const newDate = new Date(dateStr);
+
+    const options = {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+    };
+
+    const locale = newDate.toLocaleString('vi-VN', options);
+
+    const [time, weekDay, date] = locale.replace(/\s+/, '').split(',');
+
+    return `${weekDay},${date} ${time}`;
+}
+
 function formatCurrency(money) {
     return `${Math.abs(money).toLocaleString('vi-VN')} đ`;
 }
@@ -568,7 +588,7 @@ async function forwardImage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn hình vào lúc ${localeTimeStamp}${
                 content === undefined ? '.' : ` với nội dung là: ${content}.`
-            }\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            }\n\nUID: ${zaloUserId}`;
 
             await sendImage2Assistant(
                 res,
@@ -1020,6 +1040,7 @@ export {
     sendClassInfo,
     createDate,
     formatDate,
+    formatDateTime,
     formatCurrency,
     removeVietNam,
     sendSyntaxPayment,

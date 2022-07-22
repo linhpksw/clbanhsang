@@ -31,7 +31,7 @@ export const userRequest = async (req, res) => {
     const webhook = req.body;
     const eventName = webhook.event_name;
     const unixTimestamp = parseInt(webhook.timestamp);
-    const localeTimeStamp = new Date(unixTimestamp).toLocaleString('vi-VN');
+    const localeTimeStamp = Tools.formatDateTime(unixTimestamp);
 
     try {
         await MongoDB.client.connect();
