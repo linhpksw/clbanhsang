@@ -118,12 +118,6 @@ export const userRequest = async (req, res) => {
                 return;
             }
         } else if (eventName === 'user_send_image') {
-            console.log(webhook);
-
-            res.send('Done');
-
-            return;
-
             zaloUserId = webhook.sender.id;
             const imageInfo = webhook.message;
 
@@ -154,6 +148,7 @@ export const userRequest = async (req, res) => {
             }
             // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
             else {
+                // khong co che do quote anh
                 const quoteMessageId = webhook.message.quote_msg_id || null;
 
                 if (quoteMessageId !== null) {
