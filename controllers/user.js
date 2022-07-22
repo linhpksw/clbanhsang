@@ -137,7 +137,7 @@ export const userRequest = async (req, res) => {
                 return;
             }
 
-            if (formatContent.includes('dkph')) {
+            if (formatContent.slice(0, 4) === 'dkph') {
                 Tools.signUp(
                     res,
                     accessToken,
@@ -148,7 +148,7 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Phụ huynh'
                 );
-            } else if (formatContent.includes('dkhs')) {
+            } else if (formatContent.slice(0, 4) === 'dkhs') {
                 Tools.signUp(
                     res,
                     accessToken,
@@ -159,7 +159,7 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Học sinh'
                 );
-            } else if (formatContent.includes('xph')) {
+            } else if (formatContent.slice(0, 3) === 'xph') {
                 Tools.deleteAccount(
                     res,
                     formatContent,
@@ -170,7 +170,7 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Phụ huynh'
                 );
-            } else if (formatContent.includes('xhs')) {
+            } else if (formatContent.slice(0, 3) === 'xhs') {
                 Tools.deleteAccount(
                     res,
                     formatContent,
@@ -181,7 +181,7 @@ export const userRequest = async (req, res) => {
                     messageId,
                     'Học sinh'
                 );
-            } else if (formatContent.includes('dktg')) {
+            } else if (formatContent.slice(0, 4) === 'dktg') {
                 Tools.signUp4Assistant(
                     res,
                     accessToken,
