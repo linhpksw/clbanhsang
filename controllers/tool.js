@@ -1,6 +1,188 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
+    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+    for (let i = 0; i < zaloStudentInfo.length; i++) {
+        const [studentId, classId, role, alisaName] = zaloStudentInfo[i];
+
+        const studentName = alisaName.split('PH ')[1];
+
+        const { currentTerm, className } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1, className: 1 } }
+        );
+
+        const syntaxPayment = `${Tools.removeVietNam(studentName)} ${studentId} HPD${currentTerm}`;
+
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
+
+        res.send('Done!');
+
+        return;
+    }
+}
+
+async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+    for (let i = 0; i < zaloStudentInfo.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+
+        const { currentTerm, className } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1, className: 1 } }
+        );
+
+        const studentTermInfo = await MongoDB.findOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
+            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
+        );
+
+        const { studentName, terms } = studentTermInfo;
+
+        const {
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = terms[0];
+
+        const attachMessage = {
+            text: `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${Tools.formatCurrency(
+                billing
+            )} cho lớp toán ạ.
+Có 2 hình thức nộp học phí bao gồm:
+1) Nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng
+2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793
+    
+* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} gửi biên lai ảnh xác nhận vào lại trang OA của lớp toán.`,
+
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: 'Sao chép cú pháp chuyển khoản này',
+                            payload: '#cpck',
+                            type: 'oa.query.hide',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+    }
+}
+
+async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+    for (let i = 0; i < zaloStudentInfo.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+
+        const { currentTerm, className } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1, className: 1 } }
+        );
+
+        const studentTermInfo = await MongoDB.findOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
+            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
+        );
+
+        const { studentName, terms } = studentTermInfo;
+
+        const {
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = terms[0];
+
+        const attachMessage = {
+            text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
+
+Bắt đầu đợt: ${Tools.formatDate(start)}
+Kết thúc đợt: ${Tools.formatDate(end)}
+
+Buổi học: ${subject}
+Tổng số buổi: ${total}
+Số buổi đã học: ${study}
+Số buổi vắng mặt: ${absent}
+
+Học phí phải nộp: ${Tools.formatCurrency(billing)}
+Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}
+Học phí đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
+Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
+
+Hình thức nộp: ${type !== null ? type : ''}
+Ngày nộp: ${paidDate !== null ? paidDate : ''}
+Học phí thừa: ${remainder >= 0 ? Tools.formatCurrency(remainder) : ''}`,
+
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: 'Thông tin chuyển khoản',
+                            payload: '#ttck',
+                            type: 'oa.query.hide',
+                        },
+                        {
+                            title: 'Cú pháp chuyển khoản',
+                            payload: '#cpck',
+                            type: 'oa.query.hide',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+        // const startTerm = new Date(term);
+        // const today = new Date();
+        // const difference = Math.round((today - startTerm) / 86400 / 1000);
+
+        // if (difference > 3 && payment === null) {
+        // }
+
+        res.send('Done!');
+
+        return;
+    }
+}
+
 function removeVietNam(str) {
     return str
         .normalize('NFD')
@@ -209,7 +391,7 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
         return;
     } else {
         const studentZaloInfo = students.map((v) => {
-            return [v.zaloStudentId, v.zaloClassId, v.role];
+            return [v.zaloStudentId, v.zaloClassId, v.role, v.aliasName];
         });
 
         return studentZaloInfo;
@@ -565,4 +747,7 @@ export {
     formatDate,
     formatCurrency,
     removeVietNam,
+    sendSyntaxPayment,
+    sendPaymentTypeInfo,
+    sendPaymentInfo,
 };
