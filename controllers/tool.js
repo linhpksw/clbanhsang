@@ -506,7 +506,7 @@ async function sendImage2Assistant(
     attachments,
     forwardImageContent
 ) {
-    const imageIdUrl = attachments[0].payload.url;
+    const imageUrl = attachments[0].payload.url;
 
     const { assistants } = await MongoDB.findOneUser(
         classInfoColl,
@@ -518,7 +518,7 @@ async function sendImage2Assistant(
         const assistant = assistants[i];
         const { taZaloId } = assistant;
 
-        await ZaloAPI.sendImage(accessToken, taZaloId, forwardImageContent, imageIdUrl);
+        await ZaloAPI.sendImageByUrl(accessToken, taZaloId, forwardImageContent, imageUrl);
     }
 
     res.send('Done!');

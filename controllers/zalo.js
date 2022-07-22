@@ -167,7 +167,7 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
     console.log(jsonResponse);
 }
 
-async function sendImage(accessToken, zaloUserId, message, imageIdUrl) {
+async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
     const headers = {
         access_token: accessToken,
         'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ async function sendImage(accessToken, zaloUserId, message, imageIdUrl) {
                     elements: [
                         {
                             media_type: 'image',
-                            attachment_id: imageIdUrl,
+                            url: imageUrl,
                         },
                     ],
                 },
@@ -322,5 +322,5 @@ export {
     sendReaction,
     getConversation,
     sendMessageWithButton,
-    sendImage,
+    sendImageByUrl,
 };
