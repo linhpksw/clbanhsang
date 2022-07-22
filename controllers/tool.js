@@ -2,7 +2,7 @@ import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
 async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
-    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, alisaName] = zaloStudentInfo[i];
@@ -15,7 +15,7 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const syntaxPayment = `${Tools.removeVietNam(studentName)} ${studentId} HPD${currentTerm}`;
+        const syntaxPayment = `${removeVietNam(studentName)} ${studentId} HPD${currentTerm}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
 
@@ -26,7 +26,7 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
 }
 
 async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfo = await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
@@ -64,7 +64,7 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
         } = terms[0];
 
         const attachMessage = {
-            text: `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${Tools.formatCurrency(
+            text: `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${formatCurrency(
                 billing
             )} cho lớp toán ạ.
 Có 2 hình thức nộp học phí bao gồm:
@@ -132,22 +132,22 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
         const attachMessage = {
             text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
 
-Bắt đầu đợt: ${Tools.formatDate(start)}
-Kết thúc đợt: ${Tools.formatDate(end)}
+Bắt đầu đợt: ${formatDate(start)}
+Kết thúc đợt: ${formatDate(end)}
 
 Buổi học: ${subject}
 Tổng số buổi: ${total}
 Số buổi đã học: ${study}
 Số buổi vắng mặt: ${absent}
 
-Học phí phải nộp: ${Tools.formatCurrency(billing)}
+Học phí phải nộp: ${formatCurrency(billing)}
 Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}
-Học phí đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${Tools.formatCurrency(remainderBefore)}
-Học phí đã nộp: ${payment !== null ? Tools.formatCurrency(payment) : ''}
+Học phí đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${formatCurrency(remainderBefore)}
+Học phí đã nộp: ${payment !== null ? formatCurrency(payment) : ''}
 
 Hình thức nộp: ${type !== null ? type : ''}
 Ngày nộp: ${paidDate !== null ? paidDate : ''}
-Học phí thừa: ${remainder >= 0 ? Tools.formatCurrency(remainder) : ''}`,
+Học phí thừa: ${remainder >= 0 ? formatCurrency(remainder) : ''}`,
 
             attachment: {
                 type: 'template',
