@@ -38,7 +38,7 @@ async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
         { projection: { _id: 0 } }
     );
 
-    console.log(isRegister);
+    console.log(isRegister.userPhone);
 
     // Neu dang ki roi thi hien thong bao cho PHHS
     if (isRegister.userPhone !== null) {
