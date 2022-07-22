@@ -151,6 +151,7 @@ export const userRequest = async (req, res) => {
                 await Tools.sendImageBack2Parent(res, accessToken, imageInfo);
             }
         } else if (eventName === 'user_send_text') {
+            console.log(webhook);
             zaloUserId = webhook.sender.id;
 
             const messageId = webhook.message.msg_id;
