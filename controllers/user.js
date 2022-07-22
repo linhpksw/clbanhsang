@@ -120,6 +120,8 @@ export const userRequest = async (req, res) => {
         } else if (eventName === 'user_send_image') {
             console.log(webhook);
 
+            console.log(webhook.message.attachments);
+
             res.send('Done!');
 
             return;
