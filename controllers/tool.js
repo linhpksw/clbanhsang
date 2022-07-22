@@ -582,8 +582,8 @@ async function forwardImage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn hình${
-                content === undefined ? '.' : ` với nội dung là: ${content}.`
+            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
+                content === undefined ? ':' : ` với nội dung: ${content}.`
             }\n\nUID: ${zaloUserId}`;
 
             await sendImage2Assistant(
@@ -625,7 +625,7 @@ async function forwardMessage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn với nội dung là:\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
