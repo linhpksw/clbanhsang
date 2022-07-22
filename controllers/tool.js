@@ -473,6 +473,17 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
     }
 }
 
+async function sendImageBack2Parent(res, accessToken, imageInfo) {
+    const { attachments, text: zaloUserId } = imageInfo;
+    const imageUrl = attachments.payload.url;
+
+    await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
+
+    res.send('Done');
+
+    return;
+}
+
 async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
@@ -548,14 +559,16 @@ async function forwardImage2Assistant(
     }
     // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
     else {
-        const { attachments, text: content, msg_id: messageId } = imageInfo;
+        const { attachments, text: content } = imageInfo;
 
         // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
         for (let i = 0; i < isRegister.students.length; i++) {
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId}\n\nĐã gửi tin nhắn hình ảnh vào lúc ${localeTimeStamp} với nội dung ảnh là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn vào lúc ${localeTimeStamp} với caption là: ${
+                content === undefined ? 'trống' : content
+            }\n\nUID: ${zaloUserId}`;
 
             await sendImage2Assistant(
                 res,
@@ -596,7 +609,7 @@ async function forwardMessage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId}\n\nĐã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin nhắn vào lúc ${localeTimeStamp} với nội dung là:\n\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
@@ -1018,4 +1031,5 @@ export {
     signUp4Parent,
     signUp4Student,
     forwardImage2Assistant,
+    sendImageBack2Parent,
 };
