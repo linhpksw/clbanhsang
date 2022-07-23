@@ -500,6 +500,14 @@ async function sendImageBack2Parent(res, accessToken, imageInfo) {
     return;
 }
 
+async function findZaloIdFromUserPhone(zaloColl, userPhone) {
+    return await MongoDB.findOneUser(
+        zaloColl,
+        { userPhone: userPhone },
+        { projection: { _id: 0, zaloUserId: 1 } }
+    ).zaloUserId;
+}
+
 async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
@@ -510,7 +518,7 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
             if (message_id === quoteMessageId) {
                 const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
-                const zaloId = UID.split(' ')[1];
+                const zaloId = await findZaloIdFromUserPhone(UID.split(' ')[1]);
                 const zaloMessageId = MID.split(' ')[1];
 
                 await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
