@@ -403,23 +403,31 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
 
         const attachMessage = {
             text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
-
+------------------------
 Bắt đầu đợt: ${formatDate(start)}
 Kết thúc đợt: ${formatDate(end)}
-
+------------------------
 Buổi học: ${subject}
-Tổng số buổi: ${total}
-Số buổi đã học: ${study}
-Số buổi vắng mặt: ${absent}
-
+Tổng số buổi trong đợt: ${total} buổi
+Số buổi đã học: ${study} buổi
+Số buổi vắng mặt: ${absent} buổi
+------------------------
 Học phí phải nộp: ${formatCurrency(billing)}
-Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}
-Học phí đợt trước: ${remainderBefore >= 0 ? 'thừa' : 'thiếu'} ${formatCurrency(remainderBefore)}
-Học phí đã nộp: ${payment !== null ? formatCurrency(payment) : ''}
-
-Hình thức nộp: ${type !== null ? type : ''}
-Ngày nộp: ${paidDate !== null ? paidDate : ''}
-Học phí thừa: ${remainder >= 0 ? formatCurrency(remainder) : ''}`,
+Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}${
+                remainderBefore === 0
+                    ? ''
+                    : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
+                          remainderBefore
+                      )}`
+            }${
+                payment === null
+                    ? ''
+                    : `\n------------------------
+Học phí đã nộp: ${formatCurrency(payment)}
+Hình thức nộp: ${type}
+Ngày nộp: ${paidDate}
+${remainder >= 0 ? 'Học phí thừa: ' : 'Học phí còn thiếu: '}${formatCurrency(remainder)}`
+            }`,
 
             attachment: {
                 type: 'template',
