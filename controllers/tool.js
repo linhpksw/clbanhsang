@@ -520,6 +520,8 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
             if (message_id === quoteMessageId) {
                 const [UID, MID] = message.split('\n\n').at(-1).split(`\n`);
 
+                console.log(findZaloIdFromUserPhone(zaloColl, UID.split(' ')[1]));
+
                 const zaloId = findZaloIdFromUserPhone(zaloColl, UID.split(' ')[1]);
                 const zaloMessageId = MID.split(' ')[1];
 
