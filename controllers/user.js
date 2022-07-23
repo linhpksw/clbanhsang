@@ -45,8 +45,6 @@ export const userRequest = async (req, res) => {
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         let zaloUserId;
-        console.log(webhook);
-        console.log(eventName);
 
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;

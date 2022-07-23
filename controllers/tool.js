@@ -611,7 +611,7 @@ async function forwardMessage2Assistant(
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1 } }
+        { projection: { _id: 0, students: 1, userPhone: 1 } }
     );
 
     if (isRegister.students.length === 0) {
@@ -620,12 +620,13 @@ async function forwardMessage2Assistant(
         return;
     } else {
         // PHHS da dang ki tai khoan
+        const { userPhone } = isRegister;
         for (let i = 0; i < isRegister.students.length; i++) {
             // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${zaloUserId}\nMID: ${messageId}`;
+            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
