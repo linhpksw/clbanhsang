@@ -489,9 +489,11 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
     }
 }
 
-async function sendImageBack2Parent(res, accessToken, imageInfo) {
-    const { attachments, text: zaloUserId } = imageInfo;
+async function sendImageBack2Parent(res, accessToken, imageInfo, zaloColl) {
+    const { attachments, text: userPhone } = imageInfo;
     const imageUrl = attachments[0].payload.url;
+
+    const zaloUserId = await findZaloIdFromUserPhone(zaloColl, userPhone);
 
     await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
 
@@ -575,7 +577,7 @@ async function forwardImage2Assistant(
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1 } }
+        { projection: { _id: 0, students: 1, userPhone: 1 } }
     );
 
     // PHHS chua dang ki tai khoan thi khong nhan lai
@@ -586,6 +588,7 @@ async function forwardImage2Assistant(
     // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
     else {
         const { attachments, text: content, msg_id: messageId } = imageInfo;
+        const { userPhone } = isRegister;
 
         // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
         for (let i = 0; i < isRegister.students.length; i++) {
@@ -594,7 +597,7 @@ async function forwardImage2Assistant(
             // chuyen tiep tin nhan den tro giang tuong ung
             const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
                 content === undefined ? ':' : ` với nội dung: ${content}.`
-            }\n\nUID: ${zaloUserId}`;
+            }\n\nUID: ${userPhone}`;
 
             await sendImage2Assistant(
                 res,

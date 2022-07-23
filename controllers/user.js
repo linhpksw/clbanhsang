@@ -148,7 +148,7 @@ export const userRequest = async (req, res) => {
             }
             // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
             else {
-                await Tools.sendImageBack2Parent(res, accessToken, imageInfo);
+                await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
             }
         } else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
