@@ -652,6 +652,19 @@ async function forwardOtherMedia2Assistant(
                 }
 
                 break;
+
+            case 'audio':
+                const { url: urlAudio } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi voice\nUrl: ${urlAudio}\n\nUID: ${userPhone}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
         }
     }
 }
