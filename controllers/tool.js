@@ -482,7 +482,7 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
     if (content !== undefined) {
         const [UID, MID] = content.split('\n\n').at(-1).split(`\n`);
 
-        const zaloId = UID.split(' ')[1];
+        const zaloId = await findZaloIdFromUserPhone(zaloColl, UID.split(' ')[1]);
         const zaloMessageId = MID.split(' ')[1];
 
         await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
