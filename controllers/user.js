@@ -235,6 +235,7 @@ export const userRequest = async (req, res) => {
                     zaloUserId,
                     zaloColl,
                     classColl,
+                    classInfoColl,
                     formatContent,
                     messageId,
                     'Phụ huynh'
@@ -246,6 +247,7 @@ export const userRequest = async (req, res) => {
                     zaloUserId,
                     zaloColl,
                     classColl,
+                    classInfoColl,
                     formatContent,
                     messageId,
                     'Học sinh'

@@ -904,7 +904,7 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
 
     const [syntax, classId, taPhone, ...splitName] = content.split(' ');
 
-    const taName = splitName.join(' ');
+    const taName = splitName.join(' ').replace(/\s+/g, ' ').trim();
 
     // check xem da co tro giang tren he thong chua
     const isAssistantExist = await MongoDB.findOneUser(
@@ -1006,7 +1006,17 @@ async function deleteAccount(
     return;
 }
 
-async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatContent, messageId, zaloRole) {
+async function signUp(
+    res,
+    accessToken,
+    zaloUserId,
+    zaloColl,
+    classColl,
+    classInfoColl,
+    formatContent,
+    messageId,
+    zaloRole
+) {
     if (formatContent.length !== 21) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. ${zaloRole} hãy nhập lại.`;
         sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'sad');
@@ -1098,7 +1108,12 @@ async function signUp(res, accessToken, zaloUserId, zaloColl, classColl, formatC
         return;
     }
     // set up role cho zalo user
-    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở mã lớp ${classId}.\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
+    const { className } = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0, className: 1 } }
+    );
+    const successContent = `✅ Đăng kí thành công!\n\nZalo ${displayName} đã được đăng kí với học sinh ${fullName} có ID là ${targetStudentId} ở lớp ${className}.\n\n${zaloRole} đã có thể sử dụng đầy đủ các tính năng của lớp toán ở mục tiện ích bên dưới.`;
 
     sendResponse2Client(res, accessToken, zaloUserId, messageId, successContent, 'heart');
 
