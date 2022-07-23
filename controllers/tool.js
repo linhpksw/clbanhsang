@@ -124,6 +124,8 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
+        const studentName = aliasName.slice(3);
+
         const { currentTerm, className } = await MongoDB.findOneUser(
             classInfoColl,
             { classId: classId },
@@ -136,7 +138,17 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
             { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
         );
 
-        const { studentName, terms } = studentTermInfo;
+        if (studentTermInfo === null) {
+            const failContent = `Dữ liệu điểm danh đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+            res.send('Done!');
+
+            return;
+        }
+
+        const { terms } = studentTermInfo;
 
         const {
             term, // dot hien tai
@@ -305,6 +317,10 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
             const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+            res.send('Done!');
+
+            return;
         }
 
         const { terms } = studentTermInfo;
