@@ -287,6 +287,8 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
+        const studentName = aliasName.slice(3);
+
         const { currentTerm, className } = await MongoDB.findOneUser(
             classInfoColl,
             { classId: classId },
@@ -300,12 +302,12 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
         );
 
         if (studentTermInfo === null) {
-            const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+            const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
         }
 
-        const { studentName, terms } = studentTermInfo;
+        const { terms } = studentTermInfo;
 
         const {
             term, // dot hien tai
