@@ -45,6 +45,8 @@ export const userRequest = async (req, res) => {
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         let zaloUserId;
+        console.log(webhook);
+        console.log(eventName);
 
         if (eventName === 'user_click_chatnow') {
             zaloUserId = webhook.user_id;
@@ -151,7 +153,6 @@ export const userRequest = async (req, res) => {
                 await Tools.sendImageBack2Parent(res, accessToken, imageInfo);
             }
         } else if (eventName === 'user_send_text') {
-            console.log(webhook);
             zaloUserId = webhook.sender.id;
 
             const messageId = webhook.message.msg_id;
