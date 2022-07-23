@@ -242,7 +242,7 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
             return `- ${no}: ${teacher} - ${beautifyDate}`;
         });
 
-        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} kết quả chuyên cần đợt ${term} như sau:
+        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} kết quả chuyên cần đợt ${term} như sau:
 ------------------------
 Tổng số buổi đợt ${term}: ${total} buổi
 ------------------------
@@ -402,7 +402,7 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
         } = terms[0];
 
         const attachMessage = {
-            text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} lớp ${className} tình trạng học phí đợt ${term} như sau:
+            text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
 ------------------------
 Bắt đầu đợt: ${formatDate(start)}
 Kết thúc đợt: ${formatDate(end)}
