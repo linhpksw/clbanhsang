@@ -53,7 +53,7 @@ async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
         const attachMessage = {
             text: `Zalo ${displayName} đã đăng kí số ${userPhone} với học sinh ${studentRegister.join(', ')}. 
 Phụ huynh có muốn đăng kí thêm cho học sinh khác không?
-(Nhấn nút bên dưới để xác nhận đăng kí thêm)`,
+(Nhấn nút bên dưới để xác nhận)`,
             attachment: {
                 type: 'template',
                 payload: {
@@ -1068,10 +1068,10 @@ async function deleteAccount(
     const registerPhone = formatContent.slice(-10);
 
     // Xoa tag va thong tin tren Zalo OA chat
-    const { zaloUserId, students } = await MongoDB.findOneUser(
+    const { zaloUserId, students, displayName } = await MongoDB.findOneUser(
         zaloColl,
         { userPhone: registerPhone },
-        { projection: { _id: 0, zaloUserId: 1, students: 1 } }
+        { projection: { _id: 0, zaloUserId: 1, students: 1, displayName: 1 } }
     );
 
     for (let i = 0; i < students.length; i++) {
@@ -1089,7 +1089,11 @@ async function deleteAccount(
         { $set: { userPhone: null, students: [] } }
     );
 
-    const successContent = `🗑️ Xoá thành công tài khoản ${registerPhone} được đăng kí với học sinh ${targetStudentId}.`;
+    const sendResponse2DeleteUser = `Zalo ${displayName} đã xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} bởi trợ giảng.`;
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
+
+    const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
 
     await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
 
