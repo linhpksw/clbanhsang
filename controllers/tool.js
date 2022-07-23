@@ -501,11 +501,13 @@ async function sendImageBack2Parent(res, accessToken, imageInfo) {
 }
 
 async function findZaloIdFromUserPhone(zaloColl, userPhone) {
-    return await MongoDB.findOneUser(
+    const result = await MongoDB.findOneUser(
         zaloColl,
         { userPhone: userPhone },
         { projection: { _id: 0, zaloUserId: 1 } }
-    ).zaloUserId;
+    );
+
+    return result.zaloUserId;
 }
 
 async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId) {
