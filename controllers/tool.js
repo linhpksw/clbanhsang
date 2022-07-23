@@ -501,7 +501,7 @@ async function sendImageBack2Parent(res, accessToken, imageInfo) {
 }
 
 async function findZaloIdFromUserPhone(zaloColl, userPhone) {
-    const result = MongoDB.findOneUser(
+    const result = await MongoDB.findOneUser(
         zaloColl,
         { userPhone: userPhone },
         { projection: { _id: 0, zaloUserId: 1 } }
