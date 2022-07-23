@@ -565,6 +565,97 @@ async function sendImage2Assistant(
     return;
 }
 
+async function forwardOtherMedia2Assistant(
+    res,
+    accessToken,
+    zaloUserId,
+    zaloColl,
+    classInfoColl,
+    mediaInfo,
+    localeTimeStamp
+) {
+    const isRegister = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: `${zaloUserId}` },
+        { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
+    );
+
+    // PHHS chua dang ki tai khoan thi khong nhan lai
+    if (isRegister.students.length === 0) {
+        await res.send('Done');
+        return;
+    }
+    // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
+    else {
+        const { userPhone, displayName } = isRegister;
+
+        const { attachments, text: content, msg_id: messageId } = mediaInfo;
+        const { payload, type } = attachments[0];
+
+        switch (type) {
+            case 'link':
+                const { description: descLink, url: urlLink } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi link:\nMô tả: ${descLink}\nUrl: ${urlLink} \n\nUID: ${userPhone}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
+
+                break;
+
+            case 'sticker':
+                const { url: urlSticker } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi Sticker:\nUrl: ${urlSticker} \n\nUID: ${userPhone}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
+
+                break;
+
+            case 'video':
+                const { description: descVideo, url: urlVideo } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi video:\nNội dung: ${descVideo}\nUrl: ${urlVideo} \n\nUID: ${userPhone}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
+
+                break;
+
+            case 'file':
+                const { url: urlFile, size: sizeFile, name: nameFile, type: typeFile } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi file:\nTên File: ${nameFile}\nLoại: ${typeFile}\nKích cỡ: ${sizeFile}\nUrl: ${urlFile} \n\nUID: ${userPhone}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
+
+                break;
+        }
+    }
+}
+
 async function forwardImage2Assistant(
     res,
     accessToken,
@@ -577,7 +668,7 @@ async function forwardImage2Assistant(
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1, userPhone: 1 } }
+        { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
     );
 
     // PHHS chua dang ki tai khoan thi khong nhan lai
@@ -588,14 +679,14 @@ async function forwardImage2Assistant(
     // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
     else {
         const { attachments, text: content, msg_id: messageId } = imageInfo;
-        const { userPhone } = isRegister;
+        const { userPhone, displayName } = isRegister;
 
         // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
         for (let i = 0; i < isRegister.students.length; i++) {
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
+            const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
                 content === undefined ? ':' : ` với nội dung: ${content}.`
             }\n\nUID: ${userPhone}`;
 
@@ -624,7 +715,7 @@ async function forwardMessage2Assistant(
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1, userPhone: 1 } }
+        { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
     );
 
     if (isRegister.students.length === 0) {
@@ -633,13 +724,13 @@ async function forwardMessage2Assistant(
         return;
     } else {
         // PHHS da dang ki tai khoan
-        const { userPhone } = isRegister;
+        const { userPhone, displayName } = isRegister;
         for (let i = 0; i < isRegister.students.length; i++) {
             // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
+            const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
 
@@ -1063,4 +1154,5 @@ export {
     signUp4Student,
     forwardImage2Assistant,
     sendImageBack2Parent,
+    forwardOtherMedia2Assistant,
 };

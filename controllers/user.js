@@ -117,7 +117,45 @@ export const userRequest = async (req, res) => {
                 res.send('Done!');
                 return;
             }
-        } else if (eventName === 'user_send_image') {
+        }
+        // Nguoi dung gui tin nhan link, audio, video, sticker, ...
+        else if (
+            eventName === 'user_send_link' ||
+            eventName === 'user_send_audio' ||
+            eventName === 'user_send_video' ||
+            eventName === 'user_send_file'
+        ) {
+            zaloUserId = webhook.sender.id;
+
+            // Check xem nguoi dung da follow OA chua
+            if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
+                // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+
+                // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+
+                res.send('Done!');
+                return;
+            }
+
+            // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+            if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
+                const mediaInfo = webhook.message;
+
+                await Tools.forwardOtherMedia2Assistant(
+                    res,
+                    accessToken,
+                    zaloUserId,
+                    zaloColl,
+                    classInfoColl,
+                    mediaInfo,
+                    localeTimeStamp
+                );
+            }
+        }
+        // Mguoi dung gui tin nhan hinh anh
+        else if (eventName === 'user_send_image') {
             zaloUserId = webhook.sender.id;
             const imageInfo = webhook.message;
 
@@ -150,7 +188,9 @@ export const userRequest = async (req, res) => {
             else {
                 await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
             }
-        } else if (eventName === 'user_send_text') {
+        }
+        // Nguoi dung gui tin nhan text
+        else if (eventName === 'user_send_text') {
             zaloUserId = webhook.sender.id;
 
             const messageId = webhook.message.msg_id;
