@@ -112,7 +112,13 @@ export const userRequest = async (req, res) => {
 
                 const reactIcon = webhook.message.react_icon;
 
-                await Tools.sendReactBack2Parent(accessToken, zaloUserId, reactMessageId, reactIcon);
+                await Tools.sendReactBack2Parent(
+                    accessToken,
+                    zaloUserId,
+                    reactMessageId,
+                    reactIcon,
+                    zaloColl
+                );
 
                 res.send('Done!');
                 return;

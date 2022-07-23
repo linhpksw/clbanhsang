@@ -476,7 +476,7 @@ async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     }
 }
 
-async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIcon) {
+async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIcon, zaloColl) {
     const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
 
     if (content !== undefined) {
