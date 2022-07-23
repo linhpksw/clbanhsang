@@ -299,6 +299,12 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
             { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
         );
 
+        if (studentTermInfo === null) {
+            const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+        }
+
         const { studentName, terms } = studentTermInfo;
 
         const {
