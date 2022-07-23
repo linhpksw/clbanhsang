@@ -218,9 +218,9 @@ export const userRequest = async (req, res) => {
 
             // Check xem nguoi dung da follow OA chua
             if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+                const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
-                // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
                 await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
@@ -359,6 +359,31 @@ export const userRequest = async (req, res) => {
                                         title: 'Tôi muốn đăng kí khối THPT',
                                         payload: '#thpt',
                                         type: 'oa.query.hide',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                    res.send('Done!');
+
+                    return;
+                }
+
+                // Dia chi hoc
+                else if (formatContent === '#dc') {
+                    const attachMessage = {
+                        text: `Câu lạc bộ Ánh Sáng có địa chỉ tại tầng 1 trường THCS Nguyễn Trãi - Hà Đông. (Cạnh nhà thờ Hà Đông)`,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: 'Xem cụ thể trên bản đồ',
+                                        payload: { url: 'https://goo.gl/maps/PoghpFpVtydccEYL6' },
+                                        type: 'oa.open.url',
                                     },
                                 ],
                             },
