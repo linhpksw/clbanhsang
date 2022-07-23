@@ -118,6 +118,64 @@ dkhs 2005xxx 0912345678
     return;
 }
 
+async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
+    for (let i = 0; i < zaloStudentInfo.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+
+        const studentName = aliasName.slice(3);
+
+        const { currentTerm, className, assistants } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1, className: 1, assistants: 1 } }
+        );
+
+        if (assistants.length === 0) {
+            const failContent = `Hiện tại chưa có thông tin trợ giảng của con ${studentName} ${studentId} ở lớp ${className} ạ.`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+        } else {
+            const { taName, taPhone } = assistants[0];
+
+            const successContent = `Lớp toán xin gửi đến ${role.toLowerCase()} ${studentName} ở lớp ${className} số điện thoại chị trợ giảng ${taName} là ${taPhone}. Lớp toán có chức năng tự động chuyển tiếp tin nhắn đến từng trợ giảng quản lí lớp nên tin nhắn sẽ luôn được trả lời trong thời gian sớm nhất. ${role} chỉ nên liên hệ trợ giảng trong trường hợp muốn gọi trực tiếp ạ!`;
+
+            const attachMessage = {
+                text: successContent,
+                attachment: {
+                    type: 'template',
+                    payload: {
+                        buttons: [
+                            {
+                                title: `Nhắn tin đến trợ giảng ${taName}`,
+                                type: 'oa.open.sms',
+                                payload: {
+                                    content: `Chào ${taName}, tôi là ${role.toLowerCase()} ${studentName} ở lớp ${className}`,
+                                    phone_code: taPhone,
+                                },
+                            },
+                            {
+                                title: `Gọi điện đến trợ giảng ${taName}`,
+                                type: 'oa.open.phone',
+                                payload: {
+                                    phone_code: taPhone,
+                                },
+                            },
+                        ],
+                    },
+                },
+            };
+
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+        }
+    }
+
+    res.send('Done!');
+
+    return;
+}
+
 async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
@@ -1222,4 +1280,5 @@ export {
     forwardImage2Assistant,
     sendImageBack2Parent,
     forwardOtherMedia2Assistant,
+    sendAssistantInfo,
 };

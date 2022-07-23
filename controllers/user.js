@@ -331,14 +331,17 @@ export const userRequest = async (req, res) => {
                 if (formatContent === '#dktk') {
                     await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
                 }
+
                 // 1b Vai tro dang ki
                 else if (formatContent === '#vtdk') {
                     await Tools.signUpRole(res, accessToken, zaloUserId);
                 }
+
                 // 1c Dang ki cho phu huynh
                 else if (formatContent === '#dkph') {
                     await Tools.signUp4Parent(res, accessToken, zaloUserId);
                 }
+
                 // 1d Dang ki cho hoc sinh
                 else if (formatContent === '#dkhs') {
                     await Tools.signUp4Student(res, accessToken, zaloUserId);
@@ -649,6 +652,15 @@ export const userRequest = async (req, res) => {
                 // 6) Diem danh dot hien tai
                 else if (formatContent === '#ddht') {
                     await Tools.sendAttendanceInfo(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        zaloColl,
+                        classInfoColl,
+                        studentInfoColl
+                    );
+                } else if (formatContent === '#lhtg') {
+                    await Tools.sendAssistantInfo(
                         res,
                         accessToken,
                         zaloUserId,
