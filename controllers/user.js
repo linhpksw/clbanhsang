@@ -254,7 +254,8 @@ export const userRequest = async (req, res) => {
                             accessToken,
                             zaloUserId,
                             replyContent,
-                            quoteMessageId
+                            quoteMessageId,
+                            zaloColl
                         );
                     } else {
                         res.send('Done!');
