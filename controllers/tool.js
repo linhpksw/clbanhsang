@@ -601,7 +601,7 @@ async function forwardOtherMedia2Assistant(
                     const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                     // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi link:\nMô tả: ${descLink}\nUrl: ${urlLink} \n\nUID: ${userPhone}`;
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi link: ${urlLink} \n\nUID: ${userPhone}\nMID: ${messageId}`;
 
                     await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
                 }
@@ -616,7 +616,7 @@ async function forwardOtherMedia2Assistant(
                     const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                     // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi Sticker:\nUrl: ${urlSticker} \n\nUID: ${userPhone}`;
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi sticker: ${urlSticker} \n\nUID: ${userPhone}\nMID: ${messageId}`;
 
                     await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
                 }
@@ -631,7 +631,7 @@ async function forwardOtherMedia2Assistant(
                     const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                     // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi video:\nNội dung: ${descVideo}\nUrl: ${urlVideo} \n\nUID: ${userPhone}`;
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi video: ${urlVideo} \n\nUID: ${userPhone}\nMID: ${messageId}`;
 
                     await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
                 }
@@ -646,7 +646,7 @@ async function forwardOtherMedia2Assistant(
                     const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                     // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi file:\nTên File: ${nameFile}\nLoại: ${typeFile}\nKích cỡ: ${sizeFile}\nUrl: ${urlFile} \n\nUID: ${userPhone}`;
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi file: ${nameFile}\nLink: ${urlFile} \n\nUID: ${userPhone}\nMID: ${messageId}`;
 
                     await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
                 }
@@ -661,10 +661,25 @@ async function forwardOtherMedia2Assistant(
                     const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
                     // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi voice\nUrl: ${urlAudio}\n\nUID: ${userPhone}`;
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi voice: ${urlAudio}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
                     await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
                 }
+                break;
+
+            case 'image':
+                const { url: urlImage } = payload;
+
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                for (let i = 0; i < isRegister.students.length; i++) {
+                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+
+                    // chuyen tiep tin nhan den tro giang tuong ung
+                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh: ${urlImage}\n\nUID: ${userPhone}\nMID: ${messageId}`;
+
+                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+                }
+                break;
         }
     }
 }
