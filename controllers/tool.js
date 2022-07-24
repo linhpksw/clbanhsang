@@ -418,8 +418,8 @@ Tình trạng: ${
                     ? payment === billing
                         ? 'Đóng đủ ✅'
                         : payment > billing
-                        ? `Đóng thừa ${formatCurrency(payment - billing)} 🔔`
-                        : `Đóng thiếu ${formatCurrency(billing - payment)} 🚨`
+                        ? `Thừa ${formatCurrency(payment - billing)} 🔔`
+                        : `Thiếu ${formatCurrency(billing - payment)} ❌`
                     : 'Chưa đóng ❌'
             }${
                 remainderBefore === 0
