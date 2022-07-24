@@ -404,22 +404,14 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
         const attachMessage = {
             text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
 ------------------------
-Bắt đầu đợt: ${formatDate(start)}
-Kết thúc đợt: ${formatDate(end)}
-------------------------
-Buổi học: ${subject}
-Tổng số buổi trong đợt: ${total} buổi
-Số buổi đã học: ${study} buổi
-Số buổi vắng mặt: ${absent} buổi
-------------------------
 Học phí phải nộp: ${formatCurrency(billing)}
 Tình trạng: ${
                 payment !== null
                     ? payment === billing
                         ? 'Đóng đủ ✅'
                         : payment > billing
-                        ? `Thừa ${formatCurrency(payment - billing)} 🔔`
-                        : `Thiếu ${formatCurrency(billing - payment)} ❌`
+                        ? `thừa ${formatCurrency(payment - billing)} 🔔`
+                        : `thiếu ${formatCurrency(billing - payment)} ❌`
                     : 'Chưa đóng ❌'
             }${
                 remainderBefore === 0
@@ -427,15 +419,24 @@ Tình trạng: ${
                     : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
                           remainderBefore
                       )}`
-            }${
-                payment === null
-                    ? ''
-                    : `\n------------------------
+            }              
+------------------------
+Bắt đầu đợt: ${formatDate(start)}
+Kết thúc đợt: ${formatDate(end)}
+------------------------
+Buổi học: ${subject}
+Tổng số buổi trong đợt: ${total} buổi
+Số buổi đã học: ${study} buổi
+Số buổi vắng mặt: ${absent} buổi
+${
+    payment === null
+        ? ''
+        : `\n------------------------
 Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-            }`,
+}`,
 
             attachment: {
                 type: 'template',
