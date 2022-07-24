@@ -413,7 +413,15 @@ Số buổi đã học: ${study} buổi
 Số buổi vắng mặt: ${absent} buổi
 ------------------------
 Học phí phải nộp: ${formatCurrency(billing)}
-Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}${
+Tình trạng: ${
+                payment !== null
+                    ? payment === billing
+                        ? 'Đóng đủ ✅'
+                        : payment > billing
+                        ? `Đóng thừa ${formatCurrency(payment - billing)} 🔔`
+                        : `Đóng thiếu ${formatCurrency(billing - payment)} 🚨`
+                    : 'Chưa đóng ❌'
+            }${
                 remainderBefore === 0
                     ? ''
                     : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
@@ -426,7 +434,7 @@ Tình trạng: ${payment !== null ? 'Đã thu ✅' : 'Chưa thu ❌'}${
 Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
-${remainder >= 0 ? 'Học phí thừa: ' : 'Học phí còn thiếu: '}${formatCurrency(remainder)}`
+${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
             }`,
 
             attachment: {
