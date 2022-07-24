@@ -427,16 +427,15 @@ Kết thúc đợt: ${formatDate(end)}
 Buổi học: ${subject}
 Tổng số buổi trong đợt: ${total} buổi
 Số buổi đã học: ${study} buổi
-Số buổi vắng mặt: ${absent} buổi
-${
-    payment === null
-        ? ''
-        : `\n------------------------
+Số buổi vắng mặt: ${absent} buổi${
+                payment === null
+                    ? ''
+                    : `\n------------------------
 Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-}`,
+            }`,
 
             attachment: {
                 type: 'template',
