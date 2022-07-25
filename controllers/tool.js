@@ -38,7 +38,9 @@ async function checkRegister(res, accessToken, taZaloId, classInfoColl, zaloColl
 
             let parentRegisters = [];
 
-            await cursor.toArray().forEach((v) => {
+            const result = await cursor.toArray();
+
+            result.forEach((v) => {
                 const { displayName, userPhone, students } = v;
                 const { zaloStudentId, alisaName } = v[0];
 
