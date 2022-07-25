@@ -683,7 +683,7 @@ export const userRequest = async (req, res) => {
                     await Tools.checkRegister(
                         res,
                         accessToken,
-                        taZaloId,
+                        zaloUserId,
                         classInfoColl,
                         zaloColl,
                         classColl,
