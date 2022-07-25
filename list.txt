@@ -1,0 +1,24 @@
+A #phdk
+- Danh sách học sinh đã có PH đăng kí lớp 2005A0 (Đang học)
+- 5/35 HS
+
+1) Nguyễn Văn An 2005001
+- PH Dung Dinh 0963940818
+- PH Ngo Thi 0985694365
+
+1) Nguyễn Văn An 2005001
+- PH Dung Dinh 0963940818
+- PH Ngo Thi 0985694365
+
+B #phcdk
+- Danh sách học sinh chưa có PH đăng kí lớp 2005A0 (Đang học)
+- 5/35 HS
+
+1) Nguyễn Văn An 2005001
+
+2) Nguyễn Văn An 2005001
+
+C #hsdk
+- Danh sách học sinh đã đăng kí lớp 2005A0 (Đang học)
+
+D # hscdk

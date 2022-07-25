@@ -659,7 +659,10 @@ export const userRequest = async (req, res) => {
                         classInfoColl,
                         studentInfoColl
                     );
-                } else if (formatContent === '#lhtg') {
+                }
+
+                // Lien he tro giang
+                else if (formatContent === '#lhtg') {
                     await Tools.sendAssistantInfo(
                         res,
                         accessToken,
@@ -667,6 +670,24 @@ export const userRequest = async (req, res) => {
                         zaloColl,
                         classInfoColl,
                         studentInfoColl
+                    );
+                }
+
+                // Danh cho tro giang
+                else if (formatContent === '#dctg') {
+                    await Tools.assistantMenu(res, accessToken, zaloUserId, classInfoColl);
+                }
+
+                // Kiem tra dang ki
+                else if (formatContent === '#phdk') {
+                    await Tools.checkRegister(
+                        res,
+                        accessToken,
+                        taZaloId,
+                        classInfoColl,
+                        zaloColl,
+                        classColl,
+                        formatContent
                     );
                 }
             }

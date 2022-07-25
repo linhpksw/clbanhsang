@@ -1,5 +1,147 @@
+import { file } from 'googleapis/build/src/apis/file/index.js';
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
+
+async function checkRegister(res, accessToken, taZaloId, classInfoColl, zaloColl, classColl, filter) {
+    // Check xem co phai do Tro giang nhan khong
+    if (!(await isManager(taZaloId, classInfoColl))) {
+        const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
+        await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
+
+        res.send('Done!');
+        return;
+    }
+
+    const { classId } = await MongoDB.findOneUser(
+        classInfoColl,
+        { 'assistants.taZaloId': taZaloId },
+        { projection: { _id: 0, classId: 1 } }
+    );
+
+    // // Lay danh sach hoc sinh dang hoc tai lop
+    // const cursor = classColl.find(
+    //     { classId: classId },
+    //     { projection: { _id: 0, studentId: 1, fullName: 1 } }
+    // );
+
+    // let studentLists = {};
+
+    // await cursor.forEach((v) => (studentLists[v.studentId] = v.fullName));
+
+    switch (filter) {
+        case '#phdk':
+            // Lay danh sach hoc sinh da co phu huynh dang ki lop xx (Dang hoc)
+            const cursor = zaloColl.find(
+                { 'students.zaloClassId': classId, 'students.role': 'Phụ huynh' },
+                { projection: { _id: 0, 'students.$': 1, displayName: 1, userPhone: 1 } }
+            );
+
+            let parentRegisters = [];
+
+            await cursor.toArray().forEach((v) => {
+                const { displayName, userPhone, students } = v;
+                const { zaloStudentId, alisaName } = v[0];
+
+                const studentName = alisaName.slice(3);
+
+                const objIndex = parentRegisters.findIndex((obj) => obj.studentId == zaloStudentId);
+
+                // Kiem tra hoc sinh da co phu huynh dang ki chua
+                // Neu co roi thi day them vao
+                if (objIndex !== -1) {
+                    parentRegisters[objIndex].parents.push({
+                        parentName: displayName,
+                        parentPhone: userPhone,
+                    });
+                }
+                // Neu chua thi them moi
+                else {
+                    parentRegisters.push({
+                        studentName: studentName,
+                        studentId: zaloStudentId,
+                        parents: [
+                            {
+                                parentName: displayName,
+                                parentPhone: userPhone,
+                            },
+                        ],
+                    });
+                }
+            });
+            // Tao danh sach PH dang ki
+            const writeParentRegisters = parentRegisters.map((v, i) => {
+                const { studentName, studentId, parents } = v;
+
+                const listParents = parents.map((e) => {
+                    const { parentName, parentPhone } = e;
+
+                    return `- PH ${parentName} ${parentPhone}`;
+                });
+
+                return `${i + 1}) ${studentName} ${studentId}\n${listParents.join(`\n`)}`;
+            });
+
+            const totalRegister = writeParentRegisters.length;
+            // Gui tin den tro giang
+            const parentRegistersContent = `Danh sách học sinh đã có PH đăng kí lớp ${classId}: ${totalRegister}\n\n${writeParentRegisters.join(
+                `\n\n`
+            )}`;
+
+            await ZaloAPI.sendMessage(accessToken, taZaloId, parentRegistersContent);
+
+            break;
+    }
+    res.send('Done');
+    return;
+}
+
+async function assistantMenu(res, accessToken, taZaloId, classInfoColl) {
+    // Check xem co phai do Tro giang nhan khong
+    if (!(await isManager(taZaloId, classInfoColl))) {
+        const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
+        await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
+
+        res.send('Done!');
+        return;
+    }
+
+    const attachMessage = {
+        text: `Các tính năng dành cho trợ giảng:`,
+        attachment: {
+            type: 'template',
+            payload: {
+                buttons: [
+                    {
+                        title: 'Kiểm tra đăng kí',
+                        payload: '#ktdk',
+                        type: 'oa.query.hide',
+                    },
+                    {
+                        title: 'Nhắc các học sinh không có mặt hôm nay',
+                        payload: '#dkhs',
+                        type: 'oa.query.hide',
+                    },
+                    {
+                        title: 'Nhắc các học sinh không nộp bài',
+                        payload: '#dkhs',
+                        type: 'oa.query.hide',
+                    },
+                    {
+                        title: 'Nhắc các học sinh chưa nộp học',
+                        payload: '#dkhs',
+                        type: 'oa.query.hide',
+                    },
+                ],
+            },
+        },
+    };
+
+    await ZaloAPI.sendMessageWithButton(accessToken, taZaloId, attachMessage);
+
+    res.send('Done!');
+
+    return;
+}
 
 async function signUpRole(res, accessToken, zaloUserId) {
     const attachMessage = {
@@ -1062,6 +1204,9 @@ async function deleteAccount(
 ) {
     // Check xem co phai do Tro giang nhan khong
     if (!(await isManager(taZaloId, classInfoColl))) {
+        const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
+        await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
+
         res.send('Done!');
         return;
     }
@@ -1301,4 +1446,6 @@ export {
     sendImageBack2Parent,
     forwardOtherMedia2Assistant,
     sendAssistantInfo,
+    assistantMenu,
+    checkRegister,
 };
