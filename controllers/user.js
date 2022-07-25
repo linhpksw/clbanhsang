@@ -678,8 +678,11 @@ export const userRequest = async (req, res) => {
                     await Tools.assistantMenu(res, accessToken, zaloUserId, classInfoColl);
                 }
 
-                // Kiem tra dang ki
-                else if (formatContent === '#phdk') {
+                // Danh sach hoc sinh da co phu huynh dang ki
+                else if (formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11) {
+                    const classId = formatContent.slice(5);
+                    const syntax = formatContent.slice(0, 5);
+
                     await Tools.checkRegister(
                         res,
                         accessToken,
@@ -687,7 +690,25 @@ export const userRequest = async (req, res) => {
                         classInfoColl,
                         zaloColl,
                         classColl,
-                        formatContent
+                        classId,
+                        syntax
+                    );
+                }
+
+                // Danh sach hoc sinh chua co phu huynh dang ki
+                else if (formatContent.slice(0, 6) === '#dkcph' && formatContent.length === 12) {
+                    const classId = formatContent.slice(6);
+                    const syntax = formatContent.slice(0, 6);
+
+                    await Tools.checkRegister(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classInfoColl,
+                        zaloColl,
+                        classColl,
+                        classId,
+                        syntax
                     );
                 }
             }
