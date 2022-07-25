@@ -42,9 +42,9 @@ async function checkRegister(res, accessToken, taZaloId, classInfoColl, zaloColl
 
             result.forEach((v) => {
                 const { displayName, userPhone, students } = v;
-                const { zaloStudentId, alisaName } = v[0];
+                const { zaloStudentId, aliasName } = students[0];
 
-                const studentName = alisaName.slice(3);
+                const studentName = aliasName.slice(3);
 
                 const objIndex = parentRegisters.findIndex((obj) => obj.studentId == zaloStudentId);
 
