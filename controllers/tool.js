@@ -85,33 +85,74 @@ async function checkRegister(
 
             break;
 
+        case '#dkhs':
+            // Lay danh sach hoc sinh da dang ki lop xx (Dang hoc)
+            const cursorStudentRegister = zaloColl.find(
+                { 'students.zaloClassId': classId, 'students.role': 'Học sinh' },
+                { projection: { _id: 0, 'students.$': 1, displayName: 1, userPhone: 1 } }
+            );
+
+            let studentRegisters = [];
+
+            const resultStudentRegister = await cursorStudentRegister.toArray();
+
+            resultStudentRegister.forEach((v) => {
+                const { displayName, userPhone, students } = v;
+                const { zaloStudentId, aliasName } = students[0];
+
+                const studentName = aliasName.slice(3);
+
+                studentRegisters.push({
+                    studentName: studentName,
+                    studentId: zaloStudentId,
+                    studentPhone: userPhone,
+                });
+            });
+            // Tao danh sach hoc sinh dang ki
+            const writeStudentRegisters = studentRegisters.map((v, i) => {
+                const { studentName, studentId, studentPhone } = v;
+
+                return `${i + 1}) ${studentName} ${studentPhone}`;
+            });
+
+            // Gui tin den tro giang
+            const studentRegistersContent = `Danh sách học sinh đã đăng kí lớp ${classId}:\n\n${writeStudentRegisters.join(
+                `\n\n`
+            )}`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, studentRegistersContent);
+
+            break;
+
         case '#cdkph':
             // Lay danh sach hoc sinh dang hoc tai lop
-            const cursorStudent = classColl.find(
+            const cursorStudentForParent = classColl.find(
                 { classId: classId },
                 { projection: { _id: 0, studentId: 1, fullName: 1 } }
             );
 
-            let studentLists = [];
+            let studentListsForParent = [];
 
-            await cursorStudent.forEach((v) => {
+            await cursorStudentForParent.forEach((v) => {
                 const { studentId, fullName } = v;
 
-                studentLists.push([studentId, fullName]);
+                studentListsForParent.push([studentId, fullName]);
             });
 
             // Lay danh sach hoc sinh da co phu huynh dang ki
-            const cursorRegister = zaloColl.find(
+            const cursorRegisterForParent = zaloColl.find(
                 { 'students.zaloClassId': classId, 'students.role': 'Phụ huynh' },
                 { projection: { _id: 0, 'students.$': 1 } }
             );
 
-            let registers = [];
+            let registersForParent = [];
 
-            await cursorRegister.forEach((v) => registers.push(v.zaloStudentId));
+            await cursorRegisterForParent.forEach((v) => registersForParent.push(v.zaloStudentId));
 
             // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-            const parentNotRegisters = studentLists.filter((v) => !registers.includes(v[0]));
+            const parentNotRegisters = studentListsForParent.filter(
+                (v) => !registersForParent.includes(v[0])
+            );
 
             // Tao danh sach PH chua dang ki
             const writeParentNotRegisters = parentNotRegisters.map((v, i) => {
@@ -126,6 +167,50 @@ async function checkRegister(
             )}`;
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, parentNotRegistersContent);
+
+            break;
+
+        case '#cdkhs':
+            // Lay danh sach hoc sinh dang hoc tai lop
+            const cursorStudent = classColl.find(
+                { classId: classId },
+                { projection: { _id: 0, studentId: 1, fullName: 1 } }
+            );
+
+            let studentLists = [];
+
+            await cursorStudent.forEach((v) => {
+                const { studentId, fullName } = v;
+
+                studentLists.push([studentId, fullName]);
+            });
+
+            // Lay danh sach hoc sinh da dang ki
+            const cursorRegister = zaloColl.find(
+                { 'students.zaloClassId': classId, 'students.role': 'Học sinh' },
+                { projection: { _id: 0, 'students.$': 1 } }
+            );
+
+            let registers = [];
+
+            await cursorRegister.forEach((v) => registers.push(v.zaloStudentId));
+
+            // Loc ra danh sach hoc sinh chua dang ki
+            const studentNotRegisters = studentLists.filter((v) => !registers.includes(v[0]));
+
+            // Tao danh sach hoc sinh chua dang ki
+            const writeStudentNotRegisters = studentNotRegisters.map((v, i) => {
+                const [studentId, fullName] = v;
+
+                return `${i + 1}) ${fullName} ${studentId}`;
+            });
+
+            // Gui tin den tro giang
+            const studentNotRegistersContent = `Danh sách học sinh phụ huynh chưa đăng kí lớp ${classId}:\n\n${writeStudentNotRegisters.join(
+                `\n\n`
+            )}`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, studentNotRegistersContent);
 
             break;
     }

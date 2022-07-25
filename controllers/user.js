@@ -711,6 +711,40 @@ export const userRequest = async (req, res) => {
                         syntax
                     );
                 }
+
+                // Danh sach hoc sinh da dang ki
+                else if (formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11) {
+                    const classId = content.slice(5);
+                    const syntax = formatContent.slice(0, 5);
+
+                    await Tools.checkRegister(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classInfoColl,
+                        zaloColl,
+                        classColl,
+                        classId,
+                        syntax
+                    );
+                }
+
+                // Danh sach hoc sinh chua dang ki
+                else if (formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12) {
+                    const classId = content.slice(6);
+                    const syntax = formatContent.slice(0, 6);
+
+                    await Tools.checkRegister(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classInfoColl,
+                        zaloColl,
+                        classColl,
+                        classId,
+                        syntax
+                    );
+                }
             }
         }
     } catch (err) {
