@@ -162,7 +162,7 @@ async function checkRegister(
             });
 
             // Gui tin den tro giang
-            const parentNotRegistersContent = `Danh sách học sinh phụ huynh chưa đăng kí lớp ${classId}:\n\n${writeParentNotRegisters.join(
+            const parentNotRegistersContent = `Danh sách học sinh chưa có phụ huynh đăng kí lớp ${classId}:\n\n${writeParentNotRegisters.join(
                 `\n\n`
             )}`;
 
@@ -206,7 +206,7 @@ async function checkRegister(
             });
 
             // Gui tin den tro giang
-            const studentNotRegistersContent = `Danh sách học sinh phụ huynh chưa đăng kí lớp ${classId}:\n\n${writeStudentNotRegisters.join(
+            const studentNotRegistersContent = `Danh sách học sinh chưa đăng kí lớp ${classId}:\n\n${writeStudentNotRegisters.join(
                 `\n\n`
             )}`;
 
