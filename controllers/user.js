@@ -696,7 +696,7 @@ export const userRequest = async (req, res) => {
                 }
 
                 // Danh sach hoc sinh chua co phu huynh dang ki
-                else if (formatContent.slice(0, 6) === '#dkcph' && formatContent.length === 12) {
+                else if (formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12) {
                     const classId = content.slice(6);
                     const syntax = formatContent.slice(0, 6);
 
