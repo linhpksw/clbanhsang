@@ -612,7 +612,7 @@ export const userRequest = async (req, res) => {
                     // #TT2007A0
                     const classId = content.slice(-6);
 
-                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl, zaloColl);
+                    await Tools.sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId);
                 }
 
                 // 2) Thong tin lop đang hoc

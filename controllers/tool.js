@@ -443,6 +443,66 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
     }
 }
 
+async function sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId) {
+    const classInfo = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0 } }
+    );
+
+    const {
+        className,
+        room,
+        description,
+        status,
+        currentTerm,
+        totalDate,
+        tuition,
+        startTerm,
+        endTerm,
+        assistants,
+        subjects,
+    } = classInfo;
+
+    const assistantInfo = assistants
+        .map((v) => {
+            const { taName, taPhone, taZaloId } = v;
+
+            return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
+        })
+        .join(`\n`);
+
+    const subjectInfo = subjects
+        .map((v, i) => {
+            const { name, teacher, day, start, end, absent } = v;
+
+            return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
+        })
+        .join(`\n`);
+
+    const message = `Câu lạc bộ Toán Ánh Sáng xin gửi thông tin lớp ${className} như sau:
+------------------------------   
+Phòng học: ${room}
+------------------------------
+${assistants.length ? assistantInfo : `Trợ giảng:\nĐiện thoại:`}
+------------------------------
+Giáo viên giảng dạy
+${subjectInfo}
+------------------------------
+Đợt hiện tại: ${currentTerm}
+Tổng số buổi: ${totalDate} buổi
+Bắt đầu đợt: ${startTerm === null ? '' : startTerm}
+Kết thúc đợt: ${endTerm === null ? '' : endTerm}
+------------------------------
+Học phí mỗi buổi: ${tuition}`;
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+
+    res.send('Done!');
+
+    return;
+}
+
 async function sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
@@ -1586,6 +1646,7 @@ export {
     deleteAccount,
     notifyRegister,
     sendClassInfo,
+    sendPublicClassInfo,
     createDate,
     formatDate,
     formatDateTime,
