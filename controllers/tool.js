@@ -1207,7 +1207,7 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
 }
 
 async function sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl) {
-    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
     const { students } = await MongoDB.findOneUser(
         zaloColl,
@@ -1217,8 +1217,6 @@ async function sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloCo
 
     for (let i = 0; i < students.length; i++) {
         const { zaloStudentId, zaloClassId, alisaName, role } = students[i];
-
-        await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId, classInfoColl);
 
         const classInfo = await MongoDB.findOneUser(
             classInfoColl,
