@@ -118,7 +118,7 @@ async function checkRegister(
             const writeStudentRegisters = studentRegisters.map((v, i) => {
                 const { studentName, studentId, studentPhone } = v;
 
-                return `${i + 1}) ${studentName} ${studentPhone}`;
+                return `${i + 1}) ${studentId} ${studentName} ${studentPhone}`;
             });
 
             // Gui tin den tro giang
