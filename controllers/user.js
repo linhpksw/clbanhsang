@@ -634,6 +634,8 @@ export const userRequest = async (req, res) => {
 
                 // 3) Hoc phi dot hien tai
                 else if (formatContent === '#hpht') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
                     await Tools.sendPaymentInfo(
                         res,
                         accessToken,
@@ -646,6 +648,8 @@ export const userRequest = async (req, res) => {
 
                 // 4) Thong tin chuyen khoan
                 else if (formatContent === '#ttck') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
                     await Tools.sendPaymentTypeInfo(
                         res,
                         accessToken,
@@ -658,11 +662,15 @@ export const userRequest = async (req, res) => {
 
                 // 5) Cu phap chuyen khoan
                 else if (formatContent === '#cpck') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
                     await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                 }
 
                 // 6) Diem danh dot hien tai
                 else if (formatContent === '#ddht') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
                     await Tools.sendAttendanceInfo(
                         res,
                         accessToken,
@@ -675,6 +683,8 @@ export const userRequest = async (req, res) => {
 
                 // Lien he tro giang
                 else if (formatContent === '#lhtg') {
+                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
+
                     await Tools.sendAssistantInfo(
                         res,
                         accessToken,
