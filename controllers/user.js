@@ -617,7 +617,7 @@ export const userRequest = async (req, res) => {
 
                 // 2) Thong tin lop đang hoc
                 else if (formatContent === '#ldh') {
-                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl, zaloColl);
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
                 }
 
                 // 3) Hoc phi dot hien tai
