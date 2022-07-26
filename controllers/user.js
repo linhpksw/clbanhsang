@@ -610,7 +610,7 @@ export const userRequest = async (req, res) => {
                     return;
                 } else if (formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9) {
                     // #TT2007A0
-                    const classId = content.slice(-6);
+                    const classId = content.slice(-6).toUpperCase();
 
                     await Tools.sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId);
                 }
