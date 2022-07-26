@@ -298,12 +298,12 @@ async function signUpRole(res, accessToken, zaloUserId) {
                     {
                         title: 'Tôi là phụ huynh',
                         payload: '#dkph',
-                        type: 'oa.query.hide',
+                        type: 'oa.query.show',
                     },
                     {
                         title: 'Con là học sinh',
                         payload: '#dkhs',
-                        type: 'oa.query.hide',
+                        type: 'oa.query.show',
                     },
                 ],
             },
@@ -348,7 +348,7 @@ Phụ huynh có muốn đăng kí thêm cho học sinh khác không?
                         {
                             title: 'Tôi muốn đăng kí thêm cho học sinh khác',
                             payload: '#vtdk',
-                            type: 'oa.query.hide',
+                            type: 'oa.query.show',
                         },
                     ],
                 },
@@ -422,7 +422,7 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
                         {
                             title: 'Đăng kí tài khoản',
                             payload: '#dktk',
-                            type: 'oa.query.hide',
+                            type: 'oa.query.show',
                         },
                     ],
                 },
@@ -795,7 +795,7 @@ Có 2 hình thức nộp học phí bao gồm:
                         {
                             title: 'Sao chép cú pháp chuyển khoản này',
                             payload: '#cpck',
-                            type: 'oa.query.hide',
+                            type: 'oa.query.show',
                         },
                     ],
                 },
@@ -901,12 +901,12 @@ ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${
                         {
                             title: 'Thông tin chuyển khoản',
                             payload: '#ttck',
-                            type: 'oa.query.hide',
+                            type: 'oa.query.show',
                         },
                         {
                             title: 'Cú pháp chuyển khoản',
                             payload: '#cpck',
-                            type: 'oa.query.hide',
+                            type: 'oa.query.show',
                         },
                     ],
                 },

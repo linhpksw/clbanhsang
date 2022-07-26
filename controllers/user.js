@@ -370,12 +370,12 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Tôi muốn đăng kí khối THCS',
                                         payload: '#thcs',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Tôi muốn đăng kí khối THPT',
                                         payload: '#thpt',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -425,12 +425,12 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Khối 8',
                                         payload: '#k8',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Khối 9',
                                         payload: '#k9',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -450,12 +450,12 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Lớp 8A0 chuyên toán',
                                         payload: '#tt2009A0',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Lớp 8A1 chuyên toán',
                                         payload: '#tt2009A1',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -477,17 +477,17 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Lớp 9A0 chuyên toán + chuyên tin',
                                         payload: '#TT2008A0',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Lớp 9A1 chuyên toán + chuyên tin',
                                         payload: '#TT2008A1',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Lớp 9A2 toán điều kiện và nâng cao',
                                         payload: '#TT2008A2',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -512,17 +512,17 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Khối 10',
                                         payload: '#k10',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Khối 11',
                                         payload: '#k11',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Khối 12',
                                         payload: '#k12',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -542,7 +542,7 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Lớp 10A1 nâng cao',
                                         payload: '#tt2007A1',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -564,12 +564,12 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Lớp 11A0 vận dụng cao',
                                         payload: '#tt2006A0',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Lớp 11A1 nâng cao',
                                         payload: '#tt2006A1',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
@@ -591,12 +591,12 @@ export const userRequest = async (req, res) => {
                                     {
                                         title: 'Lớp 12A0 vận dụng cao',
                                         payload: '#tt2005A0',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                     {
                                         title: 'Lớp 12A1 nâng cao',
                                         payload: '#tt2005A1',
-                                        type: 'oa.query.hide',
+                                        type: 'oa.query.show',
                                     },
                                 ],
                             },
