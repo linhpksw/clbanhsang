@@ -1194,7 +1194,7 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
-        res.send('Done!');
+        // res.send('Done!');
 
         return;
     } else {
