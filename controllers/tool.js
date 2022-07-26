@@ -39,36 +39,40 @@ async function checkRegister(
                 resultParentRegister.forEach((v) => {
                     const { displayName, userPhone, students } = v;
 
-                    const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+                    students.forEach((e) => {
+                        const { zaloStudentId, zaloClassId, aliasName } = e;
 
-                    const { zaloStudentId, aliasName } = students[targetClassIdIndex];
+                        if (zaloClassId === classId) {
+                            const studentName = aliasName.slice(3);
+                            const objIndex = parentRegisters.findIndex(
+                                (obj) => obj.studentId == zaloStudentId
+                            );
 
-                    const studentName = aliasName.slice(3);
-
-                    const objIndex = parentRegisters.findIndex((obj) => obj.studentId == zaloStudentId);
-
-                    // Kiem tra hoc sinh da co phu huynh dang ki chua
-                    // Neu co roi thi day them vao
-                    if (objIndex !== -1) {
-                        parentRegisters[objIndex].parents.push({
-                            parentName: displayName,
-                            parentPhone: userPhone,
-                        });
-                    }
-                    // Neu chua thi them moi
-                    else {
-                        parentRegisters.push({
-                            studentName: studentName,
-                            studentId: zaloStudentId,
-                            parents: [
-                                {
+                            // Kiem tra hoc sinh da co phu huynh dang ki chua
+                            // Neu co roi thi day them vao
+                            if (objIndex !== -1) {
+                                parentRegisters[objIndex].parents.push({
                                     parentName: displayName,
                                     parentPhone: userPhone,
-                                },
-                            ],
-                        });
-                    }
+                                });
+                            }
+                            // Neu chua thi them moi
+                            else {
+                                parentRegisters.push({
+                                    studentName: studentName,
+                                    studentId: zaloStudentId,
+                                    parents: [
+                                        {
+                                            parentName: displayName,
+                                            parentPhone: userPhone,
+                                        },
+                                    ],
+                                });
+                            }
+                        }
+                    });
                 });
+
                 // Tao danh sach PH dang ki
                 const writeParentRegisters = parentRegisters.map((v, i) => {
                     const { studentName, studentId, parents } = v;
@@ -110,11 +114,13 @@ async function checkRegister(
                 resultParentRegister.forEach((v) => {
                     const { displayName, userPhone, students } = v;
 
-                    const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+                    students.forEach((e) => {
+                        const { zaloStudentId, zaloClassId, aliasName } = e;
 
-                    const { zaloStudentId, aliasName } = students[targetClassIdIndex];
-
-                    parentRegisters.push(zaloStudentId);
+                        if (zaloClassId === classId) {
+                            parentRegisters.push(zaloStudentId);
+                        }
+                    });
                 });
 
                 // Loc ra danh sach hoc sinh chua co phu huynh dang ki
@@ -153,15 +159,17 @@ async function checkRegister(
                 resultStudentRegister.forEach((v) => {
                     const { displayName, userPhone, students } = v;
 
-                    const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+                    students.forEach((e) => {
+                        const { zaloStudentId, zaloClassId, aliasName } = e;
 
-                    const { zaloStudentId, aliasName } = students[targetClassIdIndex];
-                    const studentName = aliasName.slice(3);
-
-                    studentRegisters.push({
-                        studentName: studentName,
-                        studentId: zaloStudentId,
-                        studentPhone: userPhone,
+                        if (zaloClassId === classId) {
+                            const studentName = aliasName.slice(3);
+                            studentRegisters.push({
+                                studentName: studentName,
+                                studentId: zaloStudentId,
+                                studentPhone: userPhone,
+                            });
+                        }
                     });
                 });
                 // Tao danh sach hoc sinh dang ki
@@ -179,6 +187,7 @@ async function checkRegister(
                 await ZaloAPI.sendMessage(accessToken, zaloUserId, studentRegistersContent);
 
                 break;
+
             case '#cdkhs':
                 // Lay danh sach hoc sinh dang hoc tai lop
                 const cursorStudent = classColl.find(
@@ -196,11 +205,13 @@ async function checkRegister(
                 resultStudentRegister.forEach((v) => {
                     const { displayName, userPhone, students } = v;
 
-                    const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+                    students.forEach((e) => {
+                        const { zaloStudentId, zaloClassId, aliasName } = e;
 
-                    const { zaloStudentId, aliasName } = students[targetClassIdIndex];
-
-                    studentRegisters.push(zaloStudentId);
+                        if (zaloClassId === classId) {
+                            studentRegisters.push(zaloStudentId);
+                        }
+                    });
                 });
 
                 // Loc ra danh sach hoc sinh chua dang ki
