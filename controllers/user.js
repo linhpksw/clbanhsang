@@ -612,12 +612,12 @@ export const userRequest = async (req, res) => {
                     // #TT2007A0
                     const classId = content.slice(-6);
 
-                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl);
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl, zaloColl);
                 }
 
                 // 2) Thong tin lop đang hoc
                 else if (formatContent === '#ldh') {
-                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classId, classInfoColl, zaloColl);
                 }
 
                 // 3) Hoc phi dot hien tai
