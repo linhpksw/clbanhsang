@@ -663,14 +663,7 @@ export const userRequest = async (req, res) => {
 
                 // Lien he tro giang
                 else if (formatContent === '#lhtg') {
-                    await Tools.sendAssistantInfo(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        studentInfoColl
-                    );
+                    await Tools.sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                 }
 
                 // Danh cho tro giang
