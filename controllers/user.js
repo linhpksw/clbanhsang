@@ -617,25 +617,11 @@ export const userRequest = async (req, res) => {
 
                 // 2) Thong tin lop đang hoc
                 else if (formatContent === '#ldh') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
-                    const { students } = await MongoDB.findOneUser(
-                        zaloColl,
-                        { zaloUserId: zaloUserId },
-                        { projection: { _id: 0, students: 1 } }
-                    );
-
-                    for (let i = 0; i < students.length; i++) {
-                        const { zaloStudentId, zaloClassId, alisaName, role } = students[i];
-
-                        await Tools.sendClassInfo(res, accessToken, zaloUserId, zaloClassId, classInfoColl);
-                    }
+                    await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
                 }
 
                 // 3) Hoc phi dot hien tai
                 else if (formatContent === '#hpht') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
                     await Tools.sendPaymentInfo(
                         res,
                         accessToken,
@@ -648,8 +634,6 @@ export const userRequest = async (req, res) => {
 
                 // 4) Thong tin chuyen khoan
                 else if (formatContent === '#ttck') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
                     await Tools.sendPaymentTypeInfo(
                         res,
                         accessToken,
@@ -662,15 +646,11 @@ export const userRequest = async (req, res) => {
 
                 // 5) Cu phap chuyen khoan
                 else if (formatContent === '#cpck') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
                     await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                 }
 
                 // 6) Diem danh dot hien tai
                 else if (formatContent === '#ddht') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
                     await Tools.sendAttendanceInfo(
                         res,
                         accessToken,
@@ -683,8 +663,6 @@ export const userRequest = async (req, res) => {
 
                 // Lien he tro giang
                 else if (formatContent === '#lhtg') {
-                    await Tools.notifyRegister(res, accessToken, zaloUserId, zaloColl);
-
                     await Tools.sendAssistantInfo(
                         res,
                         accessToken,
