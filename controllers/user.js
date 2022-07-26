@@ -680,7 +680,7 @@ export const userRequest = async (req, res) => {
 
                 // Danh sach hoc sinh da co phu huynh dang ki
                 else if (formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11) {
-                    const classId = content.slice(5);
+                    const classId = content.slice(5).toUpperCase();
                     const syntax = formatContent.slice(0, 5);
 
                     await Tools.checkRegister(
@@ -697,7 +697,7 @@ export const userRequest = async (req, res) => {
 
                 // Danh sach hoc sinh chua co phu huynh dang ki
                 else if (formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12) {
-                    const classId = content.slice(6);
+                    const classId = content.slice(6).toUpperCase();
                     const syntax = formatContent.slice(0, 6);
 
                     await Tools.checkRegister(
@@ -714,7 +714,7 @@ export const userRequest = async (req, res) => {
 
                 // Danh sach hoc sinh da dang ki
                 else if (formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11) {
-                    const classId = content.slice(5);
+                    const classId = content.toUpperCase();
                     const syntax = formatContent.slice(0, 5);
 
                     await Tools.checkRegister(
@@ -731,7 +731,7 @@ export const userRequest = async (req, res) => {
 
                 // Danh sach hoc sinh chua dang ki
                 else if (formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12) {
-                    const classId = content.slice(6);
+                    const classId = content.toUpperCase();
                     const syntax = formatContent.slice(0, 6);
 
                     await Tools.checkRegister(

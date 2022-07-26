@@ -26,7 +26,7 @@ async function checkRegister(
             // Lay danh sach hoc sinh da co phu huynh dang ki lop xx (Dang hoc)
             const cursorParentRegister = zaloColl.find(
                 { 'students.zaloClassId': classId, 'students.role': 'Phụ huynh' },
-                { projection: { _id: 0, 'students.$': 1, displayName: 1, userPhone: 1 } }
+                { projection: { _id: 0, students: 1, displayName: 1, userPhone: 1 } }
             );
 
             let parentRegisters = [];
@@ -35,7 +35,10 @@ async function checkRegister(
 
             resultParentRegister.forEach((v) => {
                 const { displayName, userPhone, students } = v;
-                const { zaloStudentId, aliasName } = students[0];
+
+                const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+
+                const { zaloStudentId, aliasName } = students[targetClassIdIndex];
 
                 const studentName = aliasName.slice(3);
 
@@ -89,7 +92,7 @@ async function checkRegister(
             // Lay danh sach hoc sinh da dang ki lop xx (Dang hoc)
             const cursorStudentRegister = zaloColl.find(
                 { 'students.zaloClassId': classId, 'students.role': 'Học sinh' },
-                { projection: { _id: 0, 'students.$': 1, displayName: 1, userPhone: 1 } }
+                { projection: { _id: 0, students: 1, displayName: 1, userPhone: 1 } }
             );
 
             let studentRegisters = [];
@@ -98,7 +101,10 @@ async function checkRegister(
 
             resultStudentRegister.forEach((v) => {
                 const { displayName, userPhone, students } = v;
-                const { zaloStudentId, aliasName } = students[0];
+
+                const targetClassIdIndex = students.findIndex((obj) => obj.zaloClassId === classId);
+
+                const { zaloStudentId, aliasName } = students[targetClassIdIndex];
 
                 const studentName = aliasName.slice(3);
 
@@ -142,7 +148,7 @@ async function checkRegister(
             // Lay danh sach hoc sinh da co phu huynh dang ki
             const cursorRegisterForParent = zaloColl.find(
                 { 'students.zaloClassId': classId, 'students.role': 'Phụ huynh' },
-                { projection: { _id: 0, 'students.$': 1 } }
+                { projection: { _id: 0, students: 1 } }
             );
 
             let registersForParent = [];
@@ -188,7 +194,7 @@ async function checkRegister(
             // Lay danh sach hoc sinh da dang ki
             const cursorRegister = zaloColl.find(
                 { 'students.zaloClassId': classId, 'students.role': 'Học sinh' },
-                { projection: { _id: 0, 'students.$': 1 } }
+                { projection: { _id: 0, students: 1 } }
             );
 
             let registers = [];
