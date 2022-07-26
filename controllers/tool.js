@@ -466,6 +466,8 @@ async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classIn
 async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
+    console.log(zaloStudentInfo);
+
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
