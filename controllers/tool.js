@@ -28,7 +28,8 @@ async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
                         cond: {
                             $and: [
                                 { $eq: ['$$item.term', parseInt(currentTerm)] },
-                                { $eq: ['$$item.payment', null] },
+                                { $eq: [{ $type: '$$item.payment' }, 'null'] },
+                                { $ne: [{ $type: '$$item.payment' }, 'string'] },
                             ],
                         },
                     },
