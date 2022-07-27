@@ -738,6 +738,26 @@ export const userRequest = async (req, res) => {
                         syntax
                     );
                 }
+
+                // Danh sach phu huynh chua nop hoc
+                else if (formatContent.slice(0, 4) === '#cnh') {
+                    // #cnh2004A1
+                    const classId = formatContent.slice(4).toUpperCase();
+
+                    await Tools.sendStudentNotPayment(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classId,
+                        studentInfoColl,
+                        classInfoColl
+                    );
+
+                    // const role = formatContent.slice(10, 12);
+                    // const offset = formatContent.slice(13);
+
+                    // const offsetId = offset.split(',');
+                }
             }
         }
     } catch (err) {

@@ -1,7 +1,89 @@
-import { file } from 'googleapis/build/src/apis/file/index.js';
-import { blobFromSync } from 'node-fetch';
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
+
+async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
+    // Lay danh sach hoc sinh chua nop hoc phi dot x lop y
+    const pipeline = [
+        {
+            $match: {
+                $and: [
+                    {
+                        classId: classId,
+                    },
+                    {
+                        'terms.term': parseInt(currentTerm),
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                studentId: 1,
+                studentName: 1,
+                terms: {
+                    $filter: {
+                        input: '$terms',
+                        as: 'item',
+                        cond: {
+                            $and: [
+                                { $eq: ['$$item.term', parseInt(currentTerm)] },
+                                { $eq: ['$$item.payment', null] },
+                            ],
+                        },
+                    },
+                },
+            },
+        },
+    ];
+
+    const aggCursorStudentNotPayment = studentInfoColl.aggregate(pipeline);
+
+    const resultStudentNotPayment = await aggCursorStudentNotPayment.toArray();
+
+    // Loc danh sach nhung hoc sinh chua nop hoc phi
+    const studentNotPayment = resultStudentNotPayment.filter((v) => v.terms.length === 1);
+
+    return studentNotPayment;
+}
+
+async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, studentInfoColl, classInfoColl) {
+    const { currentTerm } = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0, currentTerm: 1 } }
+    );
+
+    const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
+
+    // Neu tat ca hoc sinh da hoan thanh hoc phi
+    if (studentNotPayment.length === 0) {
+        // Thong bao lai cho tro giang
+        const notFoundStudentPaymentContent = `Lớp ${classId} đã hoàn thành học phí đợt ${currentTerm}. Chúc mừng trợ giảng ❤️`;
+
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, notFoundStudentPaymentContent);
+    }
+    // Neu co hoc sinh chua nop hoc thi gui danh sach chua nop hoc cho tro giang
+    else {
+        const writeStudentNotPayment = studentNotPayment.map((v, i) => {
+            const { studentId, studentName, terms } = v;
+            const { billing } = terms[0];
+
+            return `${i + 1}) ${studentName} ${studentId}: ${formatCurrency(billing)}`;
+        });
+
+        // Gui tin
+        const studentNotPaymentContent = `Danh sách chưa nộp học lớp ${classId} đợt ${currentTerm} là:\n\n${writeStudentNotPayment.join(
+            `\n\n`
+        )}`;
+
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, studentNotPaymentContent);
+    }
+
+    await res.send('Done');
+
+    return;
+}
 
 async function checkRegister(
     res,
@@ -1666,4 +1748,5 @@ export {
     sendAssistantInfo,
     assistantMenu,
     checkRegister,
+    sendStudentNotPayment,
 };
