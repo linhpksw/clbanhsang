@@ -739,9 +739,8 @@ export const userRequest = async (req, res) => {
                     );
                 }
 
-                // Danh sach phu huynh chua nop hoc
-                else if (formatContent.slice(0, 4) === '#cnh') {
-                    // #cnh2004A1
+                // Danh sach phu huynh chua nop hoc #cnh2004A1
+                else if (formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10) {
                     const classId = formatContent.slice(4).toUpperCase();
 
                     await Tools.sendStudentNotPayment(
@@ -752,11 +751,20 @@ export const userRequest = async (req, res) => {
                         studentInfoColl,
                         classInfoColl
                     );
+                }
 
-                    // const role = formatContent.slice(10, 12);
-                    // const offset = formatContent.slice(13);
+                // Nhac tat ca phu huynh chua nop hoc #cnhph2004A1
+                else if (formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12) {
+                    const classId = formatContent.slice(6).toUpperCase();
 
-                    // const offsetId = offset.split(',');
+                    await Tools.alarmStudentNotPayment2Parent(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classId,
+                        studentInfoColl,
+                        classInfoColl
+                    );
                 }
             }
         }

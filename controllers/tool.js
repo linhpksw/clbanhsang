@@ -1,6 +1,48 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+async function listStudentAttendance(studentId, currentTerm, studentInfoColl) {
+    const pipeline = [
+        {
+            $match: {
+                $and: [
+                    {
+                        studentId: parseInt(studentId),
+                    },
+                    {
+                        'terms.term': parseInt(currentTerm),
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                _id: 0,
+                studentName: 1,
+                terms: {
+                    $filter: {
+                        input: '$terms',
+                        as: 'item',
+                        cond: {
+                            $eq: ['$$item.term', parseInt(currentTerm)],
+                        },
+                    },
+                },
+            },
+        },
+    ];
+
+    const aggCursorStudentAttendance = studentInfoColl.aggregate(pipeline);
+
+    const resultStudentAttendance = await aggCursorStudentAttendance.toArray();
+
+    if (resultStudentAttendance.length === 0) {
+        return null;
+    } else {
+        return resultStudentAttendance;
+    }
+}
+
 async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
     // Lay danh sach hoc sinh chua nop hoc phi dot x lop y
     const pipeline = [
@@ -48,6 +90,25 @@ async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
     return studentNotPayment;
 }
 
+async function alarmStudentNotPayment2Parent(
+    res,
+    accessToken,
+    zaloUserId,
+    classId,
+    studentInfoColl,
+    classInfoColl
+) {
+    const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
+
+    studentNotPayment.forEach((v) => {
+        const { studentId, studentName, terms } = v;
+
+        const { term, start, end, subject, remainderBefore, billing } = terms[0];
+
+        const alarmContent = ``;
+    });
+}
+
 async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, studentInfoColl, classInfoColl) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
@@ -85,14 +146,14 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
                 payload: {
                     buttons: [
                         {
-                            title: `Nhắc tất PH chưa nộp lớp ${classId}`,
-                            payload: `#cnh${classId}PH`,
-                            type: 'oa.query.hide',
+                            title: `Nhắc tất cả PH chưa nộp lớp ${classId}`,
+                            payload: `#cnhph${classId}`,
+                            type: 'oa.query.show',
                         },
                         {
-                            title: `Nhắc tất PH trừ 1 số HS cụ thể`,
+                            title: `Nhắc tất cả PH trừ 1 số HS cụ thể lớp ${classId}`,
                             payload: {
-                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH-${classId.slice(
+                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:\n\n#cnhph${classId}-${classId.slice(
                                     0,
                                     4
                                 )}001,${classId.slice(0, 4)}002`,
@@ -101,9 +162,9 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
                             type: 'oa.open.sms',
                         },
                         {
-                            title: `Nhắc cụ thể riêng những HS`,
+                            title: `Nhắc cụ thể riêng những HS lớp ${classId}`,
                             payload: {
-                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH+${classId.slice(
+                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:\n\n#cnhph${classId}+${classId.slice(
                                     0,
                                     4
                                 )}001,${classId.slice(0, 4)}002`,
@@ -768,11 +829,7 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const studentTermInfo = await MongoDB.findOneUser(
-            studentInfoColl,
-            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
-            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
-        );
+        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
 
         if (studentTermInfo === null) {
             const failContent = `Dữ liệu điểm danh đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
@@ -784,7 +841,7 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
             return;
         }
 
-        const { terms } = studentTermInfo;
+        const { terms } = studentTermInfo[0];
 
         const {
             term, // dot hien tai
@@ -872,13 +929,9 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const studentTermInfo = await MongoDB.findOneUser(
-            studentInfoColl,
-            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
-            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
-        );
+        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
 
-        const { studentName, terms } = studentTermInfo;
+        const { studentName, terms } = studentTermInfo[0];
 
         const {
             term, // dot hien tai
@@ -899,15 +952,11 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
         } = terms[0];
 
         const attachMessage = {
-            text: `Hiện tại đã đang gần đến hạn chót đóng tiền học, ${role.toLowerCase()} cần nhanh chóng hoàn thành học phí đợt ${term} với số tiền là ${formatCurrency(
-                billing
-            )} cho lớp toán ạ.
-
-Có 2 hình thức nộp học phí bao gồm:
-1) Nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng
+            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${term} lớp ${className} bao gồm:
+1) Con ${studentName} nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về
 2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793
     
-* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} gửi biên lai ảnh xác nhận vào lại trang OA của lớp toán.`,
+* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} gửi biên lai ảnh xác nhận vào lại trang Zalo OA của lớp toán.`,
 
             attachment: {
                 type: 'template',
@@ -943,11 +992,7 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const studentTermInfo = await MongoDB.findOneUser(
-            studentInfoColl,
-            { studentId: parseInt(studentId), 'terms.term': parseInt(currentTerm) },
-            { projection: { _id: 0, studentName: 1, 'terms.$': 1 } }
-        );
+        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
 
         if (studentTermInfo === null) {
             const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
@@ -959,7 +1004,7 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
             return;
         }
 
-        const { terms } = studentTermInfo;
+        const { terms } = studentTermInfo[0];
 
         const {
             term, // dot hien tai
