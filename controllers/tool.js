@@ -85,15 +85,12 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
                 payload: {
                     buttons: [
                         {
-                            title: `Nhắc tất cả phụ huynh chưa nộp lớp ${classId}`,
+                            title: `Nhắc tất PH chưa nộp lớp ${classId}`,
                             payload: `#cnh${classId}PH`,
                             type: 'oa.query.hide',
                         },
                         {
-                            title: `Nhắc tất trừ những ID: #cnh${classId}PH-${classId.slice(
-                                0,
-                                4
-                            )}001,${classId.slice(0, 4)}002`,
+                            title: `Nhắc tất PH trừ 1 số HS cụ thể`,
                             payload: {
                                 content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH-${classId.slice(
                                     0,
@@ -104,10 +101,7 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
                             type: 'oa.open.sms',
                         },
                         {
-                            title: `Nhắc chỉ riêng những ID: #cnh${classId}PH+${classId.slice(
-                                0,
-                                4
-                            )}001,${classId.slice(0, 4)}002`,
+                            title: `Nhắc cụ thể riêng những HS`,
                             payload: {
                                 content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH+${classId.slice(
                                     0,
@@ -123,8 +117,6 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
         };
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, studentNotPaymentContent);
     }
 
     await res.send('Done');
