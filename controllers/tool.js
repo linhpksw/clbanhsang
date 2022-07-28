@@ -78,6 +78,52 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
             `\n\n`
         )}`;
 
+        const attachMessage = {
+            text: studentNotPaymentContent,
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: `Nhắc tất cả phụ huynh chưa nộp lớp ${classId}`,
+                            payload: `#cnh${classId}PH`,
+                            type: 'oa.query.hide',
+                        },
+                        {
+                            title: `Nhắc tất trừ những ID: #cnh${classId}PH-${classId.slice(
+                                0,
+                                4
+                            )}001,${classId.slice(0, 4)}002`,
+                            payload: {
+                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH-${classId.slice(
+                                    0,
+                                    4
+                                )}001,${classId.slice(0, 4)}002`,
+                                phone_code: '0375830815',
+                            },
+                            type: 'oa.open.sms',
+                        },
+                        {
+                            title: `Nhắc chỉ riêng những ID: #cnh${classId}PH+${classId.slice(
+                                0,
+                                4
+                            )}001,${classId.slice(0, 4)}002`,
+                            payload: {
+                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:\n\n#cnh${classId}PH+${classId.slice(
+                                    0,
+                                    4
+                                )}001,${classId.slice(0, 4)}002`,
+                                phone_code: '0375830815',
+                            },
+                            type: 'oa.open.sms',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
         await ZaloAPI.sendMessage(accessToken, zaloUserId, studentNotPaymentContent);
     }
 
