@@ -1956,7 +1956,6 @@ export {
     sendImageBack2Parent,
     forwardOtherMedia2Assistant,
     sendAssistantInfo,
-    assistantMenu,
     checkRegister,
     sendStudentNotPayment,
     getStudyDate,
