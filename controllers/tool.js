@@ -146,6 +146,7 @@ async function alarmStudentNotPayment2Parent(
         { classId: classId },
         { projection: { _id: 0, className: 1 } }
     );
+    console.log(startTerm, startTerm);
     const createStartTerm = createDate(startTerm);
     const createEndTerm = createDate(endTerm);
 
