@@ -140,6 +140,7 @@ async function alarmStudentNotPayment2Parent(
     );
 
     const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
+    console.log(studentNotPayment);
 
     const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
         classInfoColl,
@@ -166,6 +167,9 @@ async function alarmStudentNotPayment2Parent(
 
     const duePaymentTermOne = duePayment[4];
     const duePaymentOtherTerm = duePayment[2];
+
+    console.log(duePaymentTermOne);
+    console.log(duePaymentOtherTerm);
 
     let listSendSuccess = [];
     let listSendFail = [];
@@ -216,6 +220,7 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
         };
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl);
+        console.log(parentIdArr);
 
         for (let v = 0; v < parentIdArr.length; v++) {
             const parentId = parentIdArr[v];
