@@ -1943,7 +1943,15 @@ async function signUp(
         ? (formatAliasName = aliasNameArr[0])
         : (formatAliasName = aliasNameArr.join(', '));
 
-    ZaloAPI.updateFollowerInfo(accessToken, formatZaloStudentId, zaloUserId, registerPhone, formatAliasName);
+    await ZaloAPI.updateFollowerInfo(
+        accessToken,
+        formatZaloStudentId,
+        zaloUserId,
+        registerPhone,
+        formatAliasName
+    );
+
+    res.send('Done!');
 
     return;
 }
