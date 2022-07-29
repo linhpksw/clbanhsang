@@ -199,7 +199,7 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
                             type: 'oa.query.show',
                         },
                         {
-                            title: `Cụ thể học phí đợt ${term}`,
+                            title: `Chi tiết học phí đợt ${term}`,
                             payload: `#hpht`,
                             type: 'oa.query.show',
                         },
@@ -275,28 +275,24 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
                 payload: {
                     buttons: [
                         {
-                            title: `Nhắc tất cả PH chưa nộp lớp ${classId}`,
+                            title: `Nhắc tất cả PH chưa nộp học`,
                             payload: `#cnhph${classId}`,
                             type: 'oa.query.show',
                         },
                         {
-                            title: `Nhắc tất cả PH trừ 1 số HS cụ thể lớp ${classId}`,
+                            title: `Nhắc tất cả PH trừ 1 số HS cụ thể`,
                             payload: {
-                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:\n\n#cnhph${classId}-${classId.slice(
-                                    0,
-                                    4
-                                )}001,${classId.slice(0, 4)}002`,
+                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:
+#cnhph${classId}-${classId.slice(0, 4)}001,${classId.slice(0, 4)}002`,
                                 phone_code: '0375830815',
                             },
                             type: 'oa.open.sms',
                         },
                         {
-                            title: `Nhắc cụ thể riêng những HS lớp ${classId}`,
+                            title: `Nhắc cụ thể riêng 1 số HS`,
                             payload: {
-                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:\n\n#cnhph${classId}+${classId.slice(
-                                    0,
-                                    4
-                                )}001,${classId.slice(0, 4)}002`,
+                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:
+#cnhph${classId}+${classId.slice(0, 4)}001,${classId.slice(0, 4)}002`,
                                 phone_code: '0375830815',
                             },
                             type: 'oa.open.sms',
@@ -551,53 +547,53 @@ async function checkRegister(
     return;
 }
 
-async function assistantMenu(res, accessToken, taZaloId, classInfoColl) {
-    // Check xem co phai do Tro giang nhan khong
-    if (!(await isManager(taZaloId, classInfoColl))) {
-        const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
-        await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
+// async function assistantMenu(res, accessToken, taZaloId, classInfoColl) {
+//     // Check xem co phai do Tro giang nhan khong
+//     if (!(await isManager(taZaloId, classInfoColl))) {
+//         const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
+//         await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
 
-        res.send('Done!');
-        return;
-    }
+//         res.send('Done!');
+//         return;
+//     }
 
-    const attachMessage = {
-        text: `Các tính năng dành cho trợ giảng:`,
-        attachment: {
-            type: 'template',
-            payload: {
-                buttons: [
-                    {
-                        title: 'Kiểm tra đăng kí',
-                        payload: '#ktdk',
-                        type: 'oa.query.hide',
-                    },
-                    {
-                        title: 'Nhắc các học sinh không có mặt hôm nay',
-                        payload: '#dkhs',
-                        type: 'oa.query.hide',
-                    },
-                    {
-                        title: 'Nhắc các học sinh không nộp bài',
-                        payload: '#dkhs',
-                        type: 'oa.query.hide',
-                    },
-                    {
-                        title: 'Nhắc các học sinh chưa nộp học',
-                        payload: '#dkhs',
-                        type: 'oa.query.hide',
-                    },
-                ],
-            },
-        },
-    };
+//     const attachMessage = {
+//         text: `Các tính năng dành cho trợ giảng:`,
+//         attachment: {
+//             type: 'template',
+//             payload: {
+//                 buttons: [
+//                     {
+//                         title: 'Kiểm tra đăng kí',
+//                         payload: '#ktdk',
+//                         type: 'oa.query.hide',
+//                     },
+//                     {
+//                         title: 'Nhắc các học sinh không có mặt hôm nay',
+//                         payload: '#dkhs',
+//                         type: 'oa.query.hide',
+//                     },
+//                     {
+//                         title: 'Nhắc các học sinh không nộp bài',
+//                         payload: '#dkhs',
+//                         type: 'oa.query.hide',
+//                     },
+//                     {
+//                         title: 'Nhắc các học sinh chưa nộp học',
+//                         payload: '#dkhs',
+//                         type: 'oa.query.hide',
+//                     },
+//                 ],
+//             },
+//         },
+//     };
 
-    await ZaloAPI.sendMessageWithButton(accessToken, taZaloId, attachMessage);
+//     await ZaloAPI.sendMessageWithButton(accessToken, taZaloId, attachMessage);
 
-    res.send('Done!');
+//     res.send('Done!');
 
-    return;
-}
+//     return;
+// }
 
 async function signUpRole(res, accessToken, zaloUserId) {
     const attachMessage = {
@@ -1052,40 +1048,21 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
+        const studentName = aliasName.slice(3);
+
         const { currentTerm, className } = await MongoDB.findOneUser(
             classInfoColl,
             { classId: classId },
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
-
-        const { studentName, terms } = studentTermInfo[0];
-
-        const {
-            term, // dot hien tai
-            start, // bat dau dot
-            end, // ket thuc dot
-            total, // so buoi trong dot
-            study, // so buoi hoc
-            absent, // so buoi nghi
-            subject, // mon hoc
-            remainderBefore, // du dot truoc
-            billing, // phai nop
-            payment, // da nop
-            type, // hinh thuc nop
-            paidDate, // ngay nop
-            remainder, // con thua
-            attendances,
-            absences,
-        } = terms[0];
-
         const attachMessage = {
-            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${term} cho học sinh ${studentName} lớp ${className} bao gồm:
+            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${currentTerm} cho học sinh ${studentName} ${studentId} lớp ${className} bao gồm:
+
 1) Học sinh nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về.
 2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793.
     
-* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} chụp màn hình ảnh xác nhận chuyển khoản thành công vào lại trang Zalo OA của lớp toán.`,
+* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} chụp màn hình ảnh biên lai chuyển khoản vào lại trang Zalo OA của lớp toán.`,
 
             attachment: {
                 type: 'template',
