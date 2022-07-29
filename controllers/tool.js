@@ -177,13 +177,17 @@ async function alarmStudentNotPayment2Parent(
 
         if (option === 'excludeStudent') {
             if (specificStudentLists.includes(`${studentId}`)) {
+                console.log('Dang chay nhac tru 1 so hoc sinh');
                 break;
             }
         } else if (option === 'onlyStudent') {
             if (!specificStudentLists.includes(`${studentId}`)) {
+                console.log('Dang chay nhac chi rieng 1 so HS');
                 break;
             }
         }
+
+        console.log('Dang chay binh thuong');
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
 
