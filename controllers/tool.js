@@ -1785,6 +1785,25 @@ async function signUp(
     const targetStudentId = parseInt(formatContent.substring(4, 11));
     const registerPhone = formatContent.slice(-10);
 
+    // Kiem tra so dien thoai dang ki co khac voi so Zalo nay da dang ki khong
+    const isDiffWithRegisterPhone = await MongoDB.findOneUser(
+        zaloColl,
+        { zaloUserId: zaloUserId },
+        { projection: { _id: 0, userPhone: 1 } }
+    );
+
+    if (isDiffWithRegisterPhone.userPhone !== null) {
+        if (isDiffWithRegisterPhone.userPhone !== registerPhone) {
+            const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+
+            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
+
+            res.send('Done!');
+
+            return;
+        }
+    }
+
     // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
@@ -1796,15 +1815,6 @@ async function signUp(
     );
 
     if (isRegister !== null) {
-        if (isRegister.userPhone !== registerPhone) {
-            const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
-
-            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
-
-            res.send('Done!');
-
-            return;
-        }
         const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
         await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
