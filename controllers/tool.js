@@ -1795,12 +1795,14 @@ async function signUp(
         { projection: { _id: 0 } }
     );
 
-    if (isRegister.userPhone !== registerPhone) {
-        const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+    if (isRegister !== null) {
+        if (isRegister.userPhone !== registerPhone) {
+            const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
-        sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
+            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
-        return;
+            return;
+        }
     }
 
     const zaloUserInfo = await MongoDB.findOneUser(
