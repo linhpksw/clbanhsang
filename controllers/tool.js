@@ -140,6 +140,7 @@ async function alarmStudentNotPayment2Parent(
     );
 
     const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
+    console.log(studentNotPayment);
 
     const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
         classInfoColl,
@@ -172,6 +173,7 @@ async function alarmStudentNotPayment2Parent(
 
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
+        console.log(studentId, studentName);
 
         const { term, remainderBefore, billing } = terms[0];
 
