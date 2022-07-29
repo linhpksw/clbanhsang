@@ -140,7 +140,6 @@ async function alarmStudentNotPayment2Parent(
     );
 
     const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
-    console.log(studentNotPayment);
 
     const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
         classInfoColl,
@@ -173,7 +172,12 @@ async function alarmStudentNotPayment2Parent(
 
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
-        console.log(studentId, studentName);
+
+        const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
+
+        if (parentIdArr.length === 0) {
+            listSendFail.push(`PH ${i + 1}) ${studentName} ${studentId}`);
+        }
 
         const { term, remainderBefore, billing } = terms[0];
 
@@ -217,8 +221,6 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
             },
         };
 
-        const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
-
         for (let q = 0; q < parentIdArr.length; q++) {
             const [zaloParentId, zaloClassId] = parentIdArr[q];
 
@@ -229,9 +231,9 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
             );
 
             if (jsonResponse.error === 0) {
-                listSendSuccess.push(`${i + 1}) ${studentName} ${studentId}`);
+                listSendSuccess.push(`PH ${i + 1}.${q + 1}) ${studentName} ${studentId}`);
             } else {
-                listSendFail.push(`${i + 1}) ${studentName} ${studentId}`);
+                listSendFail.push(`PH ${i + 1}.${q + 1}) ${studentName} ${studentId}`);
             }
         }
     }
