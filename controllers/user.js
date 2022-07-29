@@ -767,6 +767,52 @@ export const userRequest = async (req, res) => {
                         classInfoColl
                     );
                 }
+
+                // Nhac tat ca tru 1 so HS cu the #cnhph2004A1-2004001,2004003
+                else if (
+                    formatContent.slice(0, 6) === '#cnhph' &&
+                    formatContent.slice(0, 13).length === 13 &&
+                    formatContent.slice(12, 13) === '-'
+                ) {
+                    const classId = formatContent.slice(6).toUpperCase();
+
+                    const excludeStudentLists = formatContent.slice(13).split(',');
+
+                    await Tools.alarmStudentNotPayment2Parent(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classId,
+                        zaloColl,
+                        studentInfoColl,
+                        classInfoColl,
+                        'excludeStudent',
+                        excludeStudentLists
+                    );
+                }
+
+                // Nhac cu the rieng 1 so hoc sinh #cnhph2004A1+2004001, 2004003
+                else if (
+                    formatContent.slice(0, 6) === '#cnhph' &&
+                    formatContent.slice(0, 13).length === 13 &&
+                    formatContent.slice(12, 13) === '+'
+                ) {
+                    const classId = formatContent.slice(6).toUpperCase();
+
+                    const onlyStudentLists = formatContent.slice(13).split(',');
+
+                    await Tools.alarmStudentNotPayment2Parent(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classId,
+                        zaloColl,
+                        studentInfoColl,
+                        classInfoColl,
+                        'onlyStudent',
+                        onlyStudentLists
+                    );
+                }
             }
         }
     } catch (err) {

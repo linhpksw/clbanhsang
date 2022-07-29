@@ -131,7 +131,9 @@ async function alarmStudentNotPayment2Parent(
     classId,
     zaloColl,
     studentInfoColl,
-    classInfoColl
+    classInfoColl,
+    option,
+    specificStudentLists
 ) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
@@ -173,10 +175,22 @@ async function alarmStudentNotPayment2Parent(
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
 
+        if (option === 'excludeStudent') {
+            if (specificStudentLists.includes(`${studentId}`)) {
+                break;
+            }
+        } else if (option === 'onlyStudent') {
+            if (!specificStudentLists.includes(`${studentId}`)) {
+                break;
+            }
+        }
+
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
 
         if (parentIdArr.length === 0) {
             listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
+
+            break;
         }
 
         const { term, remainderBefore, billing } = terms[0];
