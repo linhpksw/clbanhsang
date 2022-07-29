@@ -216,12 +216,15 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
         };
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
-        console.log(parentIdArr);
 
-        for (let v = 0; v < parentIdArr.length; v++) {
-            const parentId = parentIdArr[v];
+        for (let q = 0; q < parentIdArr.length; q++) {
+            const [zaloParentId, zaloClassId] = parentIdArr[q];
 
-            const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, parentId, attachMessage);
+            const jsonResponse = await ZaloAPI.sendMessageWithButton(
+                accessToken,
+                zaloParentId,
+                attachMessage
+            );
 
             if (jsonResponse.error === 0) {
                 listSendSuccess.push(`${i + 1}) ${studentName} ${studentId}`);
@@ -1261,13 +1264,14 @@ function createDate(dateStr) {
 async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     const cursor = zaloColl.find(
         { 'students.zaloStudentId': parseInt(zaloStudentId) },
-        { projection: { _id: 0, zaloUserId: 1, students: 1 } }
+        { projection: { _id: 0, zaloUserId: 1, 'students.$': 1 } }
     );
 
     let zaloIdArr = [];
     await cursor.forEach((v) => {
         zaloIdArr.push([v.zaloUserId, v.students[0].zaloClassId]);
     });
+    // Do la classId nen khong thanh van de vi neu co truong hop ca 2 hs khac ID thi do $ match ket qua dau tien dung nen van duoc
 
     return zaloIdArr;
 }
