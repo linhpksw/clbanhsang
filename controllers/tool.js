@@ -144,9 +144,9 @@ async function alarmStudentNotPayment2Parent(
     const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },
-        { projection: { _id: 0, className: 1 } }
+        { projection: { _id: 0, className: 1, startTerm: 1, endTerm: 1, subjects: 1 } }
     );
-    console.log(startTerm, startTerm);
+
     const createStartTerm = createDate(startTerm);
     const createEndTerm = createDate(endTerm);
 
