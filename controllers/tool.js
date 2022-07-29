@@ -1,6 +1,40 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
+function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1, absent2) {
+    const convertWeekday = {
+        'Chủ nhật': 0,
+        'Thứ 2': 1,
+        'Thứ 3': 2,
+        'Thứ 4': 3,
+        'Thứ 5': 4,
+        'Thứ 6': 5,
+        'Thứ 7': 6,
+    };
+
+    const date = new Date(startTerm.getTime());
+    const dates = [];
+    while (date <= endTerm) {
+        if (date.getDay() === convertWeekday[weekday1] || date.getDay() === convertWeekday[weekday2]) {
+            const formatDate = new Date(date).toLocaleDateString('vi-VN');
+
+            dates.push(formatDate);
+        }
+        date.setDate(date.getDate() + 1);
+    }
+    const absent = `${absent1},${absent2}`
+        .replace(/\s+/g, '')
+        .split(',')
+        .map((date) => {
+            const [day, month, year] = date.split('/');
+            return `${month}/${day}/${year}`;
+        });
+
+    const filteredDate = dates.filter((date) => !absent.includes(date));
+
+    return filteredDate;
+}
+
 async function listStudentAttendance(studentId, currentTerm, studentInfoColl) {
     const pipeline = [
         {
@@ -95,18 +129,113 @@ async function alarmStudentNotPayment2Parent(
     accessToken,
     zaloUserId,
     classId,
+    zaloColl,
     studentInfoColl,
     classInfoColl
 ) {
     const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
-    studentNotPayment.forEach((v) => {
-        const { studentId, studentName, terms } = v;
+    const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
+        classInfoColl,
+        { classId: classId },
+        { projection: { _id: 0, className: 1 } }
+    );
+    const createStartTerm = createDate(startTerm);
+    const createEndTerm = createDate(endTerm);
 
-        const { term, start, end, subject, remainderBefore, billing } = terms[0];
+    const weekday1 = subjects[0].day;
+    const absent1 = subjects[0].absent;
+    const weekday2 = subjects[1].day;
+    const absent2 = subjects[1].absent;
 
-        const alarmContent = ``;
-    });
+    const duePayment = getStudyDate(
+        createStartTerm,
+        createEndTerm,
+        weekday1,
+        weekday2,
+        ...absent1,
+        ...absent2
+    );
+
+    const duePaymentTermOne = duePayment[4];
+    const duePaymentOtherTerm = duePayment[2];
+
+    let listSendSuccess = [];
+    let listSendFail = [];
+
+    for (let i = 0; i < studentNotPayment.length; i++) {
+        const { studentId, studentName, terms } = studentNotPayment[i];
+
+        const { term, remainderBefore, billing } = terms[0];
+
+        const alarmContent = `Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của em ${studentName} ${studentId} lớp ${className} như sau:
+- Học phí từ đợt trước: ${
+            remainderBefore === 0
+                ? '0 đ'
+                : remainderBefore > 0
+                ? `thừa ${formatCurrency(remainderBefore)}`
+                : `thiếu ${formatCurrency(remainderBefore)}`
+        }
+-Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
+
+Phụ huynh cần hoàn thành học phí trước hạn ngày ${
+            term === 1 ? duePaymentTermOne : duePaymentOtherTerm
+        } cho lớp toán. Trân trọng!`;
+
+        const attachMessage = {
+            text: alarmContent,
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: `Thông tin chuyển khoản`,
+                            payload: `#ttck`,
+                            type: 'oa.query.show',
+                        },
+                        {
+                            title: `Cú pháp chuyển khoản`,
+                            payload: `#cpck`,
+                            type: 'oa.query.show',
+                        },
+                        {
+                            title: `Cụ thể học phí đợt ${term}`,
+                            payload: `#hpht`,
+                            type: 'oa.query.show',
+                        },
+                    ],
+                },
+            },
+        };
+
+        const parentIdArr = await findZaloIdFromStudentId(zaloColl);
+
+        for (let v = 0; v < parentIdArr.length; v++) {
+            const parentId = parentIdArr[v];
+
+            const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, parentId, attachMessage);
+
+            if (jsonResponse.error === 0) {
+                listSendSuccess.push(`${i + 1}) ${studentName} ${studentId}`);
+            } else {
+                listSendFail.push(`${i + 1}) ${studentName} ${studentId}`);
+            }
+        }
+    }
+
+    const sendingResult = `Kết quả gửi tin nhắn thông báo học phí lớp ${classId}:
+A, Số tin nhắn gửi thành công: ${listSendSuccess.length}
+${listSendSuccess.join(`\n\n`)}
+
+B, Số tin nhắn gửi thất bại: ${listSendFail.length}
+${listSendSuccess.join(`\n\n`)}`;
+
+    // Gui lai thong ke ket qua gui cho tro giang
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, sendingResult);
+
+    res.send('Done!');
+
+    return;
 }
 
 async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, studentInfoColl, classInfoColl) {
@@ -952,11 +1081,11 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
         } = terms[0];
 
         const attachMessage = {
-            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${term} lớp ${className} bao gồm:
-1) Con ${studentName} nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về
-2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793
+            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${term} cho học sinh ${studentName} lớp ${className} bao gồm:
+1) Học sinh nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về.
+2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793.
     
-* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} gửi biên lai ảnh xác nhận vào lại trang Zalo OA của lớp toán.`,
+* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} chụp màn hình ảnh xác nhận chuyển khoản thành công vào lại trang Zalo OA của lớp toán.`,
 
             attachment: {
                 type: 'template',
@@ -1147,7 +1276,7 @@ function createDate(dateStr) {
 async function findZaloIdFromStudentId(zaloColl, zaloStudentId) {
     const cursor = zaloColl.find(
         { 'students.zaloStudentId': parseInt(zaloStudentId) },
-        { projection: { _id: 0, zaloUserId: 1, 'students.zaloClassId': 1 } }
+        { projection: { _id: 0, zaloUserId: 1, students: 1 } }
     );
 
     let zaloIdArr = [];
@@ -1666,8 +1795,8 @@ async function signUp(
         { projection: { _id: 0 } }
     );
 
-    if (isRegister !== null) {
-        const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+    if (isRegister.userPhone !== registerPhone) {
+        const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
         sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
@@ -1833,4 +1962,5 @@ export {
     assistantMenu,
     checkRegister,
     sendStudentNotPayment,
+    getStudyDate,
 };

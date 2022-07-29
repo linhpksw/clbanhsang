@@ -165,6 +165,8 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
     const jsonResponse = await response.json();
 
     console.log(jsonResponse);
+
+    return jsonResponse;
 }
 
 async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
