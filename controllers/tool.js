@@ -176,7 +176,7 @@ async function alarmStudentNotPayment2Parent(
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
 
         if (parentIdArr.length === 0) {
-            listSendFail.push(`PH ${i + 1}) ${studentName} ${studentId}`);
+            listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
         }
 
         const { term, remainderBefore, billing } = terms[0];
@@ -231,18 +231,19 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
             );
 
             if (jsonResponse.error === 0) {
-                listSendSuccess.push(`PH ${i + 1}.${q + 1}) ${studentName} ${studentId}`);
+                listSendSuccess.push(`- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`);
             } else {
-                listSendFail.push(`PH ${i + 1}.${q + 1}) ${studentName} ${studentId}`);
+                listSendFail.push(`- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`);
             }
         }
     }
 
     const sendingResult = `Kết quả gửi tin nhắn thông báo học phí lớp ${classId}:
-A, Số tin nhắn gửi thành công: ${listSendSuccess.length}
+
+A, Số tin gửi thành công: ${listSendSuccess.length}
 ${listSendSuccess.join(`\n\n`)}
 
-B, Số tin nhắn gửi thất bại: ${listSendFail.length}
+B, Số tin gửi thất bại: ${listSendFail.length}
 ${listSendFail.join(`\n\n`)}`;
 
     // Gui lai thong ke ket qua gui cho tro giang
