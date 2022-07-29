@@ -1798,8 +1798,7 @@ async function signUp(
 
             await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
-            res.send('Done!');
-
+            // Khong res send vi sendResponse2Client da co roi
             return;
         }
     }
@@ -1819,7 +1818,7 @@ async function signUp(
 
         await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
-        res.send('Done!');
+        // Khong res send vi sendResponse2Client da co roi
 
         return;
     }
@@ -1943,15 +1942,7 @@ async function signUp(
         ? (formatAliasName = aliasNameArr[0])
         : (formatAliasName = aliasNameArr.join(', '));
 
-    await ZaloAPI.updateFollowerInfo(
-        accessToken,
-        formatZaloStudentId,
-        zaloUserId,
-        registerPhone,
-        formatAliasName
-    );
-
-    res.send('Done!');
+    ZaloAPI.updateFollowerInfo(accessToken, formatZaloStudentId, zaloUserId, registerPhone, formatAliasName);
 
     return;
 }
