@@ -762,6 +762,7 @@ export const userRequest = async (req, res) => {
                         accessToken,
                         zaloUserId,
                         classId,
+                        zaloColl,
                         studentInfoColl,
                         classInfoColl
                     );

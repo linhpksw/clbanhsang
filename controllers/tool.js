@@ -1959,4 +1959,5 @@ export {
     checkRegister,
     sendStudentNotPayment,
     getStudyDate,
+    alarmStudentNotPayment2Parent,
 };
