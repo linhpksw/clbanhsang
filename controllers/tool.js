@@ -1802,6 +1802,12 @@ async function signUp(
             await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
 
             return;
+        } else {
+            const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+
+            await sendResponse2Client(res, accessToken, zaloUserId, messageId, failContent, 'like');
+
+            return;
         }
     }
 
