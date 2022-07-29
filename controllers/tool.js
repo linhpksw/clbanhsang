@@ -239,7 +239,7 @@ A, Số tin nhắn gửi thành công: ${listSendSuccess.length}
 ${listSendSuccess.join(`\n\n`)}
 
 B, Số tin nhắn gửi thất bại: ${listSendFail.length}
-${listSendSuccess.join(`\n\n`)}`;
+${listSendFail.join(`\n\n`)}`;
 
     // Gui lai thong ke ket qua gui cho tro giang
     await ZaloAPI.sendMessage(accessToken, zaloUserId, sendingResult);
