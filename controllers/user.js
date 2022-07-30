@@ -774,7 +774,7 @@ export const userRequest = async (req, res) => {
                     formatContent.slice(0, 13).length === 13 &&
                     formatContent.slice(12, 13) === '-'
                 ) {
-                    const classId = formatContent.slice(6).toUpperCase();
+                    const classId = formatContent.slice(6, 12).toUpperCase();
 
                     const excludeStudentLists = formatContent.slice(13).split(',');
 
@@ -797,7 +797,7 @@ export const userRequest = async (req, res) => {
                     formatContent.slice(0, 13).length === 13 &&
                     formatContent.slice(12, 13) === '+'
                 ) {
-                    const classId = formatContent.slice(6).toUpperCase();
+                    const classId = formatContent.slice(6, 12).toUpperCase();
 
                     const onlyStudentLists = formatContent.slice(13).split(',');
 

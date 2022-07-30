@@ -172,29 +172,20 @@ async function alarmStudentNotPayment2Parent(
     let listSendSuccess = [];
     let listSendFail = [];
 
-    console.log(studentNotPayment);
-
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
 
         if (option === 'excludeStudent') {
             if (specificStudentLists.includes(`${studentId}`)) {
-                console.log('Dang chay nhac tru 1 so hoc sinh');
-                break;
+                continue;
             }
         } else if (option === 'onlyStudent') {
             if (!specificStudentLists.includes(`${studentId}`)) {
-                console.log('Dang chay nhac chi rieng 1 so HS');
-                break;
+                continue;
             }
         }
 
-        console.log('Dang chay binh thuong');
-        console.log(studentId, studentName);
-
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
-
-        console.log(parentIdArr);
 
         if (parentIdArr.length === 0) {
             listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
@@ -1000,7 +991,7 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            break;
+            continue;
         }
 
         const { terms } = studentTermInfo[0];
@@ -1150,7 +1141,7 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            break;
+            continue;
         }
 
         const { terms } = studentTermInfo[0];
@@ -1391,7 +1382,7 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
 
                 await ZaloAPI.sendMessage(accessToken, zaloId, replyContent);
 
-                break;
+                break; // Chi can tim thay ID tin nhan la huy vong lap luon
             }
         }
     }
