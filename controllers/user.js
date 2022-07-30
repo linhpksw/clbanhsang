@@ -813,6 +813,23 @@ export const userRequest = async (req, res) => {
                         onlyStudentLists
                     );
                 }
+
+                // Thong bao hoc phi con thua den phu huynh #hpctph2004A1
+                else if (formatContent.slice(0, 7) === '#hpctph' && formatContent.length === 13) {
+                    const classId = formatContent.slice(7).toUpperCase();
+
+                    await Tools.alarmRemainderPayment2Parent(
+                        res,
+                        accessToken,
+                        zaloUserId,
+                        classId,
+                        zaloColl,
+                        studentInfoColl,
+                        classInfoColl
+                    );
+                }
+
+                // Gui tin nhan hang loat den PH/HS #ntph+2004A1,2004A0
             }
         }
     } catch (err) {

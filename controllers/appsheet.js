@@ -225,11 +225,29 @@ export const deleteStudentRequest = async (req, res) => {
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
 
-        const zaloIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId);
-        // Dung vong lap de thay doi het tag cua PH & HS lien ket voi studentId
-        if (zaloIdArr.length > 0) {
+        const zaloParentIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId, 'Phụ huynh');
+        const zaloStudentIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId, 'Học sinh');
+        // Dung vong lap de thay doi het tag cua PH lien ket voi studentId
+        if (zaloParentIdArr.length > 0) {
             for (let i = 0; i < zaloIdArr.length; i++) {
-                const [zaloId, zaloClass] = zaloIdArr[i];
+                const [zaloId, zaloClass] = zaloParentIdArr[i];
+
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
+                await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
+
+                // set trang thai nghi trong Zalo Coll
+                MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
+                    { $set: { 'students.$.zaloClassId': `N${zaloClass}` } }
+                );
+            }
+        }
+
+        // Dung vong lap de thay doi het tag cua HS lien ket voi studentId
+        if (zaloStudentIdArr.length > 0) {
+            for (let i = 0; i < zaloIdArr.length; i++) {
+                const [zaloId, zaloClass] = zaloStudentIdArr[i];
 
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
                 await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
