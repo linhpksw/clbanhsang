@@ -156,6 +156,15 @@ export const updateStudentRequest = async (req, res) => {
 
         MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
 
+        // Set trang thai di hoc tren StudentInfoColl
+        const updateStudentInfoDoc = { classId: `${classId.slice(-6)}` };
+
+        MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId) },
+            { $set: updateStudentInfoDoc }
+        );
+
         res.send('Success');
     } catch (err) {
         console.error(err);
@@ -171,6 +180,8 @@ export const deleteStudentRequest = async (req, res) => {
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
         const classInfoColl = db.collection('classInfo');
+
+        const studentInfoColl = db.collection('studentInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -251,6 +262,15 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
         MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
+
+        // Set trang thai nghi tren StudentInfoColl
+        const updateStudentInfoDoc = { classId: `N${classId.slice(-6)}` };
+
+        MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId) },
+            { $set: updateStudentInfoDoc }
+        );
 
         res.send('Success');
     } catch (err) {
