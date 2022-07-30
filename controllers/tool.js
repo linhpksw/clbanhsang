@@ -776,11 +776,11 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
 
         return;
     } else {
-        const studentZaloInfo = students.map((v) => {
+        const studentZaloInfoArr = students.map((v) => {
             return [v.zaloStudentId, v.zaloClassId, v.role, v.aliasName];
         });
 
-        return studentZaloInfo;
+        return studentZaloInfoArr;
     }
 }
 
@@ -1117,12 +1117,12 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
 }
 
 async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo === undefined) return;
+    if (zaloStudentInfoArr === undefined) return; // Fix sau
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfoArr[i];
 
         const studentName = aliasName.slice(3);
 
@@ -1139,9 +1139,7 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            res.send('Done!');
-
-            return;
+            break;
         }
 
         const { terms } = studentTermInfo[0];
@@ -1220,18 +1218,11 @@ ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${
         };
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-        // const startTerm = new Date(term);
-        // const today = new Date();
-        // const difference = Math.round((today - startTerm) / 86400 / 1000);
-
-        // if (difference > 3 && payment === null) {
-        // }
-
-        res.send('Done!');
-
-        return;
     }
+
+    res.send('Done!');
+
+    return;
 }
 
 function removeVietNam(str) {
