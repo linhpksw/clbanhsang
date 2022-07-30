@@ -845,12 +845,12 @@ Học phí mỗi buổi: ${tuition}`;
 }
 
 async function sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo === undefined) return;
+    if (zaloStudentInfoArr === undefined) return;
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [zaloStudentId, zaloClassId, alisaName, role] = zaloStudentInfo[i];
+    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
+        const [zaloStudentId, zaloClassId, alisaName, role] = zaloStudentInfoArr[i];
 
         const classInfo = await MongoDB.findOneUser(
             classInfoColl,
@@ -1051,10 +1051,12 @@ Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo
 }
 
 async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [studentId, classId, role, alisaName] = zaloStudentInfo[i];
+    if (zaloStudentInfoArr === undefined) return;
+
+    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
+        const [studentId, classId, role, alisaName] = zaloStudentInfoArr[i];
 
         const studentName = alisaName.substring(3);
 
@@ -1067,18 +1069,20 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
         const syntaxPayment = `${removeVietNam(studentName)} ${studentId} HPD${currentTerm}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
-
-        res.send('Done!');
-
-        return;
     }
+
+    res.send('Done!');
+
+    return;
 }
 
 async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+    if (zaloStudentInfoArr === undefined) return;
+
+    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
+        const [studentId, classId, role, aliasName] = zaloStudentInfoArr[i];
 
         const studentName = aliasName.slice(3);
 
@@ -1112,6 +1116,10 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
     }
+
+    res.send('Done!');
+
+    return;
 }
 
 async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
