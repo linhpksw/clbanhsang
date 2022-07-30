@@ -172,6 +172,8 @@ async function alarmStudentNotPayment2Parent(
     let listSendSuccess = [];
     let listSendFail = [];
 
+    console.log(studentNotPayment);
+
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
 
