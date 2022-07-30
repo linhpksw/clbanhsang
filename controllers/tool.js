@@ -975,7 +975,7 @@ async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classIn
 async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
     const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo === undefined) return;
+    if (zaloStudentInfo === undefined) return; // Fix sau
 
     for (let i = 0; i < zaloStudentInfo.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
@@ -995,9 +995,7 @@ async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classI
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            res.send('Done!');
-
-            return;
+            break;
         }
 
         const { terms } = studentTermInfo[0];
@@ -1045,11 +1043,11 @@ Số buổi đã học: ${study} buổi${attendanceInfo.length ? `\n${attendance
 Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo.join(`\n`)}` : ''}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
-
-        res.send('Done!');
-
-        return;
     }
+
+    res.send('Done!');
+
+    return;
 }
 
 async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
