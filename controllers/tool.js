@@ -1608,6 +1608,7 @@ async function forwardMessage2Assistant(
     if (isRegister.students.length === 0) {
         // PHHS chua dang ki tai khoan
         await res.send('Done');
+
         return;
     } else {
         // PHHS da dang ki tai khoan
@@ -1620,11 +1621,11 @@ async function forwardMessage2Assistant(
             const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
             await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
-
-            await res.send('Done');
-
-            return;
         }
+
+        await res.send('Done');
+
+        return;
     }
 }
 
