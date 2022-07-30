@@ -8,7 +8,7 @@ export const getListUser = async (req, res) => {
 
         console.log(data);
 
-        res.res(data);
+        res.send(data);
     } catch (err) {
         console.error(err);
     } finally {
