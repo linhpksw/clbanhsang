@@ -4,7 +4,7 @@ import * as MongoDB from './mongo.js';
 
 export const getListUser = async (req, res) => {
     try {
-        const data = req;
+        const data = req.body;
 
         console.log(data);
 
