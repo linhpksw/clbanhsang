@@ -199,7 +199,7 @@ async function alarmStudentNotPayment2Parent(
         if (parentIdArr.length === 0) {
             listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
 
-            break;
+            continue;
         }
 
         const { term, remainderBefore, billing } = terms[0];
