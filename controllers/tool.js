@@ -188,6 +188,7 @@ async function alarmStudentNotPayment2Parent(
         }
 
         console.log('Dang chay binh thuong');
+        console.log(studentId, studentName);
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
 
