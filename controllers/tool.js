@@ -158,8 +158,8 @@ async function alarmStudentNotPayment2Parent(
     const weekday2 = subjects[1].day;
     const absent2 = subjects[1].absent;
 
-    const absent1List = absent1 === null ? [] : absent1.split(',');
-    const absent2List = absent2 === null ? [] : absent2.split(',');
+    const absent1List = absent1 === null ? [] : absent1;
+    const absent2List = absent2 === null ? [] : absent2;
 
     const duePayment = getStudyDate(
         createStartTerm,
