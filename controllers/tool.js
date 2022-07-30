@@ -1,7 +1,7 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
 
-function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1, absent2) {
+function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
     const convertWeekday = {
         'Chủ nhật': 0,
         'Thứ 2': 1,
@@ -22,12 +22,13 @@ function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1, absent2) 
         }
         date.setDate(date.getDate() + 1);
     }
-    const absent = `${absent1},${absent2}`
+
+    const absent = `${absent1List},${absent2List}`
         .replace(/\s+/g, '')
         .split(',')
         .map((date) => {
             const [day, month, year] = date.split('/');
-            return `${month}/${day}/${year}`;
+            return `${parseInt(day)}/${parseInt(month)}/${parseInt(year)}`;
         });
 
     const filteredDate = dates.filter((date) => !absent.includes(date));
@@ -157,13 +158,16 @@ async function alarmStudentNotPayment2Parent(
     const weekday2 = subjects[1].day;
     const absent2 = subjects[1].absent;
 
+    const absent1List = absent1 === null ? [] : absent1.split(',');
+    const absent2List = absent2 === null ? [] : absent2.split(',');
+
     const duePayment = getStudyDate(
         createStartTerm,
         createEndTerm,
         weekday1,
         weekday2,
-        ...absent1,
-        ...absent2
+        ...absent1List,
+        ...absent2List
     );
 
     const duePaymentTermOne = duePayment[4];
