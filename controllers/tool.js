@@ -191,6 +191,8 @@ async function alarmStudentNotPayment2Parent(
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId);
 
+        console.log(parentIdArr);
+
         if (parentIdArr.length === 0) {
             listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
 
