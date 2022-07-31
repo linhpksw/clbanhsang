@@ -122,7 +122,9 @@ async function writeListUser(client, sourceId, zaloList) {
 
     const totalList = zaloList.length;
 
-    const request = {
+    const requestClear = { spreadsheetId: sourceId, range: 'Zalo!A8:H' };
+
+    const requestUpdate = {
         spreadsheetId: sourceId,
         range: `Zalo!A8:H${8 + totalList - 1}`,
         valueInputOption: 'USER_ENTERED',
@@ -133,9 +135,12 @@ async function writeListUser(client, sourceId, zaloList) {
     };
 
     try {
-        const response = (await sheets.spreadsheets.values.update(request)).data;
+        const responseClear = (await sheets.spreadsheets.values.clear(requestClear)).data;
 
-        console.log(JSON.stringify(response, null, 2));
+        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
+
+        console.log(responseClear);
+        console.log(responseUpdate);
     } catch (err) {
         console.error(err);
     }
