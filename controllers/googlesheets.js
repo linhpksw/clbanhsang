@@ -155,7 +155,9 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, content) {
 
         const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
 
-        console.log(JSON.stringify(responseData));
+        const data = responseData.values;
+
+        console.log(data);
     } catch (err) {
         console.error(err);
     }
