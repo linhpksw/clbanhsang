@@ -1,7 +1,8 @@
 import express from 'express';
-import { getListUser } from '../controllers/googlesheets.js';
+import { getListUser, sendListUser } from '../controllers/googlesheets.js';
 
 const router = express.Router();
-router.post('/', getListUser);
+router.post('/search', getListUser);
+router.post('/send', sendListUser);
 
 export default router;

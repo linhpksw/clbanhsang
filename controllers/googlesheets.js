@@ -18,6 +18,28 @@ const SCOPE = process.env.SCOPE;
 
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
+export const sendListUser = async (req, res) => {
+    const data = req.body;
+
+    const { sourceId, lastCol, lastRow, content } = data;
+
+    try {
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                sendMessageBulk(client, sourceId, lastCol, lastRow, content);
+            }
+        });
+
+        res.send('Done');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const getListUser = async (req, res) => {
     const data = req.body;
 
@@ -106,7 +128,7 @@ export const getListUser = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                writeListUser(client, sourceId, zaloList);
+                getUserBulk(client, sourceId, zaloList);
             }
         });
 
@@ -117,7 +139,29 @@ export const getListUser = async (req, res) => {
     }
 };
 
-async function writeListUser(client, sourceId, zaloList) {
+async function sendMessageBulk(client, sourceId, lastCol, lastRow, content) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const requestData = {
+        spreadsheetId: sourceId,
+
+        range: `Zalo!R6C1:R${lastRow}C${lastCol}`,
+    };
+
+    try {
+        // await MongoDB.client.connect();
+        // const db = MongoDB.client.db('zalo_servers');
+        // const zaloColl = db.collection('zaloUsers');
+
+        const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+
+        console.log(JSON.stringify(responseData));
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function getUserBulk(client, sourceId, zaloList) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const totalList = zaloList.length;
