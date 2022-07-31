@@ -124,7 +124,7 @@ async function writeListUser(client, sourceId, zaloList) {
 
     const request = {
         spreadsheetId: sourceId,
-        range: `A8:H${8 + totalList - 1}`,
+        range: `Zalo!A8:H${8 + totalList - 1}`,
         valueInputOption: 'USER_ENTERED',
         resource: {
             majorDimension: 'ROWS',
