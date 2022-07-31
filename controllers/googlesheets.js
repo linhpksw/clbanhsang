@@ -89,9 +89,9 @@ export const getListUser = async (req, res) => {
                     zaloList.push([
                         zaloUserId,
                         displayName,
+                        studentName,
                         role,
                         zaloStudentId,
-                        studentName,
                         zaloClassId,
                         className,
                     ]);
@@ -110,7 +110,7 @@ export const getListUser = async (req, res) => {
             }
         });
 
-        res.send(zaloList);
+        res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
