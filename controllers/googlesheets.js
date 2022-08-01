@@ -40,14 +40,6 @@ export const sendListUser = async (req, res) => {
     }
 };
 
-export const getExcludeUser = async (req, res) => {
-    try {
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
 export const getIncludeUser = async (req, res) => {
     const data = req.body;
     try {
@@ -135,6 +127,38 @@ export const getIncludeUser = async (req, res) => {
         console.error(err);
     } finally {
     }
+};
+
+export const searchNotRegister = async (req, res) => {
+    const data = req.body;
+
+    await MongoDB.client.connect();
+    const db = MongoDB.client.db('zalo_servers');
+    const zaloColl = db.collection('zaloUsers');
+
+    const { sourceId } = data;
+
+    let zaloList = [];
+
+    const result = zaloColl.find(
+        { userPhone: null },
+        { projection: { _id: 0, zaloUserId: 1, displayName: 1 } }
+    );
+
+    await result.forEach((v, i) => {
+        const { zaloUserId, displayName } = v;
+
+        zaloList.push([i + 1, zaloUserId, displayName]);
+    });
+
+    client.authorize((err) => {
+        if (err) {
+            console.error(err);
+            return;
+        } else {
+            getUserBulk(client, sourceId, zaloList);
+        }
+    });
 };
 
 export const getListUser = async (req, res) => {
