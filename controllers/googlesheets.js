@@ -166,7 +166,10 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
         for (let i = 0; i < obj.length; i++) {
             const row = obj[i];
             const zaloUserId = row['{ZID}'];
+
+            console.log(row);
             const content = fillInTemplateFromObject(template, row);
+            console.log(content);
 
             const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 
