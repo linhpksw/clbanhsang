@@ -54,6 +54,7 @@ export const getIncludeUser = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const zaloColl = db.collection('zaloUsers');
+        const classInfoColl = db.collection('classInfo');
 
         const { sourceId, studentIds, role } = data;
 
@@ -89,11 +90,21 @@ export const getIncludeUser = async (req, res) => {
 
             if (result.length === 0) continue; // Neu hoc sinh khong co tren CSDL
 
-            result.forEach((v) => {
-                const { zaloUserId, displayName, userPhone, students } = v;
-                students.forEach((e) => {
-                    const { zaloStudentId, zaloClassId, aliasName, role } = e;
+            for (let i = 0; i < result.length; i++) {
+                const { zaloUserId, displayName, userPhone, students } = result[i];
+
+                for (let v = 0; v < students.length; v++) {
+                    const { zaloStudentId, zaloClassId, aliasName, role } = students[v];
                     const studentName = aliasName.slice(3);
+
+                    const resutlClassId = await MongoDB.findOneUser(
+                        classInfoColl,
+                        { classId: zaloClassId },
+                        { projection: { _id: 0, className: 1 } }
+                    );
+
+                    if (resutlClassId === null) continue;
+                    const { className } = resutlClassId;
 
                     zaloList.push([
                         zaloUserId,
@@ -104,8 +115,8 @@ export const getIncludeUser = async (req, res) => {
                         zaloClassId,
                         className,
                     ]);
-                });
-            });
+                }
+            }
         }
 
         zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
