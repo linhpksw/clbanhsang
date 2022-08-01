@@ -165,6 +165,7 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
         // Loops through all the rows of data
         for (let i = 0; i < obj.length; i++) {
             const row = obj[i];
+            console.log(row);
             const zaloUserId = row[1];
             const content = fillInTemplateFromObject(template, row);
 
