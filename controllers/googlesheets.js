@@ -167,9 +167,7 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
             const row = obj[i];
             const zaloUserId = row['{ZID}'];
 
-            console.log(row);
             const content = fillInTemplateFromObject(template, row);
-            console.log(content);
 
             const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 
@@ -196,10 +194,13 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
 
 // Fill template string with data object
 function fillInTemplateFromObject(template, data) {
+    let template_string = JSON.stringify(template);
+
     // Token replacement
-    return template.replace(/{[^{}]+}/g, (key) => {
-        return escapeData(data[key.replace(/[{}]+/g, '')] || '');
+    template_string = template_string.replace(/{[^{}]+}/g, (key) => {
+        return escapeData(data[key.replace(/[]+/g, '')] || '');
     });
+    return JSON.parse(template_string);
 }
 // Escape cell data to make JSON safe
 function escapeData(str) {
