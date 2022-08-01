@@ -21,7 +21,7 @@ const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 export const sendListUser = async (req, res) => {
     const data = req.body;
 
-    const { sourceId, lastCol, lastRow, content } = data;
+    const { sourceId, lastCol, lastRow, template } = data;
 
     try {
         client.authorize((err) => {
@@ -29,7 +29,7 @@ export const sendListUser = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                sendMessageBulk(client, sourceId, lastCol, lastRow, content);
+                sendMessageBulk(client, sourceId, lastCol, lastRow, template);
             }
         });
 
@@ -139,28 +139,80 @@ export const getListUser = async (req, res) => {
     }
 };
 
-async function sendMessageBulk(client, sourceId, lastCol, lastRow, content) {
+async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestData = {
         spreadsheetId: sourceId,
-
-        range: `Zalo!R6C1:R${lastRow}C${lastCol}`,
+        range: `Zalo!R7C1:R${lastRow}C${lastCol}`,
     };
 
     try {
-        // await MongoDB.client.connect();
-        // const db = MongoDB.client.db('zalo_servers');
-        // const zaloColl = db.collection('zaloUsers');
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
-
         const data = responseData.values;
+        const heads = data.shift();
 
-        console.log(data);
+        const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
+        // Creates an array to record sent zalo message
+        const out = [];
+
+        // Loops through all the rows of data
+        for (let i = 0; i < obj.length; i++) {
+            const row = obj[i];
+            try {
+                const zaloUserId = row[1];
+                const content = fillInTemplateFromObject(template, row);
+
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+
+                out.push(['Success']);
+            } catch (e) {
+                out.push([e]);
+            }
+        }
+
+        const requestUpdate = {
+            spreadsheetId: sourceId,
+            range: `Zalo!I8:I${8 + out.length - 1}`,
+            valueInputOption: 'USER_ENTERED',
+            resource: {
+                majorDimension: 'ROWS',
+                values: out,
+            },
+        };
+
+        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
+
+        console.log(responseUpdate);
     } catch (err) {
         console.error(err);
     }
+}
+
+// Fill template string with data object
+function fillInTemplateFromObject(template, data) {
+    // Token replacement
+    return template.replace(/{[^{}]+}/g, (key) => {
+        return escapeData(data[key.replace(/[{}]+/g, '')] || '');
+    });
+}
+// Escape cell data to make JSON safe
+function escapeData(str) {
+    return str
+        .replace(/[\\]/g, '\\\\')
+        .replace(/[\"]/g, '\\"')
+        .replace(/[\/]/g, '\\/')
+        .replace(/[\b]/g, '\\b')
+        .replace(/[\f]/g, '\\f')
+        .replace(/[\n]/g, '\\n')
+        .replace(/[\r]/g, '\\r')
+        .replace(/[\t]/g, '\\t');
 }
 
 async function getUserBulk(client, sourceId, zaloList) {
