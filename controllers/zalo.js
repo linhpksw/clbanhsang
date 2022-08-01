@@ -229,6 +229,8 @@ async function sendMessage(accessToken, zaloUserId, message) {
     const jsonResponse = await response.json();
 
     console.log(jsonResponse);
+
+    return jsonResponse;
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {

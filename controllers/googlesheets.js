@@ -165,16 +165,12 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
         // Loops through all the rows of data
         for (let i = 0; i < obj.length; i++) {
             const row = obj[i];
-            try {
-                const zaloUserId = row[1];
-                const content = fillInTemplateFromObject(template, row);
+            const zaloUserId = row[1];
+            const content = fillInTemplateFromObject(template, row);
 
-                await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+            const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 
-                out.push(['Success']);
-            } catch (e) {
-                out.push([e]);
-            }
+            result.error === 0 ? out.push([result.message]) : out.push([result.message]);
         }
 
         const requestUpdate = {
