@@ -40,6 +40,92 @@ export const sendListUser = async (req, res) => {
     }
 };
 
+export const getExcludeUser = async (req, res) => {
+    try {
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+export const getIncludeUser = async (req, res) => {
+    const data = req.body;
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const zaloColl = db.collection('zaloUsers');
+
+        const { sourceId, studentIds, role } = data;
+
+        let zaloList = [];
+
+        for (let i = 0; i < studentIds.length; i++) {
+            const studentId = studentIds[i];
+
+            const pipeline = [
+                { $match: { 'students.zaloStudentId': parseInt(studentId) } },
+                {
+                    $project: {
+                        _id: 0,
+                        zaloUserId: 1,
+                        displayName: 1,
+                        userPhone: 1,
+                        students: {
+                            $filter: {
+                                input: '$students',
+                                as: 'item',
+                                cond: {
+                                    $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                                },
+                            },
+                        },
+                    },
+                },
+            ];
+
+            const aggCursor = zaloColl.aggregate(pipeline);
+
+            const result = await aggCursor.toArray();
+
+            if (result.length === 0) continue; // Neu hoc sinh khong co tren CSDL
+
+            result.forEach((v) => {
+                const { zaloUserId, displayName, userPhone, students } = v;
+                students.forEach((e) => {
+                    const { zaloStudentId, zaloClassId, aliasName, role } = e;
+                    const studentName = aliasName.slice(3);
+
+                    zaloList.push([
+                        zaloUserId,
+                        displayName,
+                        studentName,
+                        role,
+                        zaloStudentId,
+                        zaloClassId,
+                        className,
+                    ]);
+                });
+            });
+        }
+
+        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                getUserBulk(client, sourceId, zaloList);
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const getListUser = async (req, res) => {
     const data = req.body;
 
@@ -192,29 +278,6 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
     }
 }
 
-// Fill template string with data object
-function fillInTemplateFromObject(template, data) {
-    let template_string = JSON.stringify(template);
-
-    // Token replacement
-    template_string = template_string.replace(/{[^{}]+}/g, (key) => {
-        return escapeData(data[key.replace(/[]+/g, '')] || '');
-    });
-    return JSON.parse(template_string);
-}
-// Escape cell data to make JSON safe
-function escapeData(str) {
-    return str
-        .replace(/[\\]/g, '\\\\')
-        .replace(/[\"]/g, '\\"')
-        .replace(/[\/]/g, '\\/')
-        .replace(/[\b]/g, '\\b')
-        .replace(/[\f]/g, '\\f')
-        .replace(/[\n]/g, '\\n')
-        .replace(/[\r]/g, '\\r')
-        .replace(/[\t]/g, '\\t');
-}
-
 async function getUserBulk(client, sourceId, zaloList) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
@@ -242,4 +305,27 @@ async function getUserBulk(client, sourceId, zaloList) {
     } catch (err) {
         console.error(err);
     }
+}
+
+// Fill template string with data object
+function fillInTemplateFromObject(template, data) {
+    let template_string = JSON.stringify(template);
+
+    // Token replacement
+    template_string = template_string.replace(/{[^{}]+}/g, (key) => {
+        return escapeData(data[key.replace(/[]+/g, '')] || '');
+    });
+    return JSON.parse(template_string);
+}
+// Escape cell data to make JSON safe
+function escapeData(str) {
+    return str
+        .replace(/[\\]/g, '\\\\')
+        .replace(/[\"]/g, '\\"')
+        .replace(/[\/]/g, '\\/')
+        .replace(/[\b]/g, '\\b')
+        .replace(/[\f]/g, '\\f')
+        .replace(/[\n]/g, '\\n')
+        .replace(/[\r]/g, '\\r')
+        .replace(/[\t]/g, '\\t');
 }
