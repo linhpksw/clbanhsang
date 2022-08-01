@@ -145,7 +145,9 @@ export const searchNotRegister = async (req, res) => {
         { projection: { _id: 0, zaloUserId: 1, displayName: 1 } }
     );
 
-    await result.forEach((i, v) => {
+    const notRegisterList = await result.toArray();
+
+    notRegisterList.forEach((v, i) => {
         const { zaloUserId, displayName } = v;
 
         zaloList.push([i + 1, zaloUserId, displayName]);
