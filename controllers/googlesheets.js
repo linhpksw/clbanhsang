@@ -159,6 +159,8 @@ export const searchNotRegister = async (req, res) => {
             getUserBulk(client, sourceId, zaloList);
         }
     });
+
+    res.send('Done!');
 };
 
 export const getListUser = async (req, res) => {
