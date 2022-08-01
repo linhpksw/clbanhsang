@@ -165,6 +165,88 @@ export const searchNotRegister = async (req, res) => {
     res.send('Done!');
 };
 
+export const getListUserFromClassId = async (req, res) => {
+    const data = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const zaloColl = db.collection('zaloUsers');
+        const classInfoColl = db.collection('classInfo');
+
+        const { sourceId, classId, role } = data;
+
+        const { className } = await classInfoColl.findOne(
+            { classId: classId },
+            { projection: { _id: 0, className: 1 } }
+        );
+
+        let zaloList = [];
+
+        const pipeline = [
+            { $match: { 'students.zaloClassId': classId } },
+            {
+                $project: {
+                    _id: 0,
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $and: [
+                                    { $eq: ['$$item.zaloClassId', classId] },
+                                    { $eq: ['$$item.role', role] },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+
+        const result = await aggCursor.toArray();
+
+        result.forEach((v) => {
+            const { zaloUserId, displayName, userPhone, students } = v;
+            students.forEach((e) => {
+                const { zaloStudentId, zaloClassId, aliasName, role } = e;
+                const studentName = aliasName.slice(3);
+
+                zaloList.push([
+                    zaloUserId,
+                    displayName,
+                    studentName,
+                    role,
+                    zaloStudentId,
+                    zaloClassId,
+                    className,
+                ]);
+            });
+        });
+
+        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                getUserBulk(client, sourceId, zaloList);
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const getListUser = async (req, res) => {
     const data = req.body;
 
