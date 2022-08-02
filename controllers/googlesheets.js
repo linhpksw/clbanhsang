@@ -239,7 +239,7 @@ export const getListUserFromClassId = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                getUserBulk(client, sourceId, zaloList);
+                getUserBulk(client, sourceId, sheetName, zaloList);
             }
         });
 
