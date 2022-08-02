@@ -1,24 +1,22 @@
 import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
+import { google } from 'googleapis';
 
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import * as dotenv from 'dotenv';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
-
-import { google } from 'googleapis';
-
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
-
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
-export const createMockMessage = async (req, res) => {
+export const createMockMessageFromClassId = async (req, res) => {
     const data = req.body;
 
     try {
@@ -26,7 +24,7 @@ export const createMockMessage = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const classInfoColl = db.collection('classInfo');
 
-        const { sourceId, sheetName, classId, status, role } = data;
+        const { sourceId, sheetName, classId, role } = data;
 
         const result = await classInfoColl.findOne(
             { classId: classId },
@@ -54,7 +52,7 @@ export const createMockMessage = async (req, res) => {
     }
 };
 
-export const sendListUser = async (req, res) => {
+export const sendBulk = async (req, res) => {
     const data = req.body;
 
     const { sourceId, sheetName, lastCol, lastRow, template } = data;
@@ -168,7 +166,88 @@ export const getIncludeUser = async (req, res) => {
     }
 };
 
-export const searchNotRegisterStudent = async (req, res) => {
+export const getNotRegisterFromAdmin = async (req, res) => {
+    const data = req.body;
+
+    await MongoDB.client.connect();
+    const db = MongoDB.client.db('zalo_servers');
+    const zaloColl = db.collection('zaloUsers');
+    const classColl = db.collection('classUsers');
+
+    const { sourceId, sheetName, classIds, status, role } = data;
+
+    let classCheckList = [];
+    if (status === 'Đang học') {
+        classCheckList = [...classIds];
+    } else {
+        classIds.forEach((v) => classCheckList.push([`N${v[0]}`, v[1]]));
+    }
+
+    let zaloList = [];
+
+    for (let i = 0; i < classCheckList.length; i++) {
+        const [classId, className] = classCheckList[i];
+
+        const cursorRegister = zaloColl.find(
+            { 'students.zaloClassId': classId, 'students.role': role },
+            { projection: { _id: 0, students: 1, displayName: 1, userPhone: 1 } }
+        );
+
+        let registers = [];
+
+        const resultRegister = await cursorRegister.toArray();
+
+        // Lay danh sach hoc sinh dang hoc tai lop
+        const cursorStudents = classColl.find(
+            { classId: classId },
+            { projection: { _id: 0, studentId: 1, fullName: 1 } }
+        );
+
+        let studentLists = [];
+
+        await cursorStudents.forEach((v) => {
+            const { studentId, fullName } = v;
+
+            studentLists.push([studentId, fullName]);
+        });
+
+        // Lay danh sach hoc sinh da co phu huynh dang ki lop xx (Dang hoc)
+        resultRegister.forEach((v) => {
+            const { displayName, userPhone, students } = v;
+
+            students.forEach((e) => {
+                const { zaloStudentId, zaloClassId, aliasName } = e;
+
+                if (zaloClassId === classId) {
+                    registers.push(zaloStudentId);
+                }
+            });
+        });
+
+        // Loc ra danh sach hoc sinh chua co phu huynh dang ki
+        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
+
+        notRegisters.forEach((v, i) => {
+            const [studentId, fullName] = v;
+
+            zaloList.push([i + 1, '', '', fullName, role, studentId, '', '']);
+        });
+    }
+
+    // Tra ve sheet cho Admin
+    client.authorize((err) => {
+        if (err) {
+            console.error(err);
+            return;
+        } else {
+            getUserBulk(client, sourceId, sheetName, zaloList);
+        }
+    });
+
+    res.send('Done!');
+};
+
+export const getNotRegisterFromClassId = async (req, res) => {
     const data = req.body;
 
     await MongoDB.client.connect();
@@ -238,7 +317,7 @@ export const searchNotRegisterStudent = async (req, res) => {
     res.send('Done!');
 };
 
-export const searchNotRegister = async (req, res) => {
+export const getSeekInfoFromAdmin = async (req, res) => {
     const data = req.body;
 
     await MongoDB.client.connect();
@@ -254,9 +333,9 @@ export const searchNotRegister = async (req, res) => {
         { projection: { _id: 0, zaloUserId: 1, displayName: 1 } }
     );
 
-    const notRegisterList = await result.toArray();
+    const seekInfoList = await result.toArray();
 
-    notRegisterList.forEach((v, i) => {
+    seekInfoList.forEach((v, i) => {
         const { zaloUserId, displayName } = v;
 
         zaloList.push([i + 1, zaloUserId, displayName]);
@@ -356,7 +435,7 @@ export const getListUserFromClassId = async (req, res) => {
     }
 };
 
-export const getListUser = async (req, res) => {
+export const getListUserFromAdmin = async (req, res) => {
     const data = req.body;
 
     try {
