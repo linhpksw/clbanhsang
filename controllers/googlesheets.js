@@ -138,6 +138,7 @@ export const searchNotRegisterStudent = async (req, res) => {
     await MongoDB.client.connect();
     const db = MongoDB.client.db('zalo_servers');
     const zaloColl = db.collection('zaloUsers');
+    const classColl = db.collection('classUsers');
 
     const { sourceId, sheetName, classId, role } = data;
 
