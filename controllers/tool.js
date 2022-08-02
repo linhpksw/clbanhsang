@@ -581,54 +581,6 @@ async function checkRegister(
     return;
 }
 
-// async function assistantMenu(res, accessToken, taZaloId, classInfoColl) {
-//     // Check xem co phai do Tro giang nhan khong
-//     if (!(await isManager(taZaloId, classInfoColl))) {
-//         const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
-//         await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
-
-//         res.send('Done!');
-//         return;
-//     }
-
-//     const attachMessage = {
-//         text: `Các tính năng dành cho trợ giảng:`,
-//         attachment: {
-//             type: 'template',
-//             payload: {
-//                 buttons: [
-//                     {
-//                         title: 'Kiểm tra đăng kí',
-//                         payload: '#ktdk',
-//                         type: 'oa.query.hide',
-//                     },
-//                     {
-//                         title: 'Nhắc các học sinh không có mặt hôm nay',
-//                         payload: '#dkhs',
-//                         type: 'oa.query.hide',
-//                     },
-//                     {
-//                         title: 'Nhắc các học sinh không nộp bài',
-//                         payload: '#dkhs',
-//                         type: 'oa.query.hide',
-//                     },
-//                     {
-//                         title: 'Nhắc các học sinh chưa nộp học',
-//                         payload: '#dkhs',
-//                         type: 'oa.query.hide',
-//                     },
-//                 ],
-//             },
-//         },
-//     };
-
-//     await ZaloAPI.sendMessageWithButton(accessToken, taZaloId, attachMessage);
-
-//     res.send('Done!');
-
-//     return;
-// }
-
 async function signUpRole(res, accessToken, zaloUserId) {
     const attachMessage = {
         text: `Vui lòng chọn vai trò đăng kí:`,
