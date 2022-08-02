@@ -144,17 +144,19 @@ export const updateStudentRequest = async (req, res) => {
                         { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
                         { $set: { 'students.$.zaloClassId': `${zaloClass}` } }
                     );
-
-                    // set trang thai di hoc lai trong Student Info Coll
-                    const updateStudentInfoDoc = { classId: `${zaloClass.slice(-6)}` };
-
-                    await MongoDB.updateOneUser(
-                        studentInfoColl,
-                        { studentId: parseInt(studentId) },
-                        { $set: updateStudentInfoDoc }
-                    );
                 }
             }
+        }
+
+        // set trang thai di hoc lai trong Student Info Coll
+        if (classId.includes('N')) {
+            const updateStudentInfoDoc = { classId: classId };
+
+            await MongoDB.updateOneUser(
+                studentInfoColl,
+                { studentId: parseInt(studentId) },
+                { $set: updateStudentInfoDoc }
+            );
         }
 
         const updateDoc = {
