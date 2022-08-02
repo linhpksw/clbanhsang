@@ -5,6 +5,7 @@ import {
     getSeekInfoFromAdmin,
     getListUserFromClassId,
     getNotRegisterFromClassId,
+    getNotPaymentUserFromClassId,
     createMockMessageFromClassId,
     getIncludeUser,
     sendBulk,
@@ -19,6 +20,7 @@ router.post('/getSeekInfoFromAdmin', getSeekInfoFromAdmin);
 // Assistants
 router.post('/getListUserFromClassId', getListUserFromClassId);
 router.post('/getNotRegisterFromClassId', getNotRegisterFromClassId);
+router.post('/getNotPaymentUserFromClassId', getNotPaymentUserFromClassId);
 router.post('/createMockMessageFromClassId', createMockMessageFromClassId);
 
 // Share
