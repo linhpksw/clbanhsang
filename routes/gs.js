@@ -7,7 +7,6 @@ import {
     getNotRegisterFromClassId,
     getNotPaymentUserFromClassId,
     createMockMessageFromClassId,
-    alarmNotPayMentUserFromClassId,
     getIncludeUser,
     sendBulk,
 } from '../controllers/gs.js';
