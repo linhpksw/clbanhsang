@@ -4,6 +4,7 @@ import {
     sendListUser,
     getIncludeUser,
     searchNotRegister,
+    searchNotRegisterStudent,
     getListUserFromClassId,
 } from '../controllers/googlesheets.js';
 
@@ -12,6 +13,7 @@ router.post('/search', getListUser);
 router.post('/searchClassId', getListUserFromClassId);
 router.post('/searchInclude', getIncludeUser);
 router.post('/searchNotRegister', searchNotRegister);
+router.post('/searchNotRegisterStudent', searchNotRegisterStudent);
 router.post('/send', sendListUser);
 
 export default router;
