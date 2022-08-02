@@ -541,7 +541,7 @@ async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, te
 
     const requestData = {
         spreadsheetId: sourceId,
-        range: `Zalo!R7C1:R${lastRow}C${lastCol}`,
+        range: `${sheetName}!R7C1:R${lastRow}C${lastCol}`,
     };
 
     try {
