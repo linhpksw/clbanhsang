@@ -18,6 +18,42 @@ const SCOPE = process.env.SCOPE;
 
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
+export const createMockMessage = async (req, res) => {
+    const data = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classInfoColl = db.collection('classInfo');
+
+        const { sourceId, sheetName, classId, status, role } = data;
+
+        const result = await classInfoColl.findOne(
+            { classId: classId },
+            { projection: { _id: 0, 'assistants.$': 1, className: 1 } }
+        );
+
+        const { className } = result;
+        const { taName, taZaloId } = result[0];
+
+        const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', role, 2000999, classId, className]];
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                getUserBulk(client, sourceId, sheetName, zaloList);
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const sendListUser = async (req, res) => {
     const data = req.body;
 
