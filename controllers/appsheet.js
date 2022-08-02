@@ -149,7 +149,7 @@ export const updateStudentRequest = async (req, res) => {
         }
 
         // set trang thai di hoc lai trong Student Info Coll
-
+        console.log('Update lai trang thai trong student info coll');
         const updateStudentInfoDoc = { classId: classId };
 
         await MongoDB.updateOneUser(
