@@ -227,12 +227,14 @@ export const getNotRegisterFromAdmin = async (req, res) => {
         // Loc ra danh sach hoc sinh chua co phu huynh dang ki
         const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
 
-        notRegisters.forEach((v, i) => {
+        notRegisters.forEach((v) => {
             const [studentId, fullName] = v;
 
-            zaloList.push([i + 1, '', '', fullName, role, studentId, '', '']);
+            zaloList.push(['', '', fullName, role, studentId, '', '']);
         });
     }
+
+    zaloList.forEach((_, i) => zaloList.splice(0, 0, i + 1));
 
     // Tra ve sheet cho Admin
     client.authorize((err) => {
