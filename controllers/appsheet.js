@@ -136,17 +136,17 @@ export const updateStudentRequest = async (req, res) => {
 
                 if (zaloClass.includes('N')) {
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
-                    await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
+                    await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
 
-                    // set trang thai nghi trong Zalo Coll
+                    // set trang thai di hoc trong Zalo Coll
                     await MongoDB.updateOneUser(
                         zaloColl,
                         { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
-                        { $set: { 'students.$.zaloClassId': `N${zaloClass}` } }
+                        { $set: { 'students.$.zaloClassId': `${zaloClass}` } }
                     );
 
                     // set trang thai di hoc lai trong Student Info Coll
-                    const updateStudentInfoDoc = { classId: `${classId.slice(-6)}` };
+                    const updateStudentInfoDoc = { classId: `${zaloClass.slice(-6)}` };
 
                     await MongoDB.updateOneUser(
                         studentInfoColl,
