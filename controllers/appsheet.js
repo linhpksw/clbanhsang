@@ -104,8 +104,6 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone,
         } = webhook;
 
-        console.log(classId);
-
         const fullName = `${firstName} ${lastName}`;
 
         const zaloParentIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId, 'Phụ huynh');
@@ -151,15 +149,14 @@ export const updateStudentRequest = async (req, res) => {
         }
 
         // set trang thai di hoc lai trong Student Info Coll
-        if (classId.includes('N')) {
-            const updateStudentInfoDoc = { classId: `${classId.slice(-6)}` };
 
-            await MongoDB.updateOneUser(
-                studentInfoColl,
-                { studentId: parseInt(studentId) },
-                { $set: updateStudentInfoDoc }
-            );
-        }
+        const updateStudentInfoDoc = { classId: classId };
+
+        await MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId) },
+            { $set: updateStudentInfoDoc }
+        );
 
         const updateDoc = {
             studentId: parseInt(studentId),
