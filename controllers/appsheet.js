@@ -76,6 +76,7 @@ export const updateStudentRequest = async (req, res) => {
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
         const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfoColl');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
@@ -183,7 +184,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         const studentInfoColl = db.collection('studentInfo');
 
-        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
