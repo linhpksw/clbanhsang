@@ -184,6 +184,10 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
         const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
+        console.log(studentNotPayment);
+
+        res.send('Done');
+        return;
         let zaloList = [];
 
         studentNotPayment.forEach((v, i) => {
