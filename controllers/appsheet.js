@@ -189,7 +189,6 @@ export const deleteStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
-        const classInfoColl = db.collection('classInfo');
 
         const studentInfoColl = db.collection('studentInfo');
 
