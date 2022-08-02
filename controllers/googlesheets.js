@@ -407,7 +407,7 @@ async function getUserBulk(client, sourceId, sheetName, zaloList) {
 
     const totalList = zaloList.length;
 
-    const requestClear = { spreadsheetId: sourceId, range: 'Zalo!A8:H' };
+    const requestClear = { spreadsheetId: sourceId, range: `${sheetName}!A8:H` };
 
     const requestUpdate = {
         spreadsheetId: sourceId,
