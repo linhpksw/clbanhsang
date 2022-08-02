@@ -33,8 +33,8 @@ export const createMockMessage = async (req, res) => {
             { projection: { _id: 0, assistants: 1, className: 1 } }
         );
 
-        const { className } = result;
-        const { taName, taZaloId } = result[0];
+        const { className, assistants } = result;
+        const { taName, taZaloId } = assistants[0];
 
         const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', role, 2000999, classId, className]];
 
