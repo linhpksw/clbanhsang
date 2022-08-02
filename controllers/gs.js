@@ -193,7 +193,7 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
             const formatBilling = Tools.formatCurrency(billing);
 
-            zaloList.push(i + 1, '', '', studentName, formatBilling, studentId, '', '');
+            zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
         });
 
         // Tra ve sheet cho tro giang
