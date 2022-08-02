@@ -21,7 +21,7 @@ const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 export const sendListUser = async (req, res) => {
     const data = req.body;
 
-    const { sourceId, lastCol, lastRow, template } = data;
+    const { sourceId, sheetName, lastCol, lastRow, template } = data;
 
     try {
         client.authorize((err) => {
@@ -29,7 +29,7 @@ export const sendListUser = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                sendMessageBulk(client, sourceId, lastCol, lastRow, template);
+                sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template);
             }
         });
 
@@ -48,7 +48,7 @@ export const getIncludeUser = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const classInfoColl = db.collection('classInfo');
 
-        const { sourceId, studentIds, role } = data;
+        const { sourceId, sheetName, studentIds, role } = data;
 
         let zaloList = [];
 
@@ -68,7 +68,10 @@ export const getIncludeUser = async (req, res) => {
                                 input: '$students',
                                 as: 'item',
                                 cond: {
-                                    $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                                    $and: [
+                                        { $eq: ['$$item.zaloStudentId', parseInt(studentId)] },
+                                        { $eq: ['$$item.role', role] },
+                                    ],
                                 },
                             },
                         },
@@ -118,7 +121,7 @@ export const getIncludeUser = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                getUserBulk(client, sourceId, zaloList);
+                getUserBulk(client, sourceId, sheetName, zaloList);
             }
         });
 
@@ -136,7 +139,7 @@ export const searchNotRegister = async (req, res) => {
     const db = MongoDB.client.db('zalo_servers');
     const zaloColl = db.collection('zaloUsers');
 
-    const { sourceId } = data;
+    const { sourceId, sheetName } = data;
 
     let zaloList = [];
 
@@ -158,7 +161,7 @@ export const searchNotRegister = async (req, res) => {
             console.error(err);
             return;
         } else {
-            getUserBulk(client, sourceId, zaloList);
+            getUserBulk(client, sourceId, sheetName, zaloList);
         }
     });
 
@@ -174,7 +177,7 @@ export const getListUserFromClassId = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const classInfoColl = db.collection('classInfo');
 
-        const { sourceId, classId, role } = data;
+        const { sourceId, sheetName, classId, role } = data;
 
         const { className } = await classInfoColl.findOne(
             { classId: classId },
@@ -255,7 +258,7 @@ export const getListUser = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const zaloColl = db.collection('zaloUsers');
 
-        const { sourceId, classIds, status, role } = data;
+        const { sourceId, sheetName, classIds, status, role } = data;
 
         let classCheckList = [];
         if (status === 'Đang học') {
@@ -335,7 +338,7 @@ export const getListUser = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                getUserBulk(client, sourceId, zaloList);
+                getUserBulk(client, sourceId, sheetName, zaloList);
             }
         });
 
@@ -346,7 +349,7 @@ export const getListUser = async (req, res) => {
     }
 };
 
-async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
+async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestData = {
@@ -383,7 +386,7 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
 
         const requestUpdate = {
             spreadsheetId: sourceId,
-            range: `Zalo!I8:I${8 + out.length - 1}`,
+            range: `${sheetName}!I8:I${8 + out.length - 1}`,
             valueInputOption: 'USER_ENTERED',
             resource: {
                 majorDimension: 'ROWS',
@@ -399,7 +402,7 @@ async function sendMessageBulk(client, sourceId, lastCol, lastRow, template) {
     }
 }
 
-async function getUserBulk(client, sourceId, zaloList) {
+async function getUserBulk(client, sourceId, sheetName, zaloList) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const totalList = zaloList.length;
@@ -408,7 +411,7 @@ async function getUserBulk(client, sourceId, zaloList) {
 
     const requestUpdate = {
         spreadsheetId: sourceId,
-        range: `Zalo!A8:H${8 + totalList - 1}`,
+        range: `${sheetName}!A8:H${8 + totalList - 1}`,
         valueInputOption: 'USER_ENTERED',
         resource: {
             majorDimension: 'ROWS',
