@@ -174,6 +174,7 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfo');
 
         const { currentTerm } = await MongoDB.findOneUser(
             classInfoColl,
@@ -182,6 +183,8 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
         );
 
         const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
+
+        let zaloList = [];
 
         studentNotPayment.forEach((v, i) => {
             const { studentId, studentName, terms } = v;
