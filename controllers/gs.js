@@ -184,18 +184,19 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
         const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
-        console.log(studentNotPayment);
-
-        res.send('Done');
-        return;
         let zaloList = [];
 
         studentNotPayment.forEach((v, i) => {
             const { studentId, studentName, terms } = v;
+            console.log(terms);
             const { billing } = terms[0];
 
             zaloList.push(i + 1, '', '', studentName, billing, studentId, '', '');
         });
+
+        console.log(zaloList);
+        res.send('Done');
+        return;
 
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
