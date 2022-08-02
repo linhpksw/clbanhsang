@@ -75,12 +75,11 @@ export const updateStudentRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const zaloColl = db.collection('zaloUsers');
-        const studentInfoColl = db.collection('studentInfoColl');
+        const studentInfoColl = db.collection('studentInfo');
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
-        console.log(webhook);
 
         for (const property in webhook) {
             if (webhook[property] == '') {
@@ -150,15 +149,11 @@ export const updateStudentRequest = async (req, res) => {
         }
 
         // set trang thai di hoc lai trong Student Info Coll
-        // await MongoDB.updateOneUser(
-        //     studentInfoColl,
-        //     { studentId: parseInt(studentId) },
-        //     { $set: { classId: classId } }
-        // );
-        console.log(studentId);
-        console.log(classId);
-
-        await studentInfoColl.updateOne({ studentId: parseInt(studentId) }, { $set: { classId: classId } });
+        await MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId) },
+            { $set: { classId: classId } }
+        );
 
         const updateDoc = {
             studentId: parseInt(studentId),
