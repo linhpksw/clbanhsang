@@ -59,7 +59,7 @@ export const createStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        MongoDB.insertOneUser(classColl, newDoc);
+        await MongoDB.insertOneUser(classColl, newDoc);
 
         res.send('Success');
     } catch (err) {
@@ -78,7 +78,7 @@ export const updateStudentRequest = async (req, res) => {
         const classInfoColl = db.collection('classInfo');
         const studentInfoColl = db.collection('studentInfoColl');
 
-        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const webhook = req.body;
 
@@ -128,7 +128,7 @@ export const updateStudentRequest = async (req, res) => {
                     await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
 
                     // set trang thai di hoc lai trong Zalo Coll
-                    MongoDB.updateOneUser(
+                    await MongoDB.updateOneUser(
                         zaloColl,
                         { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
                         { $set: { 'students.$.zaloClassId': `${zaloClass.slice(-6)}` } }
@@ -137,7 +137,7 @@ export const updateStudentRequest = async (req, res) => {
                     // set trang thai di hoc lai trong Student Info Coll
                     const updateStudentInfoDoc = { classId: `${classId.slice(-6)}` };
 
-                    MongoDB.updateOneUser(
+                    await MongoDB.updateOneUser(
                         studentInfoColl,
                         { studentId: parseInt(studentId) },
                         { $set: updateStudentInfoDoc }
@@ -164,12 +164,12 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
+        await MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
 
         // Set trang thai nghi tren StudentInfoColl
         const updateStudentInfoDoc = { classId: `${classId.slice(-6)}` };
 
-        MongoDB.updateOneUser(
+        await MongoDB.updateOneUser(
             studentInfoColl,
             { studentId: parseInt(studentId) },
             { $set: updateStudentInfoDoc }
@@ -289,12 +289,12 @@ export const deleteStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-        MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
+        await MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateClassDoc });
 
         // Set trang thai nghi tren StudentInfoColl
         const updateStudentInfoDoc = { classId: `N${classId.slice(-6)}` };
 
-        MongoDB.updateOneUser(
+        await MongoDB.updateOneUser(
             studentInfoColl,
             { studentId: parseInt(studentId) },
             { $set: updateStudentInfoDoc }
