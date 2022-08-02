@@ -188,15 +188,13 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
         studentNotPayment.forEach((v, i) => {
             const { studentId, studentName, terms } = v;
-            console.log(terms);
+
             const { billing } = terms[0];
 
-            zaloList.push(i + 1, '', '', studentName, billing, studentId, '', '');
-        });
+            const formatBilling = Tools.formatCurrency(billing);
 
-        console.log(zaloList);
-        res.send('Done');
-        return;
+            zaloList.push(i + 1, '', '', studentName, formatBilling, studentId, '', '');
+        });
 
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
