@@ -30,7 +30,7 @@ export const createMockMessage = async (req, res) => {
 
         const result = await classInfoColl.findOne(
             { classId: classId },
-            { projection: { _id: 0, 'assistants.$': 1, className: 1 } }
+            { projection: { _id: 0, assistants: 1, className: 1 } }
         );
 
         const { className } = result;
