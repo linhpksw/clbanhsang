@@ -1035,7 +1035,6 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
 
     for (let i = 0; i < zaloStudentInfoArr.length; i++) {
         const [studentId, classId, role, aliasName] = zaloStudentInfoArr[i];
-
         const studentName = aliasName.slice(3);
 
         const { currentTerm, className } = await MongoDB.findOneUser(
@@ -1044,34 +1043,82 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        const attachMessage = {
-            text: `Phụ huynh có 2 hình thức nộp học phí đợt ${currentTerm} cho học sinh ${studentName} ${studentId} lớp ${className} bao gồm:
+        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
+        const { terms } = studentTermInfo[0];
+        const { billing, payment } = terms[0];
 
-1) Học sinh nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về.
-2) ${role} chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank chi nhánh Chương Dương, số: 107004444793.
+        // Truong hop phu huynh chua chuyen khoan
+        if (
+            payment !== null ||
+            payment < billing ||
+            billing.includes('Thừa') ||
+            billing.includes('Đã nộp đủ')
+        ) {
+            const syntaxPayment = `${removeVietNam(studentName)} ${studentId} HPD${currentTerm}`;
+
+            const attachMessage = {
+                text: `Phụ huynh có 3 hình thức nộp học phí đợt ${currentTerm} cho học sinh ${studentName} ${studentId} lớp ${className} bao gồm:
     
-* Lưu ý quan trọng: ${role.toLowerCase()} cần sao chép đúng cú pháp dưới đây và dán trong nội dung chuyển khoản. Sau khi chuyển khoản thành công, ${role.toLowerCase()} chụp màn hình ảnh biên lai chuyển khoản vào lại trang Zalo OA của lớp toán.`,
+1) Học sinh nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về.
+2) Phụ huynh chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank, số: 107004444793. Trong nội dung chuyển khoản cần phải ghi đúng nội dung sau để hệ thống cập nhật tự động:
+${syntaxPayment}
+3) Phụ huynh quét mã QR code phía bên dưới để chuyển khoản.
 
-            attachment: {
-                type: 'template',
-                payload: {
-                    buttons: [
-                        {
-                            title: 'Sao chép cú pháp chuyển khoản này',
-                            payload: '#cpck',
-                            type: 'oa.query.show',
-                        },
-                    ],
+* Lưu ý: 
+- Sau khi chuyển khoản thành công, phụ huynh chụp màn hình ảnh biên lai chuyển khoản vào lại trang Zalo OA của lớp toán.
+- Nếu phụ huynh đăng kí từ 2 con trở lên vui lòng chuyển khoản riêng cho từng con ạ.`,
+
+                attachment: {
+                    type: 'template',
+                    payload: {
+                        buttons: [
+                            {
+                                title: 'Sao chép cú pháp chuyển khoản này',
+                                payload: '#cpck',
+                                type: 'oa.query.show',
+                            },
+                        ],
+                    },
                 },
-            },
-        };
+            };
 
-        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+            // Gui ma QR code cho phu huynh
+            const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
+            const { terms } = studentTermInfo[0];
+
+            const { billing } = terms[0];
+
+            const qrCodeContent = `Phụ huynh quét mã QR code trên để thanh toán học phí đợt ${currentTerm} cho con ${studentName}.`;
+            const qrCodeUrl = createQRCodePayment(billing, qrCodeContent);
+
+            await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, qrCodeContent, qrCodeUrl);
+        }
+        // Truong hop phu huynh da chuyen khoan
+        else {
+            const doneContent = `Phụ huynh đã hoàn thành học phí đợt ${currentTerm} cho con ${studentName} rồi ạ!`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
+        }
     }
 
     res.send('Done!');
 
     return;
+}
+
+function createQRCodePayment(amount, content) {
+    const BANK_ID = 'vietinbank';
+    const ACCOUNT_NO = 107004444793;
+    const TEMPLATE = 'cJHMwH';
+    const ACCOUNT_NAME = 'Dang Thi Huong';
+
+    const qrCodeUrl = encodeURIComponent(
+        `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-${TEMPLATE}.jpg?amount=${amount}&addInfo=${content}&accountName=${ACCOUNT_NAME}`
+    );
+
+    return qrCodeUrl;
 }
 
 async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
@@ -1120,8 +1167,74 @@ async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfo
             absences,
         } = terms[0];
 
-        const attachMessage = {
-            text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
+        // Truong hop phu huynh chua dong hoac dong thieu thi hien thong tin chuyen khoan
+        if (
+            payment !== null ||
+            payment < billing ||
+            billing.includes('Thừa') ||
+            billing.includes('Đã nộp đủ')
+        ) {
+            const attachMessage = {
+                text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
+------------------------
+Học phí phải nộp: ${formatCurrency(billing)}
+Tình trạng: ${
+                    payment !== null
+                        ? payment === billing
+                            ? 'Đóng đủ ✅'
+                            : payment > billing
+                            ? `thừa ${formatCurrency(payment - billing)} 🔔`
+                            : `thiếu ${formatCurrency(billing - payment)} ❌`
+                        : 'Chưa đóng ❌'
+                }${
+                    remainderBefore === 0
+                        ? ''
+                        : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
+                              remainderBefore
+                          )}`
+                }              
+------------------------
+Bắt đầu đợt: ${formatDate(start)}
+Kết thúc đợt: ${formatDate(end)}
+------------------------
+Buổi học: ${subject}
+Tổng số buổi trong đợt: ${total} buổi
+Số buổi đã học: ${study} buổi
+Số buổi vắng mặt: ${absent} buổi${
+                    payment === null
+                        ? ''
+                        : `\n------------------------
+Học phí đã nộp: ${formatCurrency(payment)}
+Hình thức nộp: ${type}
+Ngày nộp: ${paidDate}
+${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
+                }`,
+
+                attachment: {
+                    type: 'template',
+                    payload: {
+                        buttons: [
+                            {
+                                title: 'Thông tin chuyển khoản',
+                                payload: '#ttck',
+                                type: 'oa.query.show',
+                            },
+                            {
+                                title: 'Cú pháp chuyển khoản',
+                                payload: '#cpck',
+                                type: 'oa.query.show',
+                            },
+                        ],
+                    },
+                },
+            };
+
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+        }
+
+        // Neu dong du thi khong can
+        else {
+            const doneContent = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
 ------------------------
 Học phí phải nộp: ${formatCurrency(billing)}
 Tình trạng: ${
@@ -1154,28 +1267,10 @@ Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-            }`,
+            }`;
 
-            attachment: {
-                type: 'template',
-                payload: {
-                    buttons: [
-                        {
-                            title: 'Thông tin chuyển khoản',
-                            payload: '#ttck',
-                            type: 'oa.query.show',
-                        },
-                        {
-                            title: 'Cú pháp chuyển khoản',
-                            payload: '#cpck',
-                            type: 'oa.query.show',
-                        },
-                    ],
-                },
-            },
-        };
-
-        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
+        }
     }
 
     res.send('Done!');

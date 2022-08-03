@@ -634,14 +634,7 @@ export const userRequest = async (req, res) => {
 
                 // 4) Thong tin chuyen khoan
                 else if (formatContent === '#ttck') {
-                    await Tools.sendPaymentTypeInfo(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        studentInfoColl
-                    );
+                    await Tools.sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                 }
 
                 // 5) Cu phap chuyen khoan
