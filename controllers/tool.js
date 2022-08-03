@@ -1043,10 +1043,7 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
             { projection: { _id: 0, currentTerm: 1, className: 1 } }
         );
 
-        console.log(currentTerm, classId);
-
         const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
-        console.log(studentTermInfo);
         const { terms } = studentTermInfo[0];
         const { billing, payment } = terms[0];
 
