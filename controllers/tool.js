@@ -1058,12 +1058,14 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
 
             const attachMessage = {
                 text: `Phụ huynh có 3 hình thức nộp học phí đợt ${currentTerm} cho học sinh ${studentName} ${studentId} lớp ${className} bao gồm:
-    
+-------
 1) Học sinh nộp tiền mặt trực tiếp tại lớp toán cho trợ giảng và nhận biên lai về.
+
 2) Phụ huynh chuyển khoản vào tài khoản Đặng Thị Hường – ngân hàng VietinBank, số: 107004444793. Trong nội dung chuyển khoản cần phải ghi đúng nội dung sau để hệ thống cập nhật tự động:
 ${syntaxPayment}
-3) Phụ huynh quét mã QR code phía bên dưới để chuyển khoản.
 
+3) Phụ huynh quét mã QR code phía bên dưới để chuyển khoản.
+-------
 * Lưu ý: 
 - Sau khi chuyển khoản thành công, phụ huynh chụp màn hình ảnh biên lai chuyển khoản vào lại trang Zalo OA của lớp toán.
 - Nếu phụ huynh đăng kí từ 2 con trở lên vui lòng chuyển khoản riêng cho từng con ạ.`,
@@ -1073,7 +1075,7 @@ ${syntaxPayment}
                     payload: {
                         buttons: [
                             {
-                                title: 'Sao chép cú pháp chuyển khoản này',
+                                title: 'Sao chép cú pháp chuyển khoản',
                                 payload: '#cpck',
                                 type: 'oa.query.show',
                             },
@@ -1107,10 +1109,11 @@ function createQRCodePayment(amount, content) {
     const BANK_ID = 'vietinbank';
     const ACCOUNT_NO = 107004444793;
     const TEMPLATE = 'cJHMwH';
-    const ACCOUNT_NAME = 'Dang Thi Huong';
+    const ACCOUNT_NAME = encodeURIComponent('Dang Thi Huong');
+    const CONTENT = encodeURIComponent(content);
 
     const qrCodeUrl = encodeURIComponent(
-        `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-${TEMPLATE}.jpg?amount=${amount}&addInfo=${content}&accountName=${ACCOUNT_NAME}`
+        `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-${TEMPLATE}.jpg?amount=${amount}&addInfo=${CONTENT}&accountName=${ACCOUNT_NAME}`
     );
 
     return qrCodeUrl;
