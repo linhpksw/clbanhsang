@@ -1088,7 +1088,7 @@ ${syntaxPayment}
 
             // Gui ma QR code cho phu huynh
             const qrCodeContent = `Phụ huynh quét mã QR code trên để thanh toán học phí đợt ${currentTerm} cho con ${studentName}.`;
-            const qrCodeUrl = createQRCodePayment(billing, qrCodeContent);
+            const qrCodeUrl = createQRCodePayment(billing, syntaxPayment);
 
             await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, qrCodeContent, qrCodeUrl);
         }
