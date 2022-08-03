@@ -1044,6 +1044,7 @@ async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, class
         );
 
         const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
+        console.log(studentTermInfo);
         const { terms } = studentTermInfo[0];
         const { billing, payment } = terms[0];
 
@@ -1085,11 +1086,6 @@ ${syntaxPayment}
             await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
             // Gui ma QR code cho phu huynh
-            const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
-            const { terms } = studentTermInfo[0];
-
-            const { billing } = terms[0];
-
             const qrCodeContent = `Phụ huynh quét mã QR code trên để thanh toán học phí đợt ${currentTerm} cho con ${studentName}.`;
             const qrCodeUrl = createQRCodePayment(billing, qrCodeContent);
 
