@@ -281,8 +281,6 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
 
     const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
-    console.log(studentNotPayment);
-
     // Neu tat ca hoc sinh da hoan thanh hoc phi
     if (studentNotPayment.length === 0) {
         // Thong bao lai cho tro giang
