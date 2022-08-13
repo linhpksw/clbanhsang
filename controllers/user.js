@@ -392,7 +392,7 @@ export const userRequest = async (req, res) => {
                 // Dia chi hoc
                 else if (formatContent === '#dc') {
                     const attachMessage = {
-                        text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong số 27 Tô Hiệu, Hà Đông.`,
+                        text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong số 27 Tô Hiệu, Nguyễn Trãi, Hà Đông.`,
                         attachment: {
                             type: 'template',
                             payload: {
