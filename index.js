@@ -27,6 +27,9 @@ const init = async () => {
     console.log(res.data);
 };
 
-app.listen(PORT, () => console.log(`Server is running on PORT: http://localhost:${PORT}`));
+app.listen(PORT, async () => {
+    console.log(`Server is running on PORT: http://localhost:${PORT}`);
+    await init();
+});
 
 app.get('/', (req, res) => res.send('Hello.'));
