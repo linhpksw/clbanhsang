@@ -392,14 +392,14 @@ export const userRequest = async (req, res) => {
                 // Dia chi hoc
                 else if (formatContent === '#dc') {
                     const attachMessage = {
-                        text: `Câu lạc bộ Ánh Sáng có địa chỉ tại tầng 1 trường THCS Nguyễn Trãi - Hà Đông. (Cạnh nhà thờ Hà Đông)`,
+                        text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong số 27 Tô Hiệu, Hà Đông.`,
                         attachment: {
                             type: 'template',
                             payload: {
                                 buttons: [
                                     {
                                         title: 'Xem cụ thể trên bản đồ',
-                                        payload: { url: 'https://goo.gl/maps/PoghpFpVtydccEYL6' },
+                                        payload: { url: 'https://goo.gl/maps/3NnMdTo7x2RYDxMG9' },
                                         type: 'oa.open.url',
                                     },
                                 ],
