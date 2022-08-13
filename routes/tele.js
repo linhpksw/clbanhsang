@@ -12,7 +12,7 @@ const { TELE_TOKEN } = process.env;
 import { botRequest } from '../controllers/tele.js';
 
 const router = express.Router();
-const URI = `/tele/${TELE_TOKEN}`;
+const URI = `/${TELE_TOKEN}`;
 router.post(URI, botRequest);
 
 export default router;
