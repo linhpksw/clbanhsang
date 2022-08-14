@@ -6,7 +6,7 @@ import usersRoutes from './routes/user.js';
 import appsheetRoutes from './routes/appsheet.js';
 import gsRoutes from './routes/gs.js';
 import teleRoutes from './routes/tele.js';
-import cassoRoutes from './routes/casso';
+import cassoRoutes from './routes/casso.js';
 import axios from 'axios';
 
 const app = express();
