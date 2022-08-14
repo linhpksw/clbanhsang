@@ -6,6 +6,7 @@ import usersRoutes from './routes/user.js';
 import appsheetRoutes from './routes/appsheet.js';
 import gsRoutes from './routes/gs.js';
 import teleRoutes from './routes/tele.js';
+import cassoRoutes from './routes/casso';
 import axios from 'axios';
 
 const app = express();
@@ -16,20 +17,21 @@ app.use('/users', usersRoutes);
 app.use('/appsheet', appsheetRoutes);
 app.use('/gs', gsRoutes);
 app.use('/tele', teleRoutes);
+app.use('/casso', cassoRoutes);
 
-const { TELE_TOKEN, SERVER_URL } = process.env;
-const TELE_API = `https://api.telegram.org/bot${TELE_TOKEN}`;
-const URI = `/tele/${TELE_TOKEN}`;
-const URL = SERVER_URL + URI;
+// const { TELE_TOKEN, SERVER_URL } = process.env;
+// const TELE_API = `https://api.telegram.org/bot${TELE_TOKEN}`;
+// const URI = `/tele/${TELE_TOKEN}`;
+// const URL = SERVER_URL + URI;
 
-const init = async () => {
-    const res = await axios.get(`${TELE_API}/setWebhook?url=${URL}`);
-    console.log(res.data);
-};
+// const init = async () => {
+//     const res = await axios.get(`${TELE_API}/setWebhook?url=${URL}`);
+//     console.log(res.data);
+// };
 
 app.listen(PORT, async () => {
     console.log(`Server is running on PORT: http://localhost:${PORT}`);
-    await init();
+    // await init();
 });
 
 app.get('/', (req, res) => res.send('Hello.'));
