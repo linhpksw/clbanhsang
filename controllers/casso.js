@@ -23,7 +23,7 @@ export const cassoRequest = async (req, res) => {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
 
             const formatWhen = Tools.formatDateTime(when);
-            const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'}  ${Tools.formatCurrency(amount)}`;
+            const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
             const formatCuSum = Tools.formatCurrency(cusum_balance);
 
             const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
