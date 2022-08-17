@@ -1203,7 +1203,9 @@ Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-                }`,
+                }
+------------------------
+🔔Chú ý: số buổi đã học/vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`,
 
                 attachment: {
                     type: 'template',
@@ -1262,7 +1264,9 @@ Học phí đã nộp: ${formatCurrency(payment)}
 Hình thức nộp: ${type}
 Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-            }`;
+            }
+------------------------
+🔔Chú ý: số buổi đã học/vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`;
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
         }
