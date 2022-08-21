@@ -119,7 +119,7 @@ export const updateStudentRequest = async (req, res) => {
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
                     await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
 
-                    // set trang thai di hoc lai trong Zalo Coll
+                    // set trang thai phu huynh di hoc lai trong Zalo Coll
                     await MongoDB.updateOneUser(
                         zaloColl,
                         { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
@@ -138,7 +138,7 @@ export const updateStudentRequest = async (req, res) => {
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
                     await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
 
-                    // set trang thai di hoc trong Zalo Coll
+                    // set trang thai hoc sinh di hoc trong Zalo Coll
                     await MongoDB.updateOneUser(
                         zaloColl,
                         { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
@@ -233,6 +233,13 @@ export const deleteStudentRequest = async (req, res) => {
 
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
                 await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
+
+                // set trang thai nghi phu huynh trong Zalo Coll
+                await MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
+                    { $set: { 'students.$.zaloClassId': `N${zaloClass}` } }
+                );
             }
         }
 
@@ -244,7 +251,7 @@ export const deleteStudentRequest = async (req, res) => {
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
                 await ZaloAPI.tagFollower(accessToken, zaloId, `N${zaloClass}`);
 
-                // set trang thai nghi trong Zalo Coll
+                // set trang thai nghi hoc sinh trong Zalo Coll
                 await MongoDB.updateOneUser(
                     zaloColl,
                     { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
