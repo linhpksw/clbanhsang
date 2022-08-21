@@ -112,7 +112,7 @@ export const updateStudentRequest = async (req, res) => {
         // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
         // Dung vong lap de thay doi het tag cua PH lien ket voi studentId
         if (zaloParentIdArr.length > 0) {
-            for (let i = 0; i < zaloIdArr.length; i++) {
+            for (let i = 0; i < zaloParentIdArr.length; i++) {
                 const [zaloId, zaloClass] = zaloParentIdArr[i];
 
                 if (zaloClass.includes('N')) {
@@ -228,7 +228,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         // Dung vong lap de thay doi het tag cua PH lien ket voi studentId
         if (zaloParentIdArr.length > 0) {
-            for (let i = 0; i < zaloIdArr.length; i++) {
+            for (let i = 0; i < zaloParentIdArr.length; i++) {
                 const [zaloId, zaloClass] = zaloParentIdArr[i];
 
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
@@ -238,7 +238,7 @@ export const deleteStudentRequest = async (req, res) => {
 
         // Dung vong lap de thay doi het tag cua HS lien ket voi studentId
         if (zaloStudentIdArr.length > 0) {
-            for (let i = 0; i < zaloIdArr.length; i++) {
+            for (let i = 0; i < zaloStudentIdArr.length; i++) {
                 const [zaloId, zaloClass] = zaloStudentIdArr[i];
 
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
