@@ -24,12 +24,12 @@ export const cassoRequest = async (req, res) => {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
 
             const doc = {
-                when: when,
-                id: id,
-                tid: tid,
+                when: new Date(when),
+                id: parseInt(id),
+                tid: parseInt(tid),
                 description: description,
-                amount: amount,
-                cuSumBalance: cusum_balance,
+                amount: parseInt(amount),
+                cuSumBalance: parseInt(cusum_balance),
             };
 
             await MongoDB.insertOneUser(transactionsColl, doc);
