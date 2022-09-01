@@ -40,7 +40,9 @@ export const cassoRequest = async (req, res) => {
                 cuSumBalance: parseInt(cusum_balance),
             };
 
-            await MongoDB.insertOneUser(transactionsColl, doc);
+            if (isExist === null) {
+                await MongoDB.insertOneUser(transactionsColl, doc);
+            }
 
             //             const formatWhen = Tools.formatDateTime(when);
             //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
@@ -54,8 +56,6 @@ export const cassoRequest = async (req, res) => {
             // `;
             //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
         }
-
-        console.log('Tao xong');
 
         await res.send('Done!');
     } catch (err) {
