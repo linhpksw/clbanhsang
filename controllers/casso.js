@@ -32,18 +32,16 @@ export const cassoRequest = async (req, res) => {
 
             // console.log(isExist);
 
-            // const doc = {
-            //     when: new Date(when),
-            //     id: parseInt(id),
-            //     tid: parseInt(tid),
-            //     description: description,
-            //     amount: parseInt(amount),
-            //     cuSumBalance: parseInt(cusum_balance),
-            // };
+            const doc = {
+                when: new Date(when),
+                id: parseInt(id),
+                tid: parseInt(tid),
+                description: description,
+                amount: parseInt(amount),
+                cuSumBalance: parseInt(cusum_balance),
+            };
 
-            // if (isExist === null) {
-            //     await MongoDB.insertOneUser(transactionsColl, doc);
-            // }
+            await MongoDB.insertOneUser(transactionsColl, doc);
 
             //             const formatWhen = Tools.formatDateTime(when);
             //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
@@ -58,7 +56,7 @@ export const cassoRequest = async (req, res) => {
             //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
         }
 
-        await res.send('Done!');
+        res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
