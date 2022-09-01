@@ -19,30 +19,31 @@ export const cassoRequest = async (req, res) => {
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const { data } = req.body;
+        console.log(data);
 
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
 
-            const isExist = await MongoDB.findOneUser(
-                transactionsColl,
-                { tid: tid },
-                { projection: { _id: 0 } }
-            );
+            // const isExist = await MongoDB.findOneUser(
+            //     transactionsColl,
+            //     { tid: tid },
+            //     { projection: { _id: 0 } }
+            // );
 
-            console.log(isExist);
+            // console.log(isExist);
 
-            const doc = {
-                when: new Date(when),
-                id: parseInt(id),
-                tid: parseInt(tid),
-                description: description,
-                amount: parseInt(amount),
-                cuSumBalance: parseInt(cusum_balance),
-            };
+            // const doc = {
+            //     when: new Date(when),
+            //     id: parseInt(id),
+            //     tid: parseInt(tid),
+            //     description: description,
+            //     amount: parseInt(amount),
+            //     cuSumBalance: parseInt(cusum_balance),
+            // };
 
-            if (isExist === null) {
-                await MongoDB.insertOneUser(transactionsColl, doc);
-            }
+            // if (isExist === null) {
+            //     await MongoDB.insertOneUser(transactionsColl, doc);
+            // }
 
             //             const formatWhen = Tools.formatDateTime(when);
             //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
