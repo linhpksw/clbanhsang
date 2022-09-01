@@ -55,7 +55,9 @@ export const cassoRequest = async (req, res) => {
             //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
         }
 
-        res.send('Done!');
+        console.log('Tao xong');
+
+        await res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
