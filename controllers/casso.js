@@ -19,21 +19,23 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
-        for (let i = 0; i < data.length; i++) {
-            const { id, tid, description, amount, cusum_balance, when } = data[i];
+        console.log(data);
 
-            const formatWhen = Tools.formatDateTime(when);
-            const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
-            const formatCuSum = Tools.formatCurrency(cusum_balance);
+        //         for (let i = 0; i < data.length; i++) {
+        //             const { id, tid, description, amount, cusum_balance, when } = data[i];
 
-            const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
-Số dư hiện tại: ${formatCuSum}
-Nội dung: ${description}
-Mã giao dịch: ${id}
-Mã tham chiếu: ${tid}
-`;
-            await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
-        }
+        //             const formatWhen = Tools.formatDateTime(when);
+        //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
+        //             const formatCuSum = Tools.formatCurrency(cusum_balance);
+
+        //             const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
+        // Số dư hiện tại: ${formatCuSum}
+        // Nội dung: ${description}
+        // Mã giao dịch: ${id}
+        // Mã tham chiếu: ${tid}
+        // `;
+        //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
+        //         }
 
         res.send('Done!');
     } catch (err) {
