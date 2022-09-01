@@ -15,27 +15,37 @@ export const cassoRequest = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
+        const transactionsColl = db.collection('transactions');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const { data } = req.body;
 
-        console.log(data);
+        for (let i = 0; i < data.length; i++) {
+            const { id, tid, description, amount, cusum_balance, when } = data[i];
 
-        //         for (let i = 0; i < data.length; i++) {
-        //             const { id, tid, description, amount, cusum_balance, when } = data[i];
+            const doc = {
+                when: when,
+                id: id,
+                tid: tid,
+                description: description,
+                amount: amount,
+                cuSumBalance: cusum_balance,
+            };
 
-        //             const formatWhen = Tools.formatDateTime(when);
-        //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
-        //             const formatCuSum = Tools.formatCurrency(cusum_balance);
+            await MongoDB.insertOneUser(transactionsColl, doc);
 
-        //             const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
-        // Số dư hiện tại: ${formatCuSum}
-        // Nội dung: ${description}
-        // Mã giao dịch: ${id}
-        // Mã tham chiếu: ${tid}
-        // `;
-        //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
-        //         }
+            //             const formatWhen = Tools.formatDateTime(when);
+            //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
+            //             const formatCuSum = Tools.formatCurrency(cusum_balance);
+
+            //             const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
+            // Số dư hiện tại: ${formatCuSum}
+            // Nội dung: ${description}
+            // Mã giao dịch: ${id}
+            // Mã tham chiếu: ${tid}
+            // `;
+            //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
+        }
 
         res.send('Done!');
     } catch (err) {
