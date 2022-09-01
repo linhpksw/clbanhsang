@@ -23,6 +23,14 @@ export const cassoRequest = async (req, res) => {
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
 
+            const isExist = await MongoDB.findOneUser(
+                transactionsColl,
+                { tid: tid },
+                { projection: { _id: 0 } }
+            );
+
+            console.log(isExist);
+
             const doc = {
                 when: new Date(when),
                 id: parseInt(id),
