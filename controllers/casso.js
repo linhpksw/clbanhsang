@@ -47,6 +47,10 @@ export const cassoRequest = async (req, res) => {
             // Tach ID tu noi dung chuyen khoan
             const studentId = await extractStudentId(description, classColl);
 
+            console.log(studentId);
+
+            continue;
+
             // Neu tach khong thanh cong
             if (studentId === 'N/A') {
                 // do something
