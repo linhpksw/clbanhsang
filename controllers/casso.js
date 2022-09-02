@@ -1,3 +1,7 @@
+import * as Tools from './tool.js';
+import * as ZaloAPI from './zalo.js';
+import * as MongoDB from './mongo.js';
+import { google } from 'googleapis';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -6,9 +10,10 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
-import * as Tools from './tool.js';
-import * as ZaloAPI from './zalo.js';
-import * as MongoDB from './mongo.js';
+const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const SCOPE = process.env.SCOPE;
+const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 export const cassoRequest = async (req, res) => {
     try {
@@ -43,7 +48,7 @@ export const cassoRequest = async (req, res) => {
                 amount: parseInt(amount),
                 cuSumBalance: parseInt(cusum_balance),
             };
-            await MongoDB.insertOneUser(transactionsColl, doc);
+            MongoDB.insertOneUser(transactionsColl, doc);
 
             // Tach ID tu noi dung chuyen khoan
             const extractId = await extractStudentId(description, classColl);
@@ -130,7 +135,19 @@ export const cassoRequest = async (req, res) => {
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
 
 Trân trọng cảm ơn quý phụ huynh!`;
-            await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+
+            // Gui tin nhan xac nhan den phu huynh
+            // await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+
+            // Day len Co Phu Trach (sheet Giao dịch)
+            client.authorize((err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                } else {
+                    upload2CoPhuTrach();
+                }
+            });
         }
 
         res.send('Done!');
@@ -139,6 +156,27 @@ Trân trọng cảm ơn quý phụ huynh!`;
     } finally {
     }
 };
+
+async function upload2CoPhuTrach(client) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const appendRequest = {
+        spreadsheetId: '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM',
+        range: 'Giao dịch',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        resource: {
+            majorDimension: 'ROWS',
+            values: [
+                [2001, 2002],
+                [2003, 2004],
+            ],
+        },
+    };
+
+    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+    console.log(appendResponse);
+}
 
 async function extractStudentId(str, classColl) {
     let id = 'N/A';
