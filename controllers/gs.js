@@ -14,7 +14,7 @@ dotenv.config({ path: path.resolve(__dirname, '../.env') });
 const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
-const client = new google.auth.JWT(CLIENT_EMAIL, null, z, [SCOPE]);
+const client = new google.auth.JWT(CLIENT_EMAIL, null, [SCOPE]);
 
 export const createMockMessageFromClassId = async (req, res) => {
     const data = req.body;
