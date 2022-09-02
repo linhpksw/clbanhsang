@@ -17,6 +17,7 @@ export const cassoRequest = async (req, res) => {
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
         const transactionsColl = db.collection('transactions');
+        const studentInfoColl = db.collection('studentInfo');
         const quotasColl = db.collection('quotas');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
