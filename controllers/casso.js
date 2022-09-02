@@ -46,7 +46,6 @@ export const cassoRequest = async (req, res) => {
 
             // Tach ID tu noi dung chuyen khoan
             const studentId = await extractStudentId(description, classColl);
-            console.log(studentId);
 
             // Neu tach khong thanh cong
             if (studentId === 'N/A') {
@@ -55,6 +54,7 @@ export const cassoRequest = async (req, res) => {
             // Neu tach thanh cong
             else {
                 // Check thong tin hoc phi cua HS dot hien tai
+                console.log(studentId);
                 const pipeline = [
                     {
                         $match: {
