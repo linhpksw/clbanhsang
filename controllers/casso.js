@@ -119,14 +119,14 @@ export const cassoRequest = async (req, res) => {
             }
 
             const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
---------------------
-- Thời gian nộp: ${Tools.formatDateTime(when)}
-- Hình thức nộp: chuyển khoản
---------------------
-- Học phí phải nộp: ${Tools.formatCurrency(billing)}
-- Học phí đã nộp: ${Tools.formatCurrency(amount)}
-- Trạng thái học phí đợt ${term}: ${tuitionStatus}
---------------------
+-----------------------------------
+- Thời gian: ${Tools.formatDateTime(when)}
+- Hình thức: chuyển khoản
+-----------------------------------
+- Học phí: ${Tools.formatCurrency(billing)}
+- Đã nộp: ${Tools.formatCurrency(amount)}
+- Trạng thái: ${tuitionStatus}
+-----------------------------------
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
 
 Trân trọng cảm ơn quý phụ huynh!`;
