@@ -120,7 +120,7 @@ export const cassoRequest = async (req, res) => {
 
             const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
 -----------------------------------
-- Thời gian: ${Tools.formatDateTime(when)}
+- Thời gian: ${new Date(when).toLocaleString('vi-VN')}
 - Hình thức: chuyển khoản
 -----------------------------------
 - Học phí: ${Tools.formatCurrency(billing)}
