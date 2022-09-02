@@ -184,17 +184,18 @@ async function extractStudentId(str, classColl) {
     const extractNum = str.replace(/\D/g, '');
     const extractId = extractNum.match(/200[4,5,6,7,8,9]\d{3}/g);
 
-    for (let i = 0; i < extractId.length; i++) {
-        const formatId = parseInt(extractId[i], 10);
+    if (extractId !== null) {
+        for (let i = 0; i < extractId.length; i++) {
+            const formatId = parseInt(extractId[i], 10);
 
-        const existId = await MongoDB.findOneUser(
-            classColl,
-            { studentId: formatId },
-            { projection: { _id: 0 } }
-        );
+            const existId = await MongoDB.findOneUser(
+                classColl,
+                { studentId: formatId },
+                { projection: { _id: 0 } }
+            );
 
-        if (existId !== null) id = formatId;
+            if (existId !== null) id = formatId;
+        }
     }
-
     return id;
 }
