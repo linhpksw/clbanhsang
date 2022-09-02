@@ -45,83 +45,79 @@ export const cassoRequest = async (req, res) => {
             await MongoDB.insertOneUser(transactionsColl, doc);
 
             // Tach ID tu noi dung chuyen khoan
-            const studentId = await extractStudentId(description, classColl);
-
-            console.log(studentId);
-
-            continue;
+            const extractId = await extractStudentId(description, classColl);
 
             // Neu tach khong thanh cong
-            if (studentId === 'N/A') {
+            if (extractId === 'N/A') {
                 // do something
+                continue;
             }
             // Neu tach thanh cong
-            else {
-                // Check thong tin hoc phi cua HS dot hien tai
-                console.log(studentId);
-                const pipeline = [
-                    {
-                        $match: {
-                            studentId: parseInt(studentId),
-                        },
+
+            // Check thong tin hoc phi cua HS dot hien tai
+            const pipeline = [
+                {
+                    $match: {
+                        studentId: parseInt(extractId),
                     },
-                    {
-                        $project: {
-                            studentId: 1,
-                            studentName: 1,
-                            terms: {
-                                $filter: {
-                                    input: '$terms',
-                                    as: 'item',
-                                    cond: {
-                                        $eq: [
-                                            '$$item.term',
-                                            {
-                                                $max: '$terms.term',
-                                            },
-                                        ],
-                                    },
+                },
+                {
+                    $project: {
+                        studentId: 1,
+                        studentName: 1,
+                        terms: {
+                            $filter: {
+                                input: '$terms',
+                                as: 'item',
+                                cond: {
+                                    $eq: [
+                                        '$$item.term',
+                                        {
+                                            $max: '$terms.term',
+                                        },
+                                    ],
                                 },
                             },
                         },
                     },
-                ];
+                },
+            ];
 
-                const aggCursor = studentInfoColl.aggregate(pipeline);
-                const result = await aggCursor.toArray();
+            const aggCursor = studentInfoColl.aggregate(pipeline);
+            const result = await aggCursor.toArray();
 
-                const { terms, studentId, studentName } = result[0];
+            const { terms, studentId, studentName } = result[0];
 
-                const {
-                    term, // dot hien tai
-                    start, // bat dau dot
-                    end, // ket thuc dot
-                    total, // so buoi trong dot
-                    study, // so buoi hoc
-                    absent, // so buoi nghi
-                    subject, // mon hoc
-                    remainderBefore, // du dot truoc
-                    billing, // phai nop
-                    payment, // da nop
-                    type, // hinh thuc nop
-                    paidDate, // ngay nop
-                    remainder, // con thua
-                    attendances,
-                    absences,
-                } = terms[0];
+            const {
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = terms[0];
 
-                let tuitionStatus;
-                if (amount === billing) {
-                    tuitionStatus = 'nộp đủ học phí';
-                } else if (amount > billing) {
-                    const diff = amount - billing;
-                    tuitionStatus = `nộp thừa ${Tools.formatCurrency(diff)}`;
-                } else {
-                    const diff = billing - amount;
-                    tuitionStatus = `nộp thiếu ${Tools.formatCurrency(diff)}`;
-                }
+            let tuitionStatus;
+            if (amount === billing) {
+                tuitionStatus = 'nộp đủ học phí';
+            } else if (amount > billing) {
+                const diff = amount - billing;
+                tuitionStatus = `nộp thừa ${Tools.formatCurrency(diff)}`;
+            } else {
+                const diff = billing - amount;
+                tuitionStatus = `nộp thiếu ${Tools.formatCurrency(diff)}`;
+            }
 
-                const confirmTuition = `✅ Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
+            const confirmTuition = `✅ Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
 - Học phí phải nộp: ${Tools.formatCurrency(billing)}
 - Học phí đã nộp: ${Tools.formatCurrency(amount)}
 - Hình thức nộp: chuyển khoản
@@ -132,8 +128,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
 
 Trân trọng cảm ơn quý phụ huynh!
 `;
-                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
-            }
+            await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
         }
 
         res.send('Done!');
