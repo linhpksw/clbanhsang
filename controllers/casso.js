@@ -109,26 +109,27 @@ export const cassoRequest = async (req, res) => {
 
             let tuitionStatus;
             if (amount === billing) {
-                tuitionStatus = 'nộp đủ học phí';
+                tuitionStatus = '✅ nộp đủ học phí';
             } else if (amount > billing) {
                 const diff = amount - billing;
-                tuitionStatus = `nộp thừa ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `🔔 nộp thừa ${Tools.formatCurrency(diff)}`;
             } else {
                 const diff = billing - amount;
-                tuitionStatus = `nộp thiếu ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `❌ nộp thiếu ${Tools.formatCurrency(diff)}`;
             }
 
-            const confirmTuition = `✅ Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
+            const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
+--------------------
+- Thời gian nộp: ${Tools.formatDateTime(when)}
+- Hình thức nộp: chuyển khoản
+--------------------
 - Học phí phải nộp: ${Tools.formatCurrency(billing)}
 - Học phí đã nộp: ${Tools.formatCurrency(amount)}
-- Hình thức nộp: chuyển khoản
-- Thời gian: ${Tools.formatDateTime(when)}
 - Trạng thái học phí đợt ${term}: ${tuitionStatus}
-
+--------------------
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
 
-Trân trọng cảm ơn quý phụ huynh!
-`;
+Trân trọng cảm ơn quý phụ huynh!`;
             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
         }
 
