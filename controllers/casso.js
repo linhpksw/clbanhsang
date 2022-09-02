@@ -15,23 +15,25 @@ export const cassoRequest = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
         const transactionsColl = db.collection('transactions');
+        const quotasColl = db.collection('quotas');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const { data } = req.body;
-        console.log(data);
 
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
+            // kiem tra giao dich da ton tai trong CSDL chua
+            const isExist = await MongoDB.findOneUser(
+                transactionsColl,
+                { tid: tid },
+                { projection: { _id: 0 } }
+            );
+            // Neu ton tai thi bo qua
+            if (isExist !== null) continue;
 
-            // const isExist = await MongoDB.findOneUser(
-            //     transactionsColl,
-            //     { tid: tid },
-            //     { projection: { _id: 0 } }
-            // );
-
-            // console.log(isExist);
-
+            // Neu chua thi day du lieu vao Transactions Coll
             const doc = {
                 when: new Date(when),
                 id: parseInt(id),
@@ -40,20 +42,93 @@ export const cassoRequest = async (req, res) => {
                 amount: parseInt(amount),
                 cuSumBalance: parseInt(cusum_balance),
             };
-
             await MongoDB.insertOneUser(transactionsColl, doc);
 
-            //             const formatWhen = Tools.formatDateTime(when);
-            //             const formatAmount = `${amount > 0 ? 'tăng' : 'giảm'} ${Tools.formatCurrency(amount)}`;
-            //             const formatCuSum = Tools.formatCurrency(cusum_balance);
+            // Tach ID tu noi dung chuyen khoan
+            const studentId = await extractStudentId(description, classColl);
 
-            //             const content = `Số dư tài khoản vừa ${formatAmount} vào ${formatWhen}
-            // Số dư hiện tại: ${formatCuSum}
-            // Nội dung: ${description}
-            // Mã giao dịch: ${id}
-            // Mã tham chiếu: ${tid}
-            // `;
-            //             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', content);
+            // Neu tach khong thanh cong
+            if (studentId === 'N/A') {
+                // do something
+            }
+            // Neu tach thanh cong
+            else {
+                // Check thong tin hoc phi cua HS dot hien tai
+                const pipeline = [
+                    {
+                        $match: {
+                            studentId: parseInt(studentId),
+                        },
+                    },
+                    {
+                        $project: {
+                            studentId: 1,
+                            studentName: 1,
+                            terms: {
+                                $filter: {
+                                    input: '$terms',
+                                    as: 'item',
+                                    cond: {
+                                        $eq: [
+                                            '$$item.term',
+                                            {
+                                                $max: '$terms.term',
+                                            },
+                                        ],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ];
+
+                const aggCursor = studentInfoColl.aggregate(pipeline);
+                const result = await aggCursor.toArray();
+
+                const { terms, studentId, studentName } = result[0];
+
+                const {
+                    term, // dot hien tai
+                    start, // bat dau dot
+                    end, // ket thuc dot
+                    total, // so buoi trong dot
+                    study, // so buoi hoc
+                    absent, // so buoi nghi
+                    subject, // mon hoc
+                    remainderBefore, // du dot truoc
+                    billing, // phai nop
+                    payment, // da nop
+                    type, // hinh thuc nop
+                    paidDate, // ngay nop
+                    remainder, // con thua
+                    attendances,
+                    absences,
+                } = terms[0];
+
+                let tuitionStatus;
+                if (amount === billing) {
+                    tuitionStatus = 'nộp đủ học phí';
+                } else if (amount > billing) {
+                    const diff = amount - billing;
+                    tuitionStatus = `nộp thừa ${Tools.formatCurrency(diff)}`;
+                } else {
+                    const diff = billing - amount;
+                    tuitionStatus = `nộp thiếu ${Tools.formatCurrency(diff)}`;
+                }
+
+                const confirmTuition = `✅ Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
+- Học phí phải nộp: ${Tools.formatCurrency(billing)}
+- Học phí đã nộp: ${Tools.formatCurrency(amount)}
+- Hình thức nộp: chuyển khoản
+- Thời gian: ${Tools.formatDateTime(when)}
+- Trạng thái học phí đợt ${term}: ${tuitionStatus}
+
+Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
+
+Trân trọng cảm ơn quý phụ huynh!
+`;
+                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+            }
         }
 
         res.send('Done!');
@@ -62,3 +137,24 @@ export const cassoRequest = async (req, res) => {
     } finally {
     }
 };
+
+async function extractStudentId(str, classColl) {
+    let id = 'N/A';
+
+    const extractNum = str.replace(/\D/g, '');
+    const extractId = extractNum.match(/200[4,5,6,7,8,9]\d{3}/g);
+
+    for (let i = 0; i < extractId.length; i++) {
+        const formatId = parseInt(extractId[i], 10);
+
+        const existId = await MongoDB.findOneUser(
+            classColl,
+            { studentId: formatId },
+            { projection: { _id: 0 } }
+        );
+
+        if (existId !== null) id = formatId;
+    }
+
+    return id;
+}
