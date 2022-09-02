@@ -145,7 +145,7 @@ Trân trọng cảm ơn quý phụ huynh!`;
                     console.error(err);
                     return;
                 } else {
-                    upload2CoPhuTrach();
+                    upload2CoPhuTrach(client);
                 }
             });
         }
