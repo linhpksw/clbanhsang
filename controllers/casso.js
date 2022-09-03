@@ -298,7 +298,7 @@ async function xuLyIdThuCong(client) {
     const { values } = getResponse;
 
     let data = [];
-    let deleteRange = [];
+    let clearIndex = [];
 
     for (let i = 0; i < values.length; i++) {
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
@@ -310,16 +310,24 @@ async function xuLyIdThuCong(client) {
                 description: description + extractId,
                 amount: amount,
                 cusum_balance: cuSumBalance,
-                when: when,
+                when: new Date(when),
             });
             deleteRange.push(i + 1);
         } else if (extractId === 'x' && extractStatus === 'Lỗi') {
-            deleteRange.push(i + 1);
+            clearIndex.push(i + 1);
         }
     }
 
-    console.log(data);
-    console.log(deleteRange);
+    const clearRange = clearIndex.map((v) => `H${v}`);
+
+    const clearRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        resource: {
+            ranges: clearRange,
+        },
+    };
+
+    const clearResponse = (await sheets.spreadsheets.values.batchClear(clearRequest)).data;
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
