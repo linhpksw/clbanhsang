@@ -46,7 +46,6 @@ export const failExtract = async (req, res) => {
         const classColl = db.collection('classUsers');
         const transactionsColl = db.collection('transactions');
         const studentInfoColl = db.collection('studentInfo');
-        const quotasColl = db.collection('quotas');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         client.authorize((err) => {
@@ -54,7 +53,7 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                await xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
