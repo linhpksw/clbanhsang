@@ -28,6 +28,8 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
+        console.log(data);
+
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
             // kiem tra giao dich da ton tai trong CSDL chua
@@ -125,9 +127,16 @@ export const cassoRequest = async (req, res) => {
                 tuitionStatus = `❌ nộp thiếu ${Tools.formatCurrency(diff)}`;
             }
 
+            const formatWhen = new Date(when).toLocaleString('vi-VN', {
+                hour: 'numeric',
+                minute: 'numeric',
+                day: 'numeric',
+                month: 'numeric',
+                year: 'numeric',
+            });
             const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
 -----------------------------------
-- Thời gian: ${new Date(when).toLocaleString('vi-VN')}
+- Thời gian: ${formatWhen}
 - Hình thức: chuyển khoản
 -----------------------------------
 - Học phí: ${Tools.formatCurrency(billing)}
