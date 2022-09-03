@@ -111,6 +111,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
     sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
+    console.log(data);
     await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
