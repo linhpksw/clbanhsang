@@ -71,6 +71,7 @@ export const cassoRequest = async (req, res) => {
                     $project: {
                         studentId: 1,
                         studentName: 1,
+                        classId: 1,
                         terms: {
                             $filter: {
                                 input: '$terms',
@@ -92,7 +93,7 @@ export const cassoRequest = async (req, res) => {
             const aggCursor = studentInfoColl.aggregate(pipeline);
             const result = await aggCursor.toArray();
 
-            const { terms, studentId, studentName } = result[0];
+            const { terms, classId, studentId, studentName } = result[0];
 
             const {
                 term, // dot hien tai
@@ -147,6 +148,7 @@ Trân trọng cảm ơn quý phụ huynh!`;
                     return;
                 } else {
                     upload2CoPhuTrach(client, uploadTransasction);
+                    chiaVeMoiLop(client, classId, term);
                 }
             });
         }
@@ -157,6 +159,55 @@ Trân trọng cảm ơn quý phụ huynh!`;
     } finally {
     }
 };
+
+async function chiaVeMoiLop(client, classId, term) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const ssId = {
+        '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
+        '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
+        '2005A1': '19brbUkN4ixYaTP-2D7GNr3WC-U7z7F2Wh60L1SelBM4',
+        '2006A0': '1ilhObfLr7qUtbSikDvsewTAAlGyjoXYQT8H10l2vpUg',
+        '2006A1': '1CLzrEd-cN6av7Vw7xr64hqqpo_kuZA3Vky7aa6iOfPI',
+        '2007A0': '16QAf6B7CLhOGbEHtghtMEq5dE_qn4TcShXEIAwA6t40',
+        '2007A1': '1XDIOvL8C7NOWutlCJODnPxpCAlhPfHdSiRaC104EMLI',
+        '2008A0': '1Pq4bKmVGSsRqOE2peG-RcoNxKwPFBUGsO4tfYl4w8bE',
+        '2008A1': '1zRkYE6rgcQUrbbsgeZcc69SjU1LFCk_i6COYhVCZJV4',
+        '2008A2': '1wzEFLknH7bsvSpXVQuGwnhmixBRYdvb38SOUW7IREBg',
+        '2009A0': '1a5TOzG08Jpl4XkTHppQMFIHQ7jV4jpfWZeT2psZNmYQ',
+        '2009A1': '1mlKSeO-1aSIhTwzXofOO2RwoZ64zx-aTBOIVJ-puU4M',
+    };
+
+    const grade = {
+        '2004A1': 12,
+        '2005A0': 12,
+        '2005A1': 12,
+        '2006A0': 11,
+        '2006A1': 11,
+        '2007A0': 10,
+        '2007A1': 10,
+        '2008A0': 9,
+        '2008A1': 9,
+        '2008A2': 9,
+        '2009A0': 8,
+        '2009A1': 8,
+    };
+
+    const updateRequest = {
+        spreadsheetId: ssId[classId],
+        range: `Hocphi_L${grade[classId]}_D${term}`,
+
+        // How the input data should be interpreted.
+        valueInputOption: '', // TODO: Update placeholder value.
+
+        resource: {
+            // TODO: Add desired properties to the request body. All existing properties
+            // will be replaced.
+        },
+
+        auth: authClient,
+    };
+}
 
 async function upload2CoPhuTrach(client, values) {
     const sheets = google.sheets({ version: 'v4', auth: client });

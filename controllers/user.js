@@ -866,6 +866,7 @@ export const updateRequest = async (req, res) => {
                 remainder, // con thua
                 attendances,
                 absences,
+                index, // vi tri hoc sinh
             } = v;
 
             const newAttendances = attendances.map((v) => {
@@ -905,6 +906,7 @@ export const updateRequest = async (req, res) => {
                         remainder: remainder,
                         attendances: newAttendances,
                         absences: newAbsences,
+                        index: index,
                     },
                 ],
             };
