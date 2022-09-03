@@ -244,7 +244,17 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     }
 };
 
-async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount, paid, accessToken) {
+async function xuLyTrenGoogleSheet(
+    client,
+    uploadTransasction,
+    classId,
+    term,
+    index,
+    when,
+    amount,
+    paid,
+    accessToken
+) {
     // upload2CoPhuTrach(client, values)
     const sheets = google.sheets({ version: 'v4', auth: client });
     const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
@@ -257,7 +267,7 @@ async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, a
         responseDateTimeRenderOption: 'FORMATTED_STRING',
         resource: {
             majorDimension: 'ROWS',
-            values: values,
+            values: uploadTransasction,
         },
     };
 
