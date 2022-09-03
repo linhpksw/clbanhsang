@@ -186,14 +186,24 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             // Gui tin nhan xac nhan den phu huynh
             ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
-            // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop
+            // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
             const uploadTransasction = [[when, id, tid, description, amount, cusum_balance, extractId]];
             client.authorize((err) => {
                 if (err) {
                     console.error(err);
                     return;
                 } else {
-                    xuLyTrenGoogleSheet(client, uploadTransasction, classId, term, index, when, amount, paid);
+                    xuLyTrenGoogleSheet(
+                        client,
+                        uploadTransasction,
+                        classId,
+                        term,
+                        index,
+                        when,
+                        amount,
+                        paid,
+                        accessToken
+                    );
                 }
             });
 
@@ -234,12 +244,13 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     }
 };
 
-async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount, paid) {
+async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount, paid, accessToken) {
     // upload2CoPhuTrach(client, values)
     const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
 
     const appendRequest = {
-        spreadsheetId: '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM',
+        spreadsheetId: ssIdCoPhuTrach,
         range: 'Giao dịch',
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
@@ -302,6 +313,49 @@ async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, a
     };
 
     const updateResponse = (await sheets.spreadsheets.values.update(updateRequest)).data;
+
+    // kiemTraQuota
+    const getRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Quota',
+    };
+
+    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+    const { values } = getResponse;
+
+    let currentAcc = [];
+
+    for (let i = 0; i < values.length; i++) {
+        const [no, account, quota, dayLeft, status, warning] = values[i];
+        if (status === 'Đang dùng') {
+            const quotaLeft = quota - 1;
+            if (quotaLeft < 10) {
+                // Gui canh bao qua Zalo toi Admin va Co giao
+                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
+                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
+
+                currentAcc.push(no, account, quota, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
+            } else {
+                currentAcc.push(no, account, quota, dayLeft, status, warning);
+            }
+        }
+    }
+
+    const [no, account, quota, dayLeft, status, warning] = currentAcc;
+    const updateQuotaRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: `Quota!A${no + 1}:F${no + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Quota!A${no + 1}:F${no + 1}`,
+            values: [[no, account, quota, dayLeft, status, warning]],
+        },
+    };
+
+    const updateQuotaResponse = (await sheets.spreadsheets.values.update(updateQuotaRequest)).data;
 }
 
 async function extractStudentId(str, classColl) {
