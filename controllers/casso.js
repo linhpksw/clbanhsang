@@ -29,227 +29,7 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
-        for (let i = 0; i < data.length; i++) {
-            const { id, tid, description, amount, cusum_balance, when } = data[i];
-            // kiem tra giao dich da ton tai trong CSDL chua
-            const isExist = await MongoDB.findOneUser(
-                transactionsColl,
-                { tid: tid },
-                { projection: { _id: 0 } }
-            );
-            // Neu ton tai thi bo qua
-            if (isExist !== null) continue;
-
-            // Neu chua thi day du lieu vao Transactions Coll
-            const doc = {
-                when: new Date(when),
-                id: parseInt(id),
-                tid: parseInt(tid),
-                description: description,
-                amount: parseInt(amount),
-                cuSumBalance: parseInt(cusum_balance),
-            };
-            MongoDB.insertOneUser(transactionsColl, doc);
-
-            // Tach ID tu noi dung chuyen khoan
-            const extractId = await extractStudentId(description, classColl);
-
-            let extractStatus = '';
-            if (extractId === 'N/A') extractStatus = 'Lỗi';
-            const uploadTransasction = [
-                [when, id, tid, description, amount, cusum_balance, extractId, extractStatus],
-            ];
-
-            // Neu tach khong thanh cong
-            if (extractId === 'N/A') {
-                // do something
-                client.authorize((err) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    } else {
-                        xyLyTachIdKhongThanhCong(client, uploadTransasction);
-                    }
-                });
-                continue;
-            }
-
-            // Neu tach thanh cong
-            // Check thong tin hoc phi cua HS dot hien tai
-            const pipeline = [
-                {
-                    $match: {
-                        studentId: parseInt(extractId),
-                    },
-                },
-                {
-                    $project: {
-                        studentId: 1,
-                        studentName: 1,
-                        classId: 1,
-                        terms: {
-                            $filter: {
-                                input: '$terms',
-                                as: 'item',
-                                cond: {
-                                    $eq: [
-                                        '$$item.term',
-                                        {
-                                            $max: '$terms.term',
-                                        },
-                                    ],
-                                },
-                            },
-                        },
-                    },
-                },
-            ];
-
-            const aggCursor = studentInfoColl.aggregate(pipeline);
-            const result = await aggCursor.toArray();
-
-            const { terms, classId, studentId, studentName } = result[0];
-
-            const {
-                index, // vi tri hoc sinh
-                term, // dot hien tai
-                start, // bat dau dot
-                end, // ket thuc dot
-                total, // so buoi trong dot
-                study, // so buoi hoc
-                absent, // so buoi nghi
-                subject, // mon hoc
-                remainderBefore, // du dot truoc
-                billing, // phai nop
-                payment, // da nop
-                type, // hinh thuc nop
-                paidDate, // ngay nop
-                remainder, // con thua
-                attendances,
-                absences,
-            } = terms[0];
-
-            let paid = 0;
-            if (payment !== null) paid = payment;
-
-            let tuitionStatus;
-
-            // Neu chua dong hoc lan nao trong dot
-            if (payment === null) {
-                if (amount === billing) {
-                    tuitionStatus = 'nộp đủ ✅';
-                } else if (amount > billing) {
-                    const diff = amount - billing;
-                    tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
-                } else {
-                    const diff = billing - amount;
-                    tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
-                }
-            }
-
-            // Neu dong them tien hoc trong dot
-            // TH1: billing: 1.000.000/payment: 1.000.000
-            // TH2: billing: 1.000.000/payment: 800.000
-            // Th3: billing: 1.000.000/payment: 1.200.000
-            else {
-                // Truong hop hoc phi bang so tien da nop
-                if (billing === payment) {
-                    tuitionStatus = `thừa ${Tools.formatCurrency(amount)}🔔`;
-                }
-                // Truong hop hoc phi > so tien da nop
-                else if (billing > payment) {
-                    const diff = billing - payment; // 200.000
-                    if (amount > diff) {
-                        tuitionStatus = `thừa ${Tools.formatCurrency(amount - diff)}🔔`;
-                    } else if (amount < diff) {
-                        tuitionStatus = `thiếu ${Tools.formatCurrency(diff - amount)}❌`;
-                    } else {
-                        tuitionStatus = 'nộp đủ✅';
-                    }
-                }
-                // Truong hop hoc phi < so tien da nop
-                else {
-                    const diff = payment - billing;
-                    tuitionStatus = `thừa ${Tools.formatCurrency(amount + diff)}🔔`;
-                }
-            }
-
-            const formatWhenDateTime = new Date(when).toLocaleString('vi-VN', {
-                hour: 'numeric',
-                minute: 'numeric',
-                day: 'numeric',
-                month: 'numeric',
-                year: 'numeric',
-            });
-
-            const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-            });
-            const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
------------------------------------
-- Thời gian: ${formatWhenDateTime}
-- Hình thức: chuyển khoản
------------------------------------
-- Học phí: ${Tools.formatCurrency(billing)}
-- Đã nộp: ${Tools.formatCurrency(amount + paid)}
-- Trạng thái: ${tuitionStatus}
------------------------------------
-Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
-
-            // Gui tin nhan xac nhan den phu huynh
-            ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
-
-            // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
-            client.authorize((err) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                } else {
-                    xuLyTrenGoogleSheet(
-                        client,
-                        uploadTransasction,
-                        classId,
-                        term,
-                        index,
-                        when,
-                        amount,
-                        paid,
-                        accessToken
-                    );
-                }
-            });
-
-            // Cap nhat hoc phi trong StudentInfoColl
-            const grade = {
-                '2004A1': 100000,
-                '2005A0': 100000,
-                '2005A1': 100000,
-                '2006A0': 100000,
-                '2006A1': 100000,
-                '2007A0': 100000,
-                '2007A1': 100000,
-                '2008A0': 120000,
-                '2008A1': 120000,
-                '2008A2': 100000,
-                '2009A0': 120000,
-                '2009A1': 120000,
-            };
-
-            const updateDoc = {
-                'terms.$.payment': amount + paid,
-                'terms.$.type': 'CK',
-                'terms.$.paidDate': formatWhenDate,
-                'terms.$.remainder': amount + paid - study * grade[classId] + remainderBefore,
-            };
-
-            MongoDB.updateOneUser(
-                studentInfoColl,
-                { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
-                { $set: updateDoc }
-            );
-        }
+        await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 
         res.send('Done!');
     } catch (err) {
@@ -274,7 +54,7 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                xuLyIdThuCong(client);
+                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
@@ -284,7 +64,7 @@ export const failExtract = async (req, res) => {
     }
 };
 
-async function xuLyIdThuCong(client) {
+async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken) {
     const sheets = google.sheets({ version: 'v4', auth: client });
     const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
 
@@ -319,21 +99,6 @@ async function xuLyIdThuCong(client) {
         }
     }
 
-    // Gui cac giao dich da them Id den server nhu Casso lam
-    console.log(data);
-    // const URL = `https://clbanhsang.com/casso/`;
-
-    const mockCassoReq = {
-        error: 0,
-        data: data,
-    };
-
-    // await fetch(URL, {
-    //     method: 'post',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(mockCassoReq),
-    // });
-
     // Clear unnecessary range
     const clearRange = clearIndex.map((v) => `Giao dịch!H${v}`);
 
@@ -345,6 +110,9 @@ async function xuLyIdThuCong(client) {
     };
 
     sheets.spreadsheets.values.batchClear(clearRequest);
+
+    // Gui cac giao dich da them Id den server nhu Casso lam
+    await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
@@ -512,4 +280,224 @@ async function extractStudentId(str, classColl) {
         }
     }
     return id;
+}
+
+async function processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken) {
+    for (let i = 0; i < data.length; i++) {
+        const { id, tid, description, amount, cusum_balance, when } = data[i];
+        // kiem tra giao dich da ton tai trong CSDL chua
+        const isExist = await MongoDB.findOneUser(transactionsColl, { tid: tid }, { projection: { _id: 0 } });
+        // Neu ton tai thi bo qua
+        if (isExist !== null) continue;
+
+        // Neu chua thi day du lieu vao Transactions Coll
+        const doc = {
+            when: new Date(when),
+            id: parseInt(id),
+            tid: parseInt(tid),
+            description: description,
+            amount: parseInt(amount),
+            cuSumBalance: parseInt(cusum_balance),
+        };
+        MongoDB.insertOneUser(transactionsColl, doc);
+
+        // Tach ID tu noi dung chuyen khoan
+        const extractId = await extractStudentId(description, classColl);
+
+        let extractStatus = '';
+        if (extractId === 'N/A') extractStatus = 'Lỗi';
+        const uploadTransasction = [
+            [when, id, tid, description, amount, cusum_balance, extractId, extractStatus],
+        ];
+
+        // Neu tach khong thanh cong
+        if (extractId === 'N/A') {
+            // do something
+            client.authorize((err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                } else {
+                    xyLyTachIdKhongThanhCong(client, uploadTransasction);
+                }
+            });
+            continue;
+        }
+
+        // Neu tach thanh cong
+        // Check thong tin hoc phi cua HS dot hien tai
+        const pipeline = [
+            {
+                $match: {
+                    studentId: parseInt(extractId),
+                },
+            },
+            {
+                $project: {
+                    studentId: 1,
+                    studentName: 1,
+                    classId: 1,
+                    terms: {
+                        $filter: {
+                            input: '$terms',
+                            as: 'item',
+                            cond: {
+                                $eq: [
+                                    '$$item.term',
+                                    {
+                                        $max: '$terms.term',
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = studentInfoColl.aggregate(pipeline);
+        const result = await aggCursor.toArray();
+
+        const { terms, classId, studentId, studentName } = result[0];
+
+        const {
+            index, // vi tri hoc sinh
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = terms[0];
+
+        let paid = 0;
+        if (payment !== null) paid = payment;
+
+        let tuitionStatus;
+
+        // Neu chua dong hoc lan nao trong dot
+        if (payment === null) {
+            if (amount === billing) {
+                tuitionStatus = 'nộp đủ ✅';
+            } else if (amount > billing) {
+                const diff = amount - billing;
+                tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
+            } else {
+                const diff = billing - amount;
+                tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
+            }
+        }
+
+        // Neu dong them tien hoc trong dot
+        // TH1: billing: 1.000.000/payment: 1.000.000
+        // TH2: billing: 1.000.000/payment: 800.000
+        // Th3: billing: 1.000.000/payment: 1.200.000
+        else {
+            // Truong hop hoc phi bang so tien da nop
+            if (billing === payment) {
+                tuitionStatus = `thừa ${Tools.formatCurrency(amount)}🔔`;
+            }
+            // Truong hop hoc phi > so tien da nop
+            else if (billing > payment) {
+                const diff = billing - payment; // 200.000
+                if (amount > diff) {
+                    tuitionStatus = `thừa ${Tools.formatCurrency(amount - diff)}🔔`;
+                } else if (amount < diff) {
+                    tuitionStatus = `thiếu ${Tools.formatCurrency(diff - amount)}❌`;
+                } else {
+                    tuitionStatus = 'nộp đủ✅';
+                }
+            }
+            // Truong hop hoc phi < so tien da nop
+            else {
+                const diff = payment - billing;
+                tuitionStatus = `thừa ${Tools.formatCurrency(amount + diff)}🔔`;
+            }
+        }
+
+        const formatWhenDateTime = new Date(when).toLocaleString('vi-VN', {
+            hour: 'numeric',
+            minute: 'numeric',
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+        });
+
+        const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+        const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
+-----------------------------------
+- Thời gian: ${formatWhenDateTime}
+- Hình thức: chuyển khoản
+-----------------------------------
+- Học phí: ${Tools.formatCurrency(billing)}
+- Đã nộp: ${Tools.formatCurrency(amount + paid)}
+- Trạng thái: ${tuitionStatus}
+-----------------------------------
+Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
+
+        // Gui tin nhan xac nhan den phu huynh
+        ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+
+        // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                xuLyTrenGoogleSheet(
+                    client,
+                    uploadTransasction,
+                    classId,
+                    term,
+                    index,
+                    when,
+                    amount,
+                    paid,
+                    accessToken
+                );
+            }
+        });
+
+        // Cap nhat hoc phi trong StudentInfoColl
+        const grade = {
+            '2004A1': 100000,
+            '2005A0': 100000,
+            '2005A1': 100000,
+            '2006A0': 100000,
+            '2006A1': 100000,
+            '2007A0': 100000,
+            '2007A1': 100000,
+            '2008A0': 120000,
+            '2008A1': 120000,
+            '2008A2': 100000,
+            '2009A0': 120000,
+            '2009A1': 120000,
+        };
+
+        const updateDoc = {
+            'terms.$.payment': amount + paid,
+            'terms.$.type': 'CK',
+            'terms.$.paidDate': formatWhenDate,
+            'terms.$.remainder': amount + paid - study * grade[classId] + remainderBefore,
+        };
+
+        MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
+            { $set: updateDoc }
+        );
+    }
 }
