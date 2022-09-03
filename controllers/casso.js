@@ -29,6 +29,8 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
+        console.log(data);
+
         await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 
         res.send('Done!');
@@ -84,7 +86,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
 
         if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
-            data.push({
+            const formatWhen = data.push({
                 id: id,
                 tid: tid,
                 description: description + extractId,
