@@ -121,10 +121,10 @@ export const cassoRequest = async (req, res) => {
                 tuitionStatus = '✅ nộp đủ học phí';
             } else if (amount > billing) {
                 const diff = amount - billing;
-                tuitionStatus = `🔔 nộp thừa ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `🔔thừa ${Tools.formatCurrency(diff)}`;
             } else {
                 const diff = billing - amount;
-                tuitionStatus = `❌ nộp thiếu ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `❌thiếu ${Tools.formatCurrency(diff)}`;
             }
 
             const formatWhen = new Date(when).toLocaleString('vi-VN', {
@@ -144,7 +144,6 @@ export const cassoRequest = async (req, res) => {
 - Trạng thái: ${tuitionStatus}
 -----------------------------------
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
-
 Trân trọng cảm ơn quý phụ huynh!`;
 
             // Gui tin nhan xac nhan den phu huynh
