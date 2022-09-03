@@ -53,13 +53,27 @@ export const cassoRequest = async (req, res) => {
             // Tach ID tu noi dung chuyen khoan
             const extractId = await extractStudentId(description, classColl);
 
+            let extractStatus = '';
+            if (extractId === 'N/A') extractStatus = 'Lỗi';
+            const uploadTransasction = [
+                [when, id, tid, description, amount, cusum_balance, extractId, extractStatus],
+            ];
+
             // Neu tach khong thanh cong
             if (extractId === 'N/A') {
                 // do something
+                client.authorize((err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    } else {
+                        xyLyTachIdKhongThanhCong(client, uploadTransasction);
+                    }
+                });
                 continue;
             }
-            // Neu tach thanh cong
 
+            // Neu tach thanh cong
             // Check thong tin hoc phi cua HS dot hien tai
             const pipeline = [
                 {
@@ -181,13 +195,12 @@ export const cassoRequest = async (req, res) => {
 - Đã nộp: ${Tools.formatCurrency(amount + paid)}
 - Trạng thái: ${tuitionStatus}
 -----------------------------------
-Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ. Cảm ơn quý phụ huynh!`;
+Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
 
             // Gui tin nhan xac nhan den phu huynh
             ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
             // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
-            const uploadTransasction = [[when, id, tid, description, amount, cusum_balance, extractId]];
             client.authorize((err) => {
                 if (err) {
                     console.error(err);
@@ -243,6 +256,26 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     } finally {
     }
 };
+
+async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
+    // upload2CoPhuTrach(client, values)
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    const appendRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Giao dịch',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            values: uploadTransasction,
+        },
+    };
+
+    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+}
 
 async function xuLyTrenGoogleSheet(
     client,
