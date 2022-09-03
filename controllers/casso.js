@@ -84,7 +84,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
 
     for (let i = 0; i < values.length; i++) {
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
-
+        console.log(when);
         if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
             const year = when.getFullYear();
             const month = ('0' + (when.getMonth() + 1)).slice(-2);
@@ -119,10 +119,10 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         },
     };
 
-    sheets.spreadsheets.values.batchClear(clearRequest);
+    // sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    // await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
