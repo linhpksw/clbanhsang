@@ -137,15 +137,16 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
 Trân trọng cảm ơn quý phụ huynh!`;
 
             // Gui tin nhan xac nhan den phu huynh
-            // await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+            await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
             // Day len Co Phu Trach (sheet Giao dịch)
+            const uploadTransasction = [[when, id, tid, description, amount, cusum_balance, extractId]];
             client.authorize((err) => {
                 if (err) {
                     console.error(err);
                     return;
                 } else {
-                    upload2CoPhuTrach(client);
+                    upload2CoPhuTrach(client, uploadTransasction);
                 }
             });
         }
@@ -157,7 +158,7 @@ Trân trọng cảm ơn quý phụ huynh!`;
     }
 };
 
-async function upload2CoPhuTrach(client) {
+async function upload2CoPhuTrach(client, values) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const appendRequest = {
@@ -167,15 +168,11 @@ async function upload2CoPhuTrach(client) {
         insertDataOption: 'INSERT_ROWS',
         resource: {
             majorDimension: 'ROWS',
-            values: [
-                [2001, 2002],
-                [2003, 2004],
-            ],
+            values: values,
         },
     };
 
     const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
-    console.log(appendResponse);
 }
 
 async function extractStudentId(str, classColl) {
