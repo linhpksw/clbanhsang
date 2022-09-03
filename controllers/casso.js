@@ -53,7 +53,7 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                await xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
