@@ -28,8 +28,6 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
-        console.log(data);
-
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
             // kiem tra giao dich da ton tai trong CSDL chua
@@ -258,6 +256,46 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     } finally {
     }
 };
+
+export const failExtract = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
+        const transactionsColl = db.collection('transactions');
+        const studentInfoColl = db.collection('studentInfo');
+        const quotasColl = db.collection('quotas');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                xuLyIdThuCong(client);
+            }
+        });
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+async function xuLyIdThuCong(client) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    const getRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Giao dịch',
+    };
+
+    const response = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+    console.log(response);
+}
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
     // upload2CoPhuTrach(client, values)
