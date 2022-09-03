@@ -96,6 +96,7 @@ export const cassoRequest = async (req, res) => {
             const { terms, classId, studentId, studentName } = result[0];
 
             const {
+                index, // vi tri hoc sinh
                 term, // dot hien tai
                 start, // bat dau dot
                 end, // ket thuc dot
@@ -140,15 +141,14 @@ Trân trọng cảm ơn quý phụ huynh!`;
             // Gui tin nhan xac nhan den phu huynh
             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
-            // Day len Co Phu Trach (sheet Giao dịch)
+            // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop
             const uploadTransasction = [[when, id, tid, description, amount, cusum_balance, extractId]];
             client.authorize((err) => {
                 if (err) {
                     console.error(err);
                     return;
                 } else {
-                    upload2CoPhuTrach(client, uploadTransasction);
-                    chiaVeMoiLop(client, classId, term);
+                    xuLyTrenGoogleSheet(client, uploadTransasction, classId, term, index, when, amount);
                 }
             });
         }
@@ -160,9 +160,25 @@ Trân trọng cảm ơn quý phụ huynh!`;
     }
 };
 
-async function chiaVeMoiLop(client, classId, term) {
+async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount) {
+    // upload2CoPhuTrach(client, values)
     const sheets = google.sheets({ version: 'v4', auth: client });
 
+    const appendRequest = {
+        spreadsheetId: '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM',
+        range: 'Giao dịch',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            values: values,
+        },
+    };
+
+    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+
+    // chiaVeMoiLop(client, classId, term, index, when, amount)
     const ssId = {
         '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
         '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
@@ -195,36 +211,17 @@ async function chiaVeMoiLop(client, classId, term) {
 
     const updateRequest = {
         spreadsheetId: ssId[classId],
-        range: `Hocphi_L${grade[classId]}_D${term}`,
-
-        // How the input data should be interpreted.
-        valueInputOption: '', // TODO: Update placeholder value.
-
-        resource: {
-            // TODO: Add desired properties to the request body. All existing properties
-            // will be replaced.
-        },
-
-        auth: authClient,
-    };
-}
-
-async function upload2CoPhuTrach(client, values) {
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    const appendRequest = {
-        spreadsheetId: '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM',
-        range: 'Giao dịch',
+        range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
         valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS',
         responseDateTimeRenderOption: 'FORMATTED_STRING',
         resource: {
             majorDimension: 'ROWS',
-            values: values,
+            range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+            values: [[amount, 'CK', when]],
         },
     };
 
-    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+    const updateResponse = (await sheets.spreadsheets.values.update(updateRequest)).data;
 }
 
 async function extractStudentId(str, classColl) {
