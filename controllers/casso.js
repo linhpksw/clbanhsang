@@ -114,15 +114,49 @@ export const cassoRequest = async (req, res) => {
                 absences,
             } = terms[0];
 
+            let paid = 0;
+            if (payment !== null) paid = payment;
+
             let tuitionStatus;
-            if (amount === billing) {
-                tuitionStatus = 'nộp đủ ✅';
-            } else if (amount > billing) {
-                const diff = amount - billing;
-                tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
-            } else {
-                const diff = billing - amount;
-                tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
+
+            // Neu chua dong hoc lan nao trong dot
+            if (payment === null) {
+                if (amount === billing) {
+                    tuitionStatus = 'nộp đủ ✅';
+                } else if (amount > billing) {
+                    const diff = amount - billing;
+                    tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
+                } else {
+                    const diff = billing - amount;
+                    tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
+                }
+            }
+
+            // Neu dong them tien hoc trong dot
+            // TH1: billing: 1.000.000/payment: 1.000.000
+            // TH2: billing: 1.000.000/payment: 800.000
+            // Th3: billing: 1.000.000/payment: 1.200.000
+            else {
+                // Truong hop hoc phi bang so tien da nop
+                if (billing === payment) {
+                    tuitionStatus = `thừa ${Tools.formatCurrency(amount)}🔔`;
+                }
+                // Truong hop hoc phi > so tien da nop
+                else if (billing > payment) {
+                    const diff = billing - payment; // 200.000
+                    if (amount > diff) {
+                        tuitionStatus = `thừa ${Tools.formatCurrency(amount - diff)}🔔`;
+                    } else if (amount < diff) {
+                        tuitionStatus = `thiếu ${Tools.formatCurrency(diff - amount)}❌`;
+                    } else {
+                        tuitionStatus = 'nộp đủ✅';
+                    }
+                }
+                // Truong hop hoc phi < so tien da nop
+                else {
+                    const diff = payment - billing;
+                    tuitionStatus = `thừa ${Tools.formatCurrency(amount + diff)}🔔`;
+                }
             }
 
             const formatWhenDateTime = new Date(when).toLocaleString('vi-VN', {
@@ -159,16 +193,31 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                     console.error(err);
                     return;
                 } else {
-                    xuLyTrenGoogleSheet(client, uploadTransasction, classId, term, index, when, amount);
+                    xuLyTrenGoogleSheet(client, uploadTransasction, classId, term, index, when, amount, paid);
                 }
             });
 
             // Cap nhat hoc phi trong StudentInfoColl
+            const grade = {
+                '2004A1': 100000,
+                '2005A0': 100000,
+                '2005A1': 100000,
+                '2006A0': 100000,
+                '2006A1': 100000,
+                '2007A0': 100000,
+                '2007A1': 100000,
+                '2008A0': 120000,
+                '2008A1': 120000,
+                '2008A2': 100000,
+                '2009A0': 120000,
+                '2009A1': 120000,
+            };
+
             const updateDoc = {
-                'terms.$.payment': amount,
+                'terms.$.payment': amount + paid,
                 'terms.$.type': 'CK',
                 'terms.$.paidDate': formatWhenDate,
-                'terms.$.remainder': billing - amount,
+                'terms.$.remainder': amount + paid - study * grade[classId],
             };
 
             MongoDB.updateOneUser(
@@ -185,7 +234,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     }
 };
 
-async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount) {
+async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, amount, paid) {
     // upload2CoPhuTrach(client, values)
     const sheets = google.sheets({ version: 'v4', auth: client });
 
@@ -248,7 +297,7 @@ async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, a
         resource: {
             majorDimension: 'ROWS',
             range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-            values: [[amount, 'CK', formatWhen]],
+            values: [[amount + paid, 'CK', formatWhen]],
         },
     };
 
