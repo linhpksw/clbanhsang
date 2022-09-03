@@ -125,16 +125,22 @@ export const cassoRequest = async (req, res) => {
                 tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
             }
 
-            const formatWhen = new Date(when).toLocaleString('vi-VN', {
+            const formatWhenDateTime = new Date(when).toLocaleString('vi-VN', {
                 hour: 'numeric',
                 minute: 'numeric',
                 day: 'numeric',
                 month: 'numeric',
                 year: 'numeric',
             });
+
+            const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            });
             const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
 -----------------------------------
-- Thời gian: ${formatWhen}
+- Thời gian: ${formatWhenDateTime}
 - Hình thức: chuyển khoản
 -----------------------------------
 - Học phí: ${Tools.formatCurrency(billing)}
@@ -144,7 +150,7 @@ export const cassoRequest = async (req, res) => {
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ. Cảm ơn quý phụ huynh!`;
 
             // Gui tin nhan xac nhan den phu huynh
-            await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+            ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
             // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop
             const uploadTransasction = [[when, id, tid, description, amount, cusum_balance, extractId]];
@@ -161,7 +167,8 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             const updateDoc = {
                 'terms.$.payment': amount,
                 'terms.$.type': 'CK',
-                'terms.$.paidDate': formatWhen,
+                'terms.$.paidDate': formatWhenDate,
+                'terms.$.remainder': billing - amount,
             };
 
             MongoDB.updateOneUser(
