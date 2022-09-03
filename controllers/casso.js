@@ -345,14 +345,14 @@ async function xuLyTrenGoogleSheet(
                 const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
                 await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
 
-                currentAcc.push(no, account, quota, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
             } else {
-                currentAcc.push(no, account, quota, dayLeft, status, warning);
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
             }
         }
     }
 
-    const [no, account, quota, dayLeft, status, warning] = currentAcc;
+    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
     const iQuota = parseInt(no, 10);
     const updateQuotaRequest = {
         spreadsheetId: ssIdCoPhuTrach,
@@ -362,7 +362,7 @@ async function xuLyTrenGoogleSheet(
         resource: {
             majorDimension: 'ROWS',
             range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-            values: [[no, account, quota, dayLeft, status, warning]],
+            values: [[no, account, quotaLeft, dayLeft, status, warning]],
         },
     };
 
