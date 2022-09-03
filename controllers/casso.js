@@ -327,13 +327,11 @@ async function xuLyIdThuCong(client) {
         data: data,
     };
 
-    const result = await fetch(URL, {
+    await fetch(URL, {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mockCassoReq),
     });
-
-    const jsonResponse = result.json();
 
     // Clear unnecessary range
     const clearRange = clearIndex.map((v) => `Giao dịch!H${v}`);
