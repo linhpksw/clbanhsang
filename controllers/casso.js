@@ -28,6 +28,8 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
+        console.log(data);
+
         for (let i = 0; i < data.length; i++) {
             const { id, tid, description, amount, cusum_balance, when } = data[i];
             // kiem tra giao dich da ton tai trong CSDL chua
