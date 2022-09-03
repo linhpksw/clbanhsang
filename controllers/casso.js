@@ -320,18 +320,19 @@ async function xuLyIdThuCong(client) {
     }
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    const URL = `https://clbanhsang.com/casso/`;
+    console.log(data);
+    // const URL = `https://clbanhsang.com/casso/`;
 
     const mockCassoReq = {
         error: 0,
         data: data,
     };
 
-    await fetch(URL, {
-        method: 'post',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(mockCassoReq),
-    });
+    // await fetch(URL, {
+    //     method: 'post',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(mockCassoReq),
+    // });
 
     // Clear unnecessary range
     const clearRange = clearIndex.map((v) => `Giao dịch!H${v}`);
