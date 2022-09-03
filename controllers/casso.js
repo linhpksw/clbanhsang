@@ -312,7 +312,7 @@ async function xuLyIdThuCong(client) {
                 cusum_balance: cuSumBalance,
                 when: new Date(when),
             });
-            deleteRange.push(i + 1);
+            clearIndex.push(i + 1);
         } else if (extractId === 'x' && extractStatus === 'Lỗi') {
             clearIndex.push(i + 1);
         }
