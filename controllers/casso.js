@@ -209,6 +209,12 @@ async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, a
         '2009A1': 8,
     };
 
+    const formatWhen = new Date(when).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+
     const updateRequest = {
         spreadsheetId: ssId[classId],
         range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
@@ -217,7 +223,7 @@ async function xuLyTrenGoogleSheet(client, values, classId, term, index, when, a
         resource: {
             majorDimension: 'ROWS',
             range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-            values: [[amount, 'CK', when]],
+            values: [[amount, 'CK', formatWhen]],
         },
     };
 
