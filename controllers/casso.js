@@ -318,7 +318,7 @@ async function xuLyIdThuCong(client) {
         }
     }
 
-    const clearRange = clearIndex.map((v) => `H${v}`);
+    const clearRange = clearIndex.map((v) => `Giao dịch!H${v}`);
 
     const clearRequest = {
         spreadsheetId: ssIdCoPhuTrach,
