@@ -86,13 +86,22 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
 
         if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
-            const formatWhen = data.push({
+            const year = when.getFullYear();
+            const month = ('0' + (when.getMonth() + 1)).slice(-2);
+            const day = ('0' + d.getDate()).slice(-2);
+            const hour = ('0' + d.getHours()).slice(-2);
+            const minute = ('0' + d.getMinutes()).slice(-2);
+            const second = ('0' + d.getSeconds()).slice(-2);
+
+            const formatWhen = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+            data.push({
                 id: id,
                 tid: tid,
                 description: description + extractId,
                 amount: amount,
                 cusum_balance: cuSumBalance,
-                when: new Date(when),
+                when: formatWhen,
             });
             clearIndex.push(i + 1);
         } else if (extractId === 'x' && extractStatus === 'Lỗi') {
