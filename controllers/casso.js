@@ -217,7 +217,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                 'terms.$.payment': amount + paid,
                 'terms.$.type': 'CK',
                 'terms.$.paidDate': formatWhenDate,
-                'terms.$.remainder': amount + paid - study * grade[classId] - remainderBefore,
+                'terms.$.remainder': amount + paid - study * grade[classId] + remainderBefore,
             };
 
             MongoDB.updateOneUser(
