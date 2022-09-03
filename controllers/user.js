@@ -848,6 +848,7 @@ export const updateRequest = async (req, res) => {
 
         const updateStudentDocs = webhook.map((v) => {
             const {
+                index, // vi tri hoc sinh
                 studentId,
                 classId,
                 studentName,
@@ -866,7 +867,6 @@ export const updateRequest = async (req, res) => {
                 remainder, // con thua
                 attendances,
                 absences,
-                index, // vi tri hoc sinh
             } = v;
 
             const newAttendances = attendances.map((v) => {
@@ -891,6 +891,7 @@ export const updateRequest = async (req, res) => {
                 studentName: studentName,
                 terms: [
                     {
+                        index: index,
                         term: parseInt(term),
                         start: Tools.createDate(start),
                         end: Tools.createDate(end),
@@ -906,7 +907,6 @@ export const updateRequest = async (req, res) => {
                         remainder: remainder,
                         attendances: newAttendances,
                         absences: newAbsences,
-                        index: index,
                     },
                 ],
             };
