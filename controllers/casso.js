@@ -73,6 +73,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         spreadsheetId: ssIdCoPhuTrach,
         range: 'Giao dịch',
         valueRenderOption: 'UNFORMATTED_VALUE',
+        dateTimeRenderOption: 'FORMATTED_STRING',
     };
 
     const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
