@@ -318,6 +318,18 @@ async function xuLyIdThuCong(client) {
         }
     }
 
+    // Gui cac giao dich da them Id den server nhu Casso lam
+    const URL = `https://clbanhsang.com/casso/`;
+
+    const result = await fetch(URL, {
+        method: 'post',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+    });
+
+    const jsonResponse = result.json();
+
+    // Clear unnecessary range
     const clearRange = clearIndex.map((v) => `Giao dịch!H${v}`);
 
     const clearRequest = {
@@ -327,7 +339,7 @@ async function xuLyIdThuCong(client) {
         },
     };
 
-    const clearResponse = (await sheets.spreadsheets.values.batchClear(clearRequest)).data;
+    sheets.spreadsheets.values.batchClear(clearRequest);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
