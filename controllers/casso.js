@@ -322,10 +322,15 @@ async function xuLyIdThuCong(client) {
     // Gui cac giao dich da them Id den server nhu Casso lam
     const URL = `https://clbanhsang.com/casso/`;
 
+    const mockCassoReq = {
+        error: 0,
+        data: data,
+    };
+
     const result = await fetch(URL, {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
+        body: JSON.stringify(mockCassoReq),
     });
 
     const jsonResponse = result.json();
