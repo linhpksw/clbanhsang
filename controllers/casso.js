@@ -353,14 +353,15 @@ async function xuLyTrenGoogleSheet(
     }
 
     const [no, account, quota, dayLeft, status, warning] = currentAcc;
+    const iQuota = parseInt(no, 10);
     const updateQuotaRequest = {
         spreadsheetId: ssIdCoPhuTrach,
-        range: `Quota!A${no + 1}:F${no + 1}`,
+        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
         valueInputOption: 'USER_ENTERED',
         responseDateTimeRenderOption: 'FORMATTED_STRING',
         resource: {
             majorDimension: 'ROWS',
-            range: `Quota!A${no + 1}:F${no + 1}`,
+            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
             values: [[no, account, quota, dayLeft, status, warning]],
         },
     };
