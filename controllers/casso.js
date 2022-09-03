@@ -166,6 +166,7 @@ async function upload2CoPhuTrach(client, values) {
         range: 'Giao dịch',
         valueInputOption: 'USER_ENTERED',
         insertDataOption: 'INSERT_ROWS',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
         resource: {
             majorDimension: 'ROWS',
             values: values,
