@@ -111,7 +111,6 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
     sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    console.log(data);
     await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
@@ -284,12 +283,10 @@ async function extractStudentId(str, classColl) {
 
 async function processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken) {
     for (let i = 0; i < data.length; i++) {
-        console.log('Đang chạy vòng lặp số ' + i);
-        console.log(data[i]);
         const { id, tid, description, amount, cusum_balance, when } = data[i];
         // kiem tra giao dich da ton tai trong CSDL chua
         const isExist = await MongoDB.findOneUser(transactionsColl, { tid: tid }, { projection: { _id: 0 } });
-        console.log(isExist);
+
         // Neu ton tai thi bo qua
         if (isExist !== null) continue;
 
