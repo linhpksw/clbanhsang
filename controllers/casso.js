@@ -178,7 +178,7 @@ export const cassoRequest = async (req, res) => {
 - Hình thức: chuyển khoản
 -----------------------------------
 - Học phí: ${Tools.formatCurrency(billing)}
-- Đã nộp: ${Tools.formatCurrency(amount)}
+- Đã nộp: ${Tools.formatCurrency(amount + paid)}
 - Trạng thái: ${tuitionStatus}
 -----------------------------------
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ. Cảm ơn quý phụ huynh!`;
