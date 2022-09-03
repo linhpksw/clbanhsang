@@ -116,13 +116,13 @@ export const cassoRequest = async (req, res) => {
 
             let tuitionStatus;
             if (amount === billing) {
-                tuitionStatus = '✅ nộp đủ học phí';
+                tuitionStatus = 'nộp đủ ✅';
             } else if (amount > billing) {
                 const diff = amount - billing;
-                tuitionStatus = `🔔thừa ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
             } else {
                 const diff = billing - amount;
-                tuitionStatus = `❌thiếu ${Tools.formatCurrency(diff)}`;
+                tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
             }
 
             const formatWhen = new Date(when).toLocaleString('vi-VN', {
@@ -141,8 +141,7 @@ export const cassoRequest = async (req, res) => {
 - Đã nộp: ${Tools.formatCurrency(amount)}
 - Trạng thái: ${tuitionStatus}
 -----------------------------------
-Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ.
-Trân trọng cảm ơn quý phụ huynh!`;
+Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý ạ. Cảm ơn quý phụ huynh!`;
 
             // Gui tin nhan xac nhan den phu huynh
             await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
@@ -157,6 +156,19 @@ Trân trọng cảm ơn quý phụ huynh!`;
                     xuLyTrenGoogleSheet(client, uploadTransasction, classId, term, index, when, amount);
                 }
             });
+
+            // Cap nhat hoc phi trong StudentInfoColl
+            const updateDoc = {
+                'terms.$.payment': amount,
+                'terms.$.type': 'CK',
+                'terms.$.paidDate': formatWhen,
+            };
+
+            MongoDB.updateOneUser(
+                studentInfoColl,
+                { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
+                { $set: updateDoc }
+            );
         }
 
         res.send('Done!');
