@@ -290,11 +290,36 @@ async function xuLyIdThuCong(client) {
     const getRequest = {
         spreadsheetId: ssIdCoPhuTrach,
         range: 'Giao dịch',
+        valueRenderOption: 'UNFORMATTED_VALUE',
     };
 
-    const response = (await sheets.spreadsheets.values.get(getRequest)).data;
+    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
 
-    console.log(response);
+    const { values } = getResponse;
+
+    let data = [];
+    let deleteRange = [];
+
+    for (let i = 0; i < values.length; i++) {
+        const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
+
+        if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
+            data.push({
+                id: id,
+                tid: tid,
+                description: description + extractId,
+                amount: amount,
+                cusum_balance: cuSumBalance,
+                when: when,
+            });
+            deleteRange.push(i + 1);
+        } else if (extractId === 'x' && extractStatus === 'Lỗi') {
+            deleteRange.push(i + 1);
+        }
+    }
+
+    console.log(data);
+    console.log(deleteRange);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
