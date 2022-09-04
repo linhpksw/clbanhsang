@@ -85,16 +85,13 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
 
     for (let i = 0; i < values.length; i++) {
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
-        console.log(when);
-        if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
-            const year = when.getFullYear();
-            const month = ('0' + (when.getMonth() + 1)).slice(-2);
-            const day = ('0' + d.getDate()).slice(-2);
-            const hour = ('0' + d.getHours()).slice(-2);
-            const minute = ('0' + d.getMinutes()).slice(-2);
-            const second = ('0' + d.getSeconds()).slice(-2);
 
-            const formatWhen = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        if (typeof extractId === 'number' && extractStatus === 'Lỗi') {
+            const [date, time] = when.split('_');
+            const [day, month, year] = date.split('/');
+            const [hour, minute] = time.split(':');
+
+            const formatWhen = `${year}-${month}-${day} ${hour}:${minute}:00`;
 
             data.push({
                 id: id,
@@ -120,10 +117,10 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         },
     };
 
-    // sheets.spreadsheets.values.batchClear(clearRequest);
+    sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    // await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
