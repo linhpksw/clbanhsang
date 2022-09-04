@@ -97,14 +97,14 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
             data.push({
                 id: id,
                 tid: tid,
-                description: description + extractId,
+                description: description + ' ' + extractId,
                 amount: amount,
                 cusum_balance: cuSumBalance,
                 when: formatWhen,
             });
             clearOldTransactionIndex.push(i + 1);
         } else if (extractId === 'x' && extractStatus === 'Lỗi') {
-            clearOldTransactionIndex.push(i + 1);
+            clearStatusIndex.push(i + 1);
         }
     }
 
