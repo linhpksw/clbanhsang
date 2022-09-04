@@ -55,7 +55,8 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                console.log('Hello');
+                // xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
