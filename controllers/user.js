@@ -44,6 +44,7 @@ export const userRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
+        console.log(accessToken);
         res.send('Done');
         return;
 
