@@ -82,7 +82,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
 
     let data = [];
     let clearStatusIndex = [];
-    let deleteOldTransaction = [];
+    let clearOldTransactionIndex = [];
 
     for (let i = 0; i < values.length; i++) {
         const [when, id, tid, description, amount, cuSumBalance, extractId, extractStatus] = values[i];
@@ -102,48 +102,29 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
                 cusum_balance: cuSumBalance,
                 when: formatWhen,
             });
-            deleteOldTransaction.push(i + 1);
+            clearOldTransaction.push(i + 1);
         } else if (extractId === 'x' && extractStatus === 'Lỗi') {
-            clearStatusIndex.push(i + 1);
+            clearOldTransactionIndex.push(i + 1);
         }
     }
 
     // Clear status
     const clearStatusRange = clearStatusIndex.map((v) => `Giao dịch!H${v}`);
+    const clearOldTransactionRange = clearOldTransactionIndex.map((v) => `Giao dịch!A${v}:H${v}`);
+
+    const clearRange = [...clearStatusRange, ...clearOldTransactionRange];
+
     const clearRequest = {
         spreadsheetId: ssIdCoPhuTrach,
         resource: {
-            ranges: clearStatusRange,
-        },
-    };
-    // await sheets.spreadsheets.values.batchClear(clearRequest);
-
-    // Delete old transactions
-    const createDeleteRequest = deleteOldTransaction.map((v) => {
-        return {
-            deleteDimension: {
-                range: {
-                    sheetId: 209597903,
-                    dimension: 'ROWS',
-                    startIndex: v - 1,
-                    endIndex: v,
-                },
-            },
-        };
-    });
-
-    const deleteRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-
-        resource: {
-            requests: createDeleteRequest,
+            ranges: clearRange,
         },
     };
 
-    sheets.spreadsheets.batchUpdate(deleteRequest);
+    sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    // await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
