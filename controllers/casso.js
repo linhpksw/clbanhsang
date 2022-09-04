@@ -141,7 +141,7 @@ async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
         },
     };
 
-    sheets.spreadsheets.values.append(appendRequest);
+    await sheets.spreadsheets.values.append(appendRequest);
 }
 
 async function xuLyTrenGoogleSheet(
