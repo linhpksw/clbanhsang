@@ -114,17 +114,19 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
 
     const clearRange = [...clearStatusRange, ...clearOldTransactionRange];
 
-    const clearRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        resource: {
-            ranges: clearRange,
-        },
-    };
+    console.log(clearRange);
 
-    sheets.spreadsheets.values.batchClear(clearRequest);
+    // const clearRequest = {
+    //     spreadsheetId: ssIdCoPhuTrach,
+    //     resource: {
+    //         ranges: clearRange,
+    //     },
+    // };
 
-    // Gui cac giao dich da them Id den server nhu Casso lam
-    processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    // sheets.spreadsheets.values.batchClear(clearRequest);
+
+    // // Gui cac giao dich da them Id den server nhu Casso lam
+    // processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
