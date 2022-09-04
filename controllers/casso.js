@@ -24,12 +24,9 @@ export const cassoRequest = async (req, res) => {
         const classColl = db.collection('classUsers');
         const transactionsColl = db.collection('transactions');
         const studentInfoColl = db.collection('studentInfo');
-        const quotasColl = db.collection('quotas');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const { data } = req.body;
-
-        console.log(data);
 
         await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 
@@ -114,19 +111,17 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
 
     const clearRange = [...clearStatusRange, ...clearOldTransactionRange];
 
-    console.log(clearRange);
+    const clearRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        resource: {
+            ranges: clearRange,
+        },
+    };
 
-    // const clearRequest = {
-    //     spreadsheetId: ssIdCoPhuTrach,
-    //     resource: {
-    //         ranges: clearRange,
-    //     },
-    // };
+    sheets.spreadsheets.values.batchClear(clearRequest);
 
-    // sheets.spreadsheets.values.batchClear(clearRequest);
-
-    // // Gui cac giao dich da them Id den server nhu Casso lam
-    // processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    // Gui cac giao dich da them Id den server nhu Casso lam
+    processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
 async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
@@ -146,7 +141,7 @@ async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
         },
     };
 
-    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+    sheets.spreadsheets.values.append(appendRequest);
 }
 
 async function xuLyTrenGoogleSheet(
@@ -176,7 +171,7 @@ async function xuLyTrenGoogleSheet(
         },
     };
 
-    const appendResponse = (await sheets.spreadsheets.values.append(appendRequest)).data;
+    sheets.spreadsheets.values.append(appendRequest);
 
     // chiaVeMoiLop(client, classId, term, index, when, amount)
     const ssId = {
@@ -227,7 +222,7 @@ async function xuLyTrenGoogleSheet(
         },
     };
 
-    const updateResponse = (await sheets.spreadsheets.values.update(updateRequest)).data;
+    sheets.spreadsheets.values.update(updateRequest);
 
     // kiemTraQuota
     const getRequest = {
@@ -271,29 +266,7 @@ async function xuLyTrenGoogleSheet(
         },
     };
 
-    const updateQuotaResponse = (await sheets.spreadsheets.values.update(updateQuotaRequest)).data;
-}
-
-async function extractStudentId(str, classColl) {
-    let id = 'N/A';
-
-    const extractNum = str.replace(/\D/g, '');
-    const extractId = extractNum.match(/200[4,5,6,7,8,9]\d{3}/g);
-
-    if (extractId !== null) {
-        for (let i = 0; i < extractId.length; i++) {
-            const formatId = parseInt(extractId[i], 10);
-
-            const existId = await MongoDB.findOneUser(
-                classColl,
-                { studentId: formatId },
-                { projection: { _id: 0 } }
-            );
-
-            if (existId !== null) id = formatId;
-        }
-    }
-    return id;
+    sheets.spreadsheets.values.update(updateQuotaRequest);
 }
 
 async function processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken) {
@@ -515,4 +488,26 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             { $set: updateDoc }
         );
     }
+}
+
+async function extractStudentId(str, classColl) {
+    let id = 'N/A';
+
+    const extractNum = str.replace(/\D/g, '');
+    const extractId = extractNum.match(/200[4,5,6,7,8,9]\d{3}/g);
+
+    if (extractId !== null) {
+        for (let i = 0; i < extractId.length; i++) {
+            const formatId = parseInt(extractId[i], 10);
+
+            const existId = await MongoDB.findOneUser(
+                classColl,
+                { studentId: formatId },
+                { projection: { _id: 0 } }
+            );
+
+            if (existId !== null) id = formatId;
+        }
+    }
+    return id;
 }
