@@ -119,6 +119,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
     // await sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Delete old transactions
+    console.log(deleteOldTransaction);
     const createDeleteRequest = deleteOldTransaction.map((v) => {
         return {
             deleteDimension: {
