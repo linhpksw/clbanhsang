@@ -43,6 +43,7 @@ export const userRequest = async (req, res) => {
         const studentInfoColl = db.collection('studentInfo');
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+        console.log(webhook);
         console.log('Hello');
         console.log(accessToken);
         res.send('Done');
