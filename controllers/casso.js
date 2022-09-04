@@ -28,6 +28,8 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
+        console.log(data);
+
         await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 
         res.send('Done!');
