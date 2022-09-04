@@ -2,6 +2,25 @@ import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
 import * as Tools from './tool.js';
 
+export const cashRequest = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
+
+        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        const webhook = req.body;
+
+        console.log(webhook);
+        res.send('Success');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const createStudentRequest = async (req, res) => {
     try {
         await MongoDB.client.connect();
