@@ -55,8 +55,7 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                console.log('Hello');
-                // xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
@@ -117,33 +116,31 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
             ranges: clearStatusRange,
         },
     };
-    sheets.spreadsheets.values.batchClear(clearRequest);
+    await sheets.spreadsheets.values.batchClear(clearRequest);
 
-    // // Delete old transactions
-    // const createDeleteRequest = deleteOldTransaction.map((v) => {
-    //     return {
-    //         deleteDimension: {
-    //             range: {
-    //                 sheetId: 209597903,
-    //                 dimension: 'ROWS',
-    //                 startIndex: v - 1,
-    //                 endIndex: v,
-    //             },
-    //         },
-    //     };
-    // });
+    // Delete old transactions
+    const createDeleteRequest = deleteOldTransaction.map((v) => {
+        return {
+            deleteDimension: {
+                range: {
+                    sheetId: 209597903,
+                    dimension: 'ROWS',
+                    startIndex: v - 1,
+                    endIndex: v,
+                },
+            },
+        };
+    });
 
-    // console.log(createDeleteRequest);
+    const deleteRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
 
-    // const deleteRequest = {
-    //     spreadsheetId: ssIdCoPhuTrach,
+        resource: {
+            requests: createDeleteRequest,
+        },
+    };
 
-    //     resource: {
-    //         requests: createDeleteRequest,
-    //     },
-    // };
-
-    // sheets.spreadsheets.batchUpdate(deleteRequest);
+    sheets.spreadsheets.batchUpdate(deleteRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
     // await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
