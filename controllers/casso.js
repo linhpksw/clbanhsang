@@ -116,31 +116,31 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
             ranges: clearStatusRange,
         },
     };
-    await sheets.spreadsheets.values.batchClear(clearRequest);
+    sheets.spreadsheets.values.batchClear(clearRequest);
 
-    // Delete old transactions
-    const createDeleteRequest = deleteOldTransaction.map((v) => {
-        return {
-            deleteDimension: {
-                range: {
-                    sheetId: 209597903,
-                    dimension: 'ROWS',
-                    startIndex: v - 1,
-                    endIndex: v,
-                },
-            },
-        };
-    });
+    // // Delete old transactions
+    // const createDeleteRequest = deleteOldTransaction.map((v) => {
+    //     return {
+    //         deleteDimension: {
+    //             range: {
+    //                 sheetId: 209597903,
+    //                 dimension: 'ROWS',
+    //                 startIndex: v - 1,
+    //                 endIndex: v,
+    //             },
+    //         },
+    //     };
+    // });
 
-    console.log(createDeleteRequest);
+    // console.log(createDeleteRequest);
 
-    const deleteRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
+    // const deleteRequest = {
+    //     spreadsheetId: ssIdCoPhuTrach,
 
-        resource: {
-            requests: createDeleteRequest,
-        },
-    };
+    //     resource: {
+    //         requests: createDeleteRequest,
+    //     },
+    // };
 
     // sheets.spreadsheets.batchUpdate(deleteRequest);
 
