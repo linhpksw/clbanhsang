@@ -119,7 +119,6 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
     // await sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Delete old transactions
-    console.log(deleteOldTransaction);
     const createDeleteRequest = deleteOldTransaction.map((v) => {
         return {
             deleteDimension: {
@@ -133,8 +132,6 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         };
     });
 
-    console.log(createDeleteRequest);
-
     const deleteRequest = {
         spreadsheetId: ssIdCoPhuTrach,
 
@@ -143,7 +140,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
         },
     };
 
-    // sheets.spreadsheets.batchUpdate(deleteRequest);
+    sheets.spreadsheets.batchUpdate(deleteRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
     // await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
