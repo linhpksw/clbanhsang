@@ -169,7 +169,6 @@ export const getIncludeUser = async (req, res) => {
 export const getNotPaymentUserFromClassId = async (req, res) => {
     const data = req.body;
 
-    console.log(data);
     const { sourceId, sheetName, classId } = data;
 
     try {
