@@ -198,6 +198,10 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
         });
 
+        console.log(zaloList);
+        res.send('Done');
+        return;
+
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
             if (err) {
