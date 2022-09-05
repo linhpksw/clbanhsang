@@ -127,11 +127,11 @@ export const cashRequest = async (req, res) => {
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
 
         // Gui tin nhan xac nhan den phu huynh
-        ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
         // Gui hinh anh bien lai den phu huynh
         const invoiceMessage = `Biên lai thu học phí đợt ${term} của học sinh ${name}`;
-        ZaloAPI.sendImageByUrl(accessToken, '4966494673333610309', invoiceMessage, invoice);
+        await ZaloAPI.sendImageByUrl(accessToken, '4966494673333610309', invoiceMessage, invoice);
 
         // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
         client.authorize((err) => {
