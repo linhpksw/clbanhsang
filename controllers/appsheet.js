@@ -11,9 +11,10 @@ export const cashRequest = async (req, res) => {
 
         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const webhook = req.body;
+        const data = req.body;
 
-        console.log(webhook);
+        console.log(data);
+
         res.send('Success');
     } catch (err) {
         console.error(err);
