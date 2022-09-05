@@ -207,7 +207,7 @@ async function alarmStudentNotPayment2Parent(
                 ? `thừa ${formatCurrency(remainderBefore)}`
                 : `thiếu ${formatCurrency(remainderBefore)}`
         }
--Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
+- Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
 
 Phụ huynh cần hoàn thành học phí trước hạn ngày ${
             term === 1 ? duePaymentTermOne : duePaymentOtherTerm
