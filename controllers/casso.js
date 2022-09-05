@@ -323,17 +323,6 @@ async function processTransaction(data, transactionsColl, classColl, studentInfo
         // Neu ton tai thi bo qua
         if (isExist !== null) continue;
 
-        // Neu chua thi day du lieu vao Transactions Coll
-        const doc = {
-            when: new Date(when),
-            id: parseInt(id),
-            tid: parseInt(tid),
-            description: description,
-            amount: parseInt(amount),
-            cuSumBalance: parseInt(cusum_balance),
-        };
-        MongoDB.insertOneUser(transactionsColl, doc);
-
         // Tach ID tu noi dung chuyen khoan
         const extractId = await extractStudentId(description, classColl);
 
@@ -358,6 +347,17 @@ async function processTransaction(data, transactionsColl, classColl, studentInfo
         }
 
         // Neu tach thanh cong
+        // Day du lieu vao Transactions Coll
+        const doc = {
+            when: new Date(when),
+            id: parseInt(id),
+            tid: parseInt(tid),
+            description: description,
+            amount: parseInt(amount),
+            cuSumBalance: parseInt(cusum_balance),
+        };
+        MongoDB.insertOneUser(transactionsColl, doc);
+
         // Check thong tin hoc phi cua HS dot hien tai
         const pipeline = [
             {
