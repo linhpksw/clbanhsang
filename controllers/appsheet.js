@@ -1,19 +1,173 @@
+import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
-import * as Tools from './tool.js';
+import { google } from 'googleapis';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import * as dotenv from 'dotenv';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+
+const CLIENT_EMAIL = process.env.CLIENT_EMAIL;
+const PRIVATE_KEY = process.env.PRIVATE_KEY;
+const SCOPE = process.env.SCOPE;
+const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 export const cashRequest = async (req, res) => {
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
-        const classColl = db.collection('classUsers');
-
-        const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
+        const studentInfoColl = db.collection('studentInfo');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const data = req.body;
 
-        console.log(data);
+        const { studentId, classId, paymentMethod, amount, date, time, invoice, name } = data;
+
+        const [day, month, year] = date.split('/');
+        const [hour, minute, second] = time.split(' ')[0].split(':');
+
+        const when = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+
+        // Check thong tin hoc phi cua HS dot hien tai
+        const pipeline = [
+            {
+                $match: {
+                    studentId: parseInt(studentId),
+                },
+            },
+            {
+                $project: {
+                    studentId: 1,
+                    studentName: 1,
+                    classId: 1,
+                    terms: {
+                        $filter: {
+                            input: '$terms',
+                            as: 'item',
+                            cond: {
+                                $eq: [
+                                    '$$item.term',
+                                    {
+                                        $max: '$terms.term',
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = studentInfoColl.aggregate(pipeline);
+        const result = await aggCursor.toArray();
+
+        const { terms } = result[0];
+
+        const {
+            index, // vi tri hoc sinh
+            term, // dot hien tai
+            start, // bat dau dot
+            end, // ket thuc dot
+            total, // so buoi trong dot
+            study, // so buoi hoc
+            absent, // so buoi nghi
+            subject, // mon hoc
+            remainderBefore, // du dot truoc
+            billing, // phai nop
+            payment, // da nop
+            type, // hinh thuc nop
+            paidDate, // ngay nop
+            remainder, // con thua
+            attendances,
+            absences,
+        } = terms[0];
+
+        let tuitionStatus;
+
+        if (amount === billing) {
+            tuitionStatus = 'nộp đủ ✅';
+        } else if (amount > billing) {
+            const diff = amount - billing;
+            tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
+        } else {
+            const diff = billing - amount;
+            tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
+        }
+
+        const formatWhenDateTime = new Date(when).toLocaleString('vi-VN', {
+            hour: 'numeric',
+            minute: 'numeric',
+            day: 'numeric',
+            month: 'numeric',
+            year: 'numeric',
+        });
+
+        const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+
+        const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${name} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin và biên lai như sau:
+-----------------------------------
+- Thời gian: ${formatWhenDateTime}
+- Hình thức: tiền mặt
+-----------------------------------
+- Học phí: ${Tools.formatCurrency(billing)}
+- Đã nộp: ${Tools.formatCurrency(amount)}
+- Trạng thái: ${tuitionStatus}
+-----------------------------------
+Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
+
+        // Gui tin nhan xac nhan den phu huynh
+        ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+
+        // Gui hinh anh bien lai den phu huynh
+        const invoiceMessage = `Biên lai thu học phí đợt ${term} của học sinh ${name}`;
+        ZaloAPI.sendImageByUrl(accessToken, '4966494673333610309', invoiceMessage, invoice);
+
+        // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                processInGoogleSheetsForAppSheet(client, classId, term, index, when, amount);
+            }
+        });
+
+        // Cap nhat hoc phi trong StudentInfoColl
+        const grade = {
+            '2004A1': 100000,
+            '2005A0': 100000,
+            '2005A1': 100000,
+            '2006A0': 100000,
+            '2006A1': 100000,
+            '2007A0': 100000,
+            '2007A1': 100000,
+            '2008A0': 120000,
+            '2008A1': 120000,
+            '2008A2': 100000,
+            '2009A0': 120000,
+            '2009A1': 120000,
+        };
+
+        const updateDoc = {
+            'terms.$.payment': amount,
+            'terms.$.type': 'CK',
+            'terms.$.paidDate': formatWhenDate,
+            'terms.$.remainder': amount - study * grade[classId] + remainderBefore,
+        };
+
+        MongoDB.updateOneUser(
+            studentInfoColl,
+            { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
+            { $set: updateDoc }
+        );
 
         res.send('Success');
     } catch (err) {
@@ -21,6 +175,60 @@ export const cashRequest = async (req, res) => {
     } finally {
     }
 };
+
+async function processInGoogleSheetsForAppSheet(client, classId, term, index, when, amount) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    // chiaVeMoiLop(client, classId, term, index, when, amount)
+    const ssId = {
+        '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
+        '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
+        '2005A1': '19brbUkN4ixYaTP-2D7GNr3WC-U7z7F2Wh60L1SelBM4',
+        '2006A0': '1ilhObfLr7qUtbSikDvsewTAAlGyjoXYQT8H10l2vpUg',
+        '2006A1': '1CLzrEd-cN6av7Vw7xr64hqqpo_kuZA3Vky7aa6iOfPI',
+        '2007A0': '16QAf6B7CLhOGbEHtghtMEq5dE_qn4TcShXEIAwA6t40',
+        '2007A1': '1XDIOvL8C7NOWutlCJODnPxpCAlhPfHdSiRaC104EMLI',
+        '2008A0': '1Pq4bKmVGSsRqOE2peG-RcoNxKwPFBUGsO4tfYl4w8bE',
+        '2008A1': '1zRkYE6rgcQUrbbsgeZcc69SjU1LFCk_i6COYhVCZJV4',
+        '2008A2': '1wzEFLknH7bsvSpXVQuGwnhmixBRYdvb38SOUW7IREBg',
+        '2009A0': '1a5TOzG08Jpl4XkTHppQMFIHQ7jV4jpfWZeT2psZNmYQ',
+        '2009A1': '1mlKSeO-1aSIhTwzXofOO2RwoZ64zx-aTBOIVJ-puU4M',
+    };
+
+    const grade = {
+        '2004A1': 12,
+        '2005A0': 12,
+        '2005A1': 12,
+        '2006A0': 11,
+        '2006A1': 11,
+        '2007A0': 10,
+        '2007A1': 10,
+        '2008A0': 9,
+        '2008A1': 9,
+        '2008A2': 9,
+        '2009A0': 8,
+        '2009A1': 8,
+    };
+
+    const formatWhen = new Date(when).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+
+    const updateRequest = {
+        spreadsheetId: ssId[classId],
+        range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+            values: [[amount, 'TM', formatWhen]],
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateRequest);
+}
 
 export const createStudentRequest = async (req, res) => {
     try {
