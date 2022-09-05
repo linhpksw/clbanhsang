@@ -54,7 +54,7 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                processIdManually(client, transactionsColl, classColl, studentInfoColl, accessToken);
             }
         });
         res.send('Done!');
@@ -64,7 +64,7 @@ export const failExtract = async (req, res) => {
     }
 };
 
-async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoColl, accessToken) {
+async function processIdManually(client, transactionsColl, classColl, studentInfoColl, accessToken) {
     const sheets = google.sheets({ version: 'v4', auth: client });
     const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
 
@@ -126,7 +126,7 @@ async function xuLyIdThuCong(client, transactionsColl, classColl, studentInfoCol
     processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
 }
 
-async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
+async function processFail2ExtractId(client, uploadTransasction, accessToken) {
     // upload2CoPhuTrach(client, values)
     const sheets = google.sheets({ version: 'v4', auth: client });
     const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
@@ -143,10 +143,54 @@ async function xyLyTachIdKhongThanhCong(client, uploadTransasction) {
         },
     };
 
-    await sheets.spreadsheets.values.append(appendRequest);
+    sheets.spreadsheets.values.append(appendRequest);
+
+    // Kiem tra Quota
+    const getRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Quota',
+    };
+
+    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+    const { values } = getResponse;
+
+    let currentAcc = [];
+
+    for (let i = 0; i < values.length; i++) {
+        const [no, account, quota, dayLeft, status, warning] = values[i];
+        if (status === 'Đang dùng') {
+            const quotaLeft = quota - 1;
+            if (quotaLeft < 10) {
+                // Gui canh bao qua Zalo toi Admin va Co giao
+                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
+                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
+
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
+            } else {
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
+            }
+        }
+    }
+
+    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
+    const iQuota = parseInt(no);
+    const updateQuotaRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+            values: [[no, account, quotaLeft, dayLeft, status, warning]],
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateQuotaRequest);
 }
 
-async function xuLyTrenGoogleSheet(
+async function processInGoogleSheets(
     client,
     uploadTransasction,
     classId,
@@ -308,7 +352,7 @@ async function processTransaction(data, transactionsColl, classColl, studentInfo
                     console.error(err);
                     return;
                 } else {
-                    xyLyTachIdKhongThanhCong(client, uploadTransasction);
+                    processFail2ExtractId(client, uploadTransasction, accessToken);
                 }
             });
             continue;
@@ -447,7 +491,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                 console.error(err);
                 return;
             } else {
-                xuLyTrenGoogleSheet(
+                processInGoogleSheets(
                     client,
                     uploadTransasction,
                     classId,
