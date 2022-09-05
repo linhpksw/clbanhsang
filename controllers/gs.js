@@ -198,10 +198,6 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
         });
 
-        console.log(zaloList);
-        res.send('Done');
-        return;
-
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
             if (err) {
@@ -670,12 +666,9 @@ async function getUserBulk(client, sourceId, sheetName, zaloList) {
     };
 
     try {
-        const responseClear = (await sheets.spreadsheets.values.clear(requestClear)).data;
+        await sheets.spreadsheets.values.clear(requestClear);
 
-        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
-
-        console.log(responseClear);
-        console.log(responseUpdate);
+        await sheets.spreadsheets.values.update(requestUpdate);
     } catch (err) {
         console.error(err);
     }
