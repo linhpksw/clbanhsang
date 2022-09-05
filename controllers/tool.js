@@ -198,7 +198,7 @@ async function alarmStudentNotPayment2Parent(
         }
 
         const { term, remainderBefore, billing } = terms[0];
-
+        // TODO: them noi dung dong vao trong thong bao nhac hoc phi
         const alarmContent = `Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của em ${studentName} ${studentId} lớp ${className} như sau:
 - Học phí từ đợt trước: ${
             remainderBefore === 0
