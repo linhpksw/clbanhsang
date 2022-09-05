@@ -26,8 +26,6 @@ export const cashRequest = async (req, res) => {
         const data = req.body;
 
         console.log(data);
-        res.send('Done');
-        return;
 
         const { studentId, classId, paymentMethod, amount, date, time, invoice, name } = data;
 
@@ -35,6 +33,7 @@ export const cashRequest = async (req, res) => {
         const [hour, minute, second] = time.split(' ')[0].split(':');
 
         const when = `${year}-${month}-${day} ${hour}:${minute}:${second}`;
+        const formatAmount = parseInt(amount.replace(/\D/g, ''));
 
         // Check thong tin hoc phi cua HS dot hien tai
         const pipeline = [
@@ -92,13 +91,13 @@ export const cashRequest = async (req, res) => {
 
         let tuitionStatus;
 
-        if (amount === billing) {
+        if (formatAmount === billing) {
             tuitionStatus = 'nộp đủ ✅';
-        } else if (amount > billing) {
-            const diff = amount - billing;
+        } else if (formatAmount > billing) {
+            const diff = formatAmount - billing;
             tuitionStatus = `thừa ${Tools.formatCurrency(diff)}🔔`;
         } else {
-            const diff = billing - amount;
+            const diff = billing - formatAmount;
             tuitionStatus = `thiếu ${Tools.formatCurrency(diff)}❌`;
         }
 
@@ -122,7 +121,7 @@ export const cashRequest = async (req, res) => {
 - Hình thức: tiền mặt
 -----------------------------------
 - Học phí: ${Tools.formatCurrency(billing)}
-- Đã nộp: ${Tools.formatCurrency(amount)}
+- Đã nộp: ${Tools.formatCurrency(formatAmount)}
 - Trạng thái: ${tuitionStatus}
 -----------------------------------
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
@@ -140,7 +139,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                 console.error(err);
                 return;
             } else {
-                processInGoogleSheetsForAppSheet(client, classId, term, index, when, amount);
+                processInGoogleSheetsForAppSheet(client, classId, term, index, when, formatAmount);
             }
         });
 
@@ -161,10 +160,10 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         };
 
         const updateDoc = {
-            'terms.$.payment': amount,
+            'terms.$.payment': formatAmount,
             'terms.$.type': 'CK',
             'terms.$.paidDate': formatWhenDate,
-            'terms.$.remainder': amount - study * grade[classId] + remainderBefore,
+            'terms.$.remainder': formatAmount - study * grade[classId] + remainderBefore,
         };
 
         MongoDB.updateOneUser(
@@ -180,9 +179,9 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
     }
 };
 
-async function processInGoogleSheetsForAppSheet(client, classId, term, index, when, amount) {
+async function processInGoogleSheetsForAppSheet(client, classId, term, index, when, formatAmount) {
     const sheets = google.sheets({ version: 'v4', auth: client });
-    // chiaVeMoiLop(client, classId, term, index, when, amount)
+    // chiaVeMoiLop(client, classId, term, index, when, formatAmount)
     const ssId = {
         '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
         '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
@@ -227,7 +226,7 @@ async function processInGoogleSheetsForAppSheet(client, classId, term, index, wh
         resource: {
             majorDimension: 'ROWS',
             range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-            values: [[amount, 'TM', formatWhen]],
+            values: [[formatAmount, 'TM', formatWhen]],
         },
     };
 
