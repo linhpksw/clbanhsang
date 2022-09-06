@@ -36,6 +36,34 @@ export const cassoRequest = async (req, res) => {
     }
 };
 
+export const unsendTransaction = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
+        const transactionsColl = db.collection('transactions');
+        const studentInfoColl = db.collection('studentInfo');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        const { data } = req.body;
+
+        console.log(data);
+
+        // client.authorize((err) => {
+        //     if (err) {
+        //         console.error(err);
+        //         return;
+        //     } else {
+        //     }
+        // });
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const failExtract = async (req, res) => {
     try {
         await MongoDB.client.connect();
