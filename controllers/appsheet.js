@@ -25,8 +25,6 @@ export const cashRequest = async (req, res) => {
 
         const data = req.body;
 
-        console.log(data);
-
         const { studentId, classId, paymentMethod, amount, date, time, invoice, name } = data;
 
         const [day, month, year] = date.split('/');

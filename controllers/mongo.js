@@ -100,5 +100,6 @@ export {
     insertManyToDB,
     insertOneUser,
     upsertOneUser,
+    deleteOneUser,
     client,
 };

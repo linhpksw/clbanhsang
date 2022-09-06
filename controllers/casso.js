@@ -46,17 +46,14 @@ export const unsendTransaction = async (req, res) => {
         const studentInfoColl = db.collection('studentInfo');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const { data } = req.body;
-
-        console.log(data);
-
-        // client.authorize((err) => {
-        //     if (err) {
-        //         console.error(err);
-        //         return;
-        //     } else {
-        //     }
-        // });
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                processUnsendTransaction(client, transactionsColl, studentInfoColl);
+            }
+        });
         res.send('Done!');
     } catch (err) {
         console.error(err);
@@ -88,6 +85,185 @@ export const failExtract = async (req, res) => {
     } finally {
     }
 };
+
+async function processUnsendTransaction(client, transactionsColl, studentInfoColl) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    const getRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Giao dịch',
+        valueRenderOption: 'UNFORMATTED_VALUE',
+        dateTimeRenderOption: 'FORMATTED_STRING',
+    };
+
+    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+    const { values } = getResponse;
+
+    for (let i = 0; i < values.length; i++) {
+        const [when, id, tid, description, amount, cuSumBalance, extractId, status] = values[i];
+        const studentId = parseInt(extractId);
+
+        if (status === 'Thu hồi') {
+            // Xoa giao dich trong Transaction Coll
+            MongoDB.deleteOneUser(transactionsColl, { tid: tid });
+
+            // Cap nhat lai hoc phi trong StudentInfo Coll
+            const pipeline = [
+                {
+                    $match: {
+                        studentId: parseInt(studentId),
+                    },
+                },
+                {
+                    $project: {
+                        studentId: 1,
+                        studentName: 1,
+                        classId: 1,
+                        terms: {
+                            $filter: {
+                                input: '$terms',
+                                as: 'item',
+                                cond: {
+                                    $eq: [
+                                        '$$item.term',
+                                        {
+                                            $max: '$terms.term',
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            ];
+
+            const aggCursor = studentInfoColl.aggregate(pipeline);
+            const result = await aggCursor.toArray();
+
+            const { terms, classId } = result[0];
+
+            const {
+                index, // vi tri hoc sinh
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = terms[0];
+
+            const grade = {
+                '2004A1': 100000,
+                '2005A0': 100000,
+                '2005A1': 100000,
+                '2006A0': 100000,
+                '2006A1': 100000,
+                '2007A0': 100000,
+                '2007A1': 100000,
+                '2008A0': 120000,
+                '2008A1': 120000,
+                '2008A2': 100000,
+                '2009A0': 120000,
+                '2009A1': 120000,
+            };
+
+            const updateDoc = {
+                'terms.$.payment': null,
+                'terms.$.type': null,
+                'terms.$.paidDate': null,
+                'terms.$.remainder': -study * grade[classId] + remainderBefore,
+            };
+
+            MongoDB.updateOneUser(
+                studentInfoColl,
+                { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
+                { $set: updateDoc }
+            );
+
+            const unsendIndex = i + 1;
+            // Cap nhat trang thai "Da thu hoi" tren sheet Giao dich +  Xoa giao dich tren sheet Tro giang
+            client.authorize((err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                } else {
+                    processUnsendInGoogleSheets(client, unsendIndex, classId, term, index);
+                }
+            });
+        }
+    }
+}
+
+async function processUnsendInGoogleSheets(client, unsendIndex, classId, term, index) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    // Cap nhat trang thai "Da thu hoi" tren sheet Giao dich
+    const updateRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: `Giao dịch!H${unsendIndex}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Giao dịch!H${unsendIndex}`,
+            values: [['Đã thu hồi']],
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateRequest);
+
+    // Xoa giao dich tren sheet Tro giang
+    const ssId = {
+        '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
+        '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
+        '2005A1': '19brbUkN4ixYaTP-2D7GNr3WC-U7z7F2Wh60L1SelBM4',
+        '2006A0': '1ilhObfLr7qUtbSikDvsewTAAlGyjoXYQT8H10l2vpUg',
+        '2006A1': '1CLzrEd-cN6av7Vw7xr64hqqpo_kuZA3Vky7aa6iOfPI',
+        '2007A0': '16QAf6B7CLhOGbEHtghtMEq5dE_qn4TcShXEIAwA6t40',
+        '2007A1': '1XDIOvL8C7NOWutlCJODnPxpCAlhPfHdSiRaC104EMLI',
+        '2008A0': '1Pq4bKmVGSsRqOE2peG-RcoNxKwPFBUGsO4tfYl4w8bE',
+        '2008A1': '1zRkYE6rgcQUrbbsgeZcc69SjU1LFCk_i6COYhVCZJV4',
+        '2008A2': '1wzEFLknH7bsvSpXVQuGwnhmixBRYdvb38SOUW7IREBg',
+        '2009A0': '1a5TOzG08Jpl4XkTHppQMFIHQ7jV4jpfWZeT2psZNmYQ',
+        '2009A1': '1mlKSeO-1aSIhTwzXofOO2RwoZ64zx-aTBOIVJ-puU4M',
+    };
+
+    const grade = {
+        '2004A1': 12,
+        '2005A0': 12,
+        '2005A1': 12,
+        '2006A0': 11,
+        '2006A1': 11,
+        '2007A0': 10,
+        '2007A1': 10,
+        '2008A0': 9,
+        '2008A1': 9,
+        '2008A2': 9,
+        '2009A0': 8,
+        '2009A1': 8,
+    };
+
+    const clearRequest = {
+        spreadsheetId: ssId[grade],
+        resource: {
+            ranges: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+        },
+    };
+
+    sheets.spreadsheets.values.clear(clearRequest);
+}
 
 async function processIdManually(client, transactionsColl, classColl, studentInfoColl, accessToken) {
     const sheets = google.sheets({ version: 'v4', auth: client });
