@@ -27,9 +27,7 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
-        console.log(data);
-
-        await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+        await processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken, false);
 
         res.send('Done!');
     } catch (err) {
@@ -122,202 +120,13 @@ async function processIdManually(client, transactionsColl, classColl, studentInf
     sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken);
+    processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken, true);
 }
 
-async function processFail2ExtractId(client, uploadTransasction, accessToken) {
-    // upload2CoPhuTrach(client, values)
-    const sheets = google.sheets({ version: 'v4', auth: client });
-    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
-
-    const appendRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: 'Giao dịch',
-        valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            values: uploadTransasction,
-        },
-    };
-
-    sheets.spreadsheets.values.append(appendRequest);
-
-    // Kiem tra Quota
-    const getRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: 'Quota',
-    };
-
-    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
-
-    const { values } = getResponse;
-
-    let currentAcc = [];
-
-    for (let i = 0; i < values.length; i++) {
-        const [no, account, quota, dayLeft, status, warning] = values[i];
-        if (status === 'Đang dùng') {
-            const quotaLeft = quota - 1;
-            if (quotaLeft < 10) {
-                // Gui canh bao qua Zalo toi Admin va Co giao
-                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
-                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
-
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
-            } else {
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
-            }
-        }
-    }
-
-    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
-    const iQuota = parseInt(no);
-    const updateQuotaRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-        valueInputOption: 'USER_ENTERED',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-            values: [[no, account, quotaLeft, dayLeft, status, warning]],
-        },
-    };
-
-    sheets.spreadsheets.values.update(updateQuotaRequest);
-}
-
-async function processInGoogleSheets(
-    client,
-    uploadTransasction,
-    classId,
-    term,
-    index,
-    when,
-    amount,
-    paid,
-    accessToken
-) {
-    // upload2CoPhuTrach(client, values)
-    const sheets = google.sheets({ version: 'v4', auth: client });
-    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
-
-    const appendRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: 'Giao dịch',
-        valueInputOption: 'USER_ENTERED',
-        insertDataOption: 'INSERT_ROWS',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            values: uploadTransasction,
-        },
-    };
-
-    sheets.spreadsheets.values.append(appendRequest);
-
-    // chiaVeMoiLop(client, classId, term, index, when, amount)
-    const ssId = {
-        '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
-        '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
-        '2005A1': '19brbUkN4ixYaTP-2D7GNr3WC-U7z7F2Wh60L1SelBM4',
-        '2006A0': '1ilhObfLr7qUtbSikDvsewTAAlGyjoXYQT8H10l2vpUg',
-        '2006A1': '1CLzrEd-cN6av7Vw7xr64hqqpo_kuZA3Vky7aa6iOfPI',
-        '2007A0': '16QAf6B7CLhOGbEHtghtMEq5dE_qn4TcShXEIAwA6t40',
-        '2007A1': '1XDIOvL8C7NOWutlCJODnPxpCAlhPfHdSiRaC104EMLI',
-        '2008A0': '1Pq4bKmVGSsRqOE2peG-RcoNxKwPFBUGsO4tfYl4w8bE',
-        '2008A1': '1zRkYE6rgcQUrbbsgeZcc69SjU1LFCk_i6COYhVCZJV4',
-        '2008A2': '1wzEFLknH7bsvSpXVQuGwnhmixBRYdvb38SOUW7IREBg',
-        '2009A0': '1a5TOzG08Jpl4XkTHppQMFIHQ7jV4jpfWZeT2psZNmYQ',
-        '2009A1': '1mlKSeO-1aSIhTwzXofOO2RwoZ64zx-aTBOIVJ-puU4M',
-    };
-
-    const grade = {
-        '2004A1': 12,
-        '2005A0': 12,
-        '2005A1': 12,
-        '2006A0': 11,
-        '2006A1': 11,
-        '2007A0': 10,
-        '2007A1': 10,
-        '2008A0': 9,
-        '2008A1': 9,
-        '2008A2': 9,
-        '2009A0': 8,
-        '2009A1': 8,
-    };
-
-    const formatWhen = new Date(when).toLocaleDateString('vi-VN', {
-        day: '2-digit',
-        month: '2-digit',
-        year: 'numeric',
-    });
-
-    const updateRequest = {
-        spreadsheetId: ssId[classId],
-        range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-        valueInputOption: 'USER_ENTERED',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-            values: [[amount + paid, 'CK', formatWhen]],
-        },
-    };
-
-    sheets.spreadsheets.values.update(updateRequest);
-
-    // kiemTraQuota
-    const getRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: 'Quota',
-    };
-
-    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
-
-    const { values } = getResponse;
-
-    let currentAcc = [];
-
-    for (let i = 0; i < values.length; i++) {
-        const [no, account, quota, dayLeft, status, warning] = values[i];
-        if (status === 'Đang dùng') {
-            const quotaLeft = quota - 1;
-            if (quotaLeft < 10) {
-                // Gui canh bao qua Zalo toi Admin va Co giao
-                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
-                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
-
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
-            } else {
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
-            }
-        }
-    }
-
-    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
-    const iQuota = parseInt(no, 10);
-    const updateQuotaRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-        valueInputOption: 'USER_ENTERED',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-            values: [[no, account, quotaLeft, dayLeft, status, warning]],
-        },
-    };
-
-    sheets.spreadsheets.values.update(updateQuotaRequest);
-}
-
-async function processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken) {
+async function processTransaction(data, transactionsColl, classColl, studentInfoColl, accessToken, isManual) {
     for (let i = 0; i < data.length; i++) {
         const { id, tid, description, amount, cusum_balance, when } = data[i];
-        // kiem tra giao dich da ton tai trong CSDL chua
+        // kiem tra giao dich da ton tai trong CSDL chua (Bang ma tham chieu tid)
         const isExist = await MongoDB.findOneUser(transactionsColl, { tid: tid }, { projection: { _id: 0 } });
 
         // Neu ton tai thi bo qua
@@ -499,7 +308,8 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                     when,
                     amount,
                     paid,
-                    accessToken
+                    accessToken,
+                    isManual
                 );
             }
         });
@@ -532,6 +342,206 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
             { $set: updateDoc }
         );
+    }
+}
+
+async function processFail2ExtractId(client, uploadTransasction, accessToken) {
+    // upload2CoPhuTrach(client, values)
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    const appendRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Giao dịch',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            values: uploadTransasction,
+        },
+    };
+
+    sheets.spreadsheets.values.append(appendRequest);
+
+    // Kiem tra Quota
+    const getRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Quota',
+    };
+
+    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+    const { values } = getResponse;
+
+    let currentAcc = [];
+
+    for (let i = 0; i < values.length; i++) {
+        const [no, account, quota, dayLeft, status, warning] = values[i];
+        if (status === 'Đang dùng') {
+            const quotaLeft = quota - 1;
+            if (quotaLeft < 10) {
+                // Gui canh bao qua Zalo toi Admin va Co giao
+                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
+                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
+
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
+            } else {
+                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
+            }
+        }
+    }
+
+    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
+    const iQuota = parseInt(no);
+    const updateQuotaRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+            values: [[no, account, quotaLeft, dayLeft, status, warning]],
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateQuotaRequest);
+}
+
+async function processInGoogleSheets(
+    client,
+    uploadTransasction,
+    classId,
+    term,
+    index,
+    when,
+    amount,
+    paid,
+    accessToken,
+    isManual
+) {
+    // upload2CoPhuTrach(client, values)
+    const sheets = google.sheets({ version: 'v4', auth: client });
+    const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+    const appendRequest = {
+        spreadsheetId: ssIdCoPhuTrach,
+        range: 'Giao dịch',
+        valueInputOption: 'USER_ENTERED',
+        insertDataOption: 'INSERT_ROWS',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            values: uploadTransasction,
+        },
+    };
+
+    sheets.spreadsheets.values.append(appendRequest);
+
+    // chiaVeMoiLop(client, classId, term, index, when, amount)
+    const ssId = {
+        '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
+        '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
+        '2005A1': '19brbUkN4ixYaTP-2D7GNr3WC-U7z7F2Wh60L1SelBM4',
+        '2006A0': '1ilhObfLr7qUtbSikDvsewTAAlGyjoXYQT8H10l2vpUg',
+        '2006A1': '1CLzrEd-cN6av7Vw7xr64hqqpo_kuZA3Vky7aa6iOfPI',
+        '2007A0': '16QAf6B7CLhOGbEHtghtMEq5dE_qn4TcShXEIAwA6t40',
+        '2007A1': '1XDIOvL8C7NOWutlCJODnPxpCAlhPfHdSiRaC104EMLI',
+        '2008A0': '1Pq4bKmVGSsRqOE2peG-RcoNxKwPFBUGsO4tfYl4w8bE',
+        '2008A1': '1zRkYE6rgcQUrbbsgeZcc69SjU1LFCk_i6COYhVCZJV4',
+        '2008A2': '1wzEFLknH7bsvSpXVQuGwnhmixBRYdvb38SOUW7IREBg',
+        '2009A0': '1a5TOzG08Jpl4XkTHppQMFIHQ7jV4jpfWZeT2psZNmYQ',
+        '2009A1': '1mlKSeO-1aSIhTwzXofOO2RwoZ64zx-aTBOIVJ-puU4M',
+    };
+
+    const grade = {
+        '2004A1': 12,
+        '2005A0': 12,
+        '2005A1': 12,
+        '2006A0': 11,
+        '2006A1': 11,
+        '2007A0': 10,
+        '2007A1': 10,
+        '2008A0': 9,
+        '2008A1': 9,
+        '2008A2': 9,
+        '2009A0': 8,
+        '2009A1': 8,
+    };
+
+    const formatWhen = new Date(when).toLocaleDateString('vi-VN', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+    });
+
+    const updateRequest = {
+        spreadsheetId: ssId[classId],
+        range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+        valueInputOption: 'USER_ENTERED',
+        responseDateTimeRenderOption: 'FORMATTED_STRING',
+        resource: {
+            majorDimension: 'ROWS',
+            range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
+            values: [[amount + paid, 'CK', formatWhen]],
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateRequest);
+
+    // kiemTraQuota
+    // Neu tu dong thi moi check Quota
+    if (!isManual) {
+        const getRequest = {
+            spreadsheetId: ssIdCoPhuTrach,
+            range: 'Quota',
+        };
+
+        const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+        const { values } = getResponse;
+
+        let currentAcc = [];
+
+        for (let i = 0; i < values.length; i++) {
+            const [no, account, quota, dayLeft, status, warning] = values[i];
+            if (status === 'Đang dùng') {
+                const quotaLeft = quota - 1;
+                if (quotaLeft < 10) {
+                    // Gui canh bao qua Zalo toi Admin va Co giao
+                    const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
+                    await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
+
+                    currentAcc.push(
+                        no,
+                        account,
+                        quotaLeft,
+                        dayLeft,
+                        status,
+                        'Chuyển sang tài khoản bên dưới!'
+                    );
+                } else {
+                    currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
+                }
+            }
+        }
+
+        const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
+        const iQuota = parseInt(no, 10);
+        const updateQuotaRequest = {
+            spreadsheetId: ssIdCoPhuTrach,
+            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+            valueInputOption: 'USER_ENTERED',
+            responseDateTimeRenderOption: 'FORMATTED_STRING',
+            resource: {
+                majorDimension: 'ROWS',
+                range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+                values: [[no, account, quotaLeft, dayLeft, status, warning]],
+            },
+        };
+
+        sheets.spreadsheets.values.update(updateQuotaRequest);
     }
 }
 
