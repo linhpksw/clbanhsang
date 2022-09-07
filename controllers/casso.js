@@ -99,6 +99,24 @@ async function processSyncTuition(client, ssId, sheetName, allTransaction) {
     };
 
     sheets.spreadsheets.values.update(updateRequest);
+
+    const formUrl = {
+        '2004A1': 'https://docs.google.com/forms/d/1HnasP-K1tkx7ihhOuf2-0JOm36EdKuOgTbdolUYm5ac/formResponse',
+        '2005A0': 'https://docs.google.com/forms/d/1QXrydf4tnstORVYKi9apuEf2cFZi5GKaMEViJ27Kz0M/formResponse',
+        '2005A1': 'https://docs.google.com/forms/d/1nOESXV1E89UlejetrUd5LUDEKKWWh8VYhRp_4QezEzc/formResponse',
+        '2006A0': 'https://docs.google.com/forms/d/1ZgntyY1vLEVpi1AZtnLG6x1fFjH3LsMWPaeU0mSLZ-s/formResponse',
+        '2006A1': 'https://docs.google.com/forms/d/1rAdDc_KU3RfJgANSzSPogYtE6R25NrUxCunaigEZuXM/formResponse',
+        '2007A0': 'https://docs.google.com/forms/d/1SonkiEyV3ceJsxRVXg7QZK0vLo29ih50GgvnRm7t83E/formResponse',
+        '2007A1': 'https://docs.google.com/forms/d/1-QnECtC9BoRn3TTSsLusuFz6K1IGB9aAkY0tu8-AMmI/formResponse',
+        '2008A0': 'https://docs.google.com/forms/d/1vAf8s6lNXJWvhhiRj0AkfuRk0KGBr4Xq0aHp-aHsY4M/formResponse',
+        '2008A1': 'https://docs.google.com/forms/d/1vA_LqZXNYHMt7XYy1lICPFslldYLymOEglNkq4aI-E0/formResponse',
+        '2008A2': 'https://docs.google.com/forms/d/1otWyCk9MYRuu9rDF2Zz3vc8-PXtuBhbkgpj7kuObj3U/formResponse',
+        '2009A0': 'https://docs.google.com/forms/d/1xZknFWSUIAgNLbKn9hbXJlGWOFklgJGaeXTa-LRISmo/formResponse',
+        '2009A1': 'https://docs.google.com/forms/d/1ok6rZ52nm0SW6QYCns6_PDQpA0yYcj9rwOkP96WNwD0/formResponse',
+    };
+    const URL = `${formUrl[classId]}`;
+
+    fetch(URL, { method: 'post' });
 }
 
 export const cassoRequest = async (req, res) => {
