@@ -402,6 +402,9 @@ async function processTransaction(
     isManual
 ) {
     for (let i = 0; i < data.length; i++) {
+        const sheets = google.sheets({ version: 'v4', auth: client });
+        const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
         const { id, tid, description, amount, cusum_balance, when } = data[i];
         // kiem tra giao dich da ton tai trong CSDL chua (Bang ma Casso id)
         const isExist = await MongoDB.findOneUser(transactionsColl, { id: id }, { projection: { _id: 0 } });
@@ -643,9 +646,6 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         await fetch(URL, { method: 'post' });
 
         // Day len Co Phu Trach (sheet Giao dịch)
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
-
         const appendRequest = {
             spreadsheetId: ssIdCoPhuTrach,
             range: 'Giao dịch',
