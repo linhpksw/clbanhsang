@@ -21,6 +21,7 @@ export const cashRequest = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const studentInfoColl = db.collection('studentInfo');
+        const transactionsColl = db.collection('transactions');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         const data = req.body;
@@ -198,7 +199,6 @@ async function processInGoogleSheetsForAppSheet(client, classId, term, index, wh
         spreadsheetId: ssId[classId],
         range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
         valueInputOption: 'USER_ENTERED',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
         resource: {
             majorDimension: 'ROWS',
             range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
