@@ -42,14 +42,15 @@ export const syncTuition = async (req, res) => {
 
             const result = await cursor.toArray();
 
+            // Truong hop co giao dich trong dot
             if (result.length > 0) {
-                let totalAmount = '';
+                let totalAmount = 0;
                 let finalWhen = '';
                 let paymentType = '';
 
                 for (let v = 0; v < result.length; v++) {
                     const { amount, when, type } = result[v];
-                    parseInt(totalAmount) += amount;
+                    totalAmount += amount;
                     finalWhen = when;
                     paymentType = type;
                 }
