@@ -778,7 +778,8 @@ async function extractStudentId(str, classColl) {
     const extractNum = str.replace(/\D/g, '');
     const extractId = extractNum.match(/200[4,5,6,7,8,9]\d{3}/g);
 
-    if (extractId !== null) {
+    // Id tach tu noi dung CK phai dung 7 so va chi duoc 1 id
+    if (extractId !== null && extractId.length === 1) {
         for (let i = 0; i < extractId.length; i++) {
             const formatId = parseInt(extractId[i], 10);
 
