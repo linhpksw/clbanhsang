@@ -350,7 +350,7 @@ async function processIdManually(client, transactionsColl, classColl, studentInf
         },
     };
 
-    sheets.spreadsheets.values.batchClear(clearRequest);
+    await sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
     processTransaction(client, data, transactionsColl, classColl, studentInfoColl, accessToken, true);
