@@ -394,7 +394,7 @@ async function processTransaction(
         // Day du lieu vao Transactions Coll
         const doc = {
             when: new Date(when),
-            id: parseInt(id),
+            id: id,
             tid: parseInt(tid),
             description: description,
             amount: parseInt(amount),
