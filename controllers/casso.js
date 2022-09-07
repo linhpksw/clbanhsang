@@ -133,23 +133,6 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             // Xoa giao dich trong Transaction Coll
             MongoDB.deleteOneUser(transactionsColl, { tid: tid });
 
-            const unsendIndex = i + 1;
-
-            // Cap nhat trang thai "Da thu hoi" tren sheet Giao dich
-            const updateRequest = {
-                spreadsheetId: ssIdCoPhuTrach,
-                range: `Giao dịch!H${unsendIndex}`,
-                valueInputOption: 'USER_ENTERED',
-                responseDateTimeRenderOption: 'FORMATTED_STRING',
-                resource: {
-                    majorDimension: 'ROWS',
-                    range: `Giao dịch!H${unsendIndex}`,
-                    values: [['Đã thu hồi']],
-                },
-            };
-
-            sheets.spreadsheets.values.update(updateRequest);
-
             // Xoa giao dich tren sheet Tro giang
             const pipeline = [
                 {
@@ -271,6 +254,23 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             const URL = `${formUrl[classId]}`;
 
             await fetch(URL, { method: 'post' });
+
+            const unsendIndex = i + 1;
+
+            // Cap nhat trang thai "Da thu hoi" tren sheet Giao dich
+            const updateRequest = {
+                spreadsheetId: ssIdCoPhuTrach,
+                range: `Giao dịch!H${unsendIndex}`,
+                valueInputOption: 'USER_ENTERED',
+                responseDateTimeRenderOption: 'FORMATTED_STRING',
+                resource: {
+                    majorDimension: 'ROWS',
+                    range: `Giao dịch!H${unsendIndex}`,
+                    values: [['Đã thu hồi']],
+                },
+            };
+
+            sheets.spreadsheets.values.update(updateRequest);
 
             // Cap nhat lai hoc phi trong StudentInfo Coll
 
@@ -560,24 +560,6 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         // Gui tin nhan xac nhan den phu huynh
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
-        // Day len Co Phu Trach (sheet Giao dịch)
-        const sheets = google.sheets({ version: 'v4', auth: client });
-        const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
-
-        const appendRequest = {
-            spreadsheetId: ssIdCoPhuTrach,
-            range: 'Giao dịch',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            responseDateTimeRenderOption: 'FORMATTED_STRING',
-            resource: {
-                majorDimension: 'ROWS',
-                values: uploadTransasction,
-            },
-        };
-
-        sheets.spreadsheets.values.append(appendRequest);
-
         // Chia ve moi lop
         const ssId = {
             '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
@@ -659,6 +641,24 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         const URL = `${formUrl[classId]}`;
 
         await fetch(URL, { method: 'post' });
+
+        // Day len Co Phu Trach (sheet Giao dịch)
+        const sheets = google.sheets({ version: 'v4', auth: client });
+        const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
+
+        const appendRequest = {
+            spreadsheetId: ssIdCoPhuTrach,
+            range: 'Giao dịch',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            responseDateTimeRenderOption: 'FORMATTED_STRING',
+            resource: {
+                majorDimension: 'ROWS',
+                values: uploadTransasction,
+            },
+        };
+
+        sheets.spreadsheets.values.append(appendRequest);
 
         // Kiem tra Quota
         // Neu tu dong thi moi check Quota
