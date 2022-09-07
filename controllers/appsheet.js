@@ -335,49 +335,55 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const zaloParentIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId, 'Phụ huynh');
-        const zaloStudentIdArr = await Tools.findZaloIdFromStudentId(zaloColl, studentId, 'Học sinh');
+        const pipeline = [
+            {
+                $match: {
+                    'students.zaloStudentId': parseInt(studentId),
+                },
+            },
+            {
+                $project: {
+                    zaloUserId: 1,
+                    _id: 0,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+        const result = await aggCursor.toArray();
 
         // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
-        // Dung vong lap de thay doi het tag cua PH lien ket voi studentId
-        if (zaloParentIdArr.length > 0) {
-            for (let i = 0; i < zaloParentIdArr.length; i++) {
-                const [zaloId, zaloClass] = zaloParentIdArr[i];
+        // Dung vong lap de thay doi het tag  lien ket voi studentId
+        if (result.length !== 0) {
+            for (let i = 0; i < result.length; i++) {
+                const { zaloUserId, students } = result[i];
+                // Khong can vong lap students vi query ra dung hoc sinh roi
+                const { zaloClassId } = students[0];
 
-                if (zaloClass.includes('N')) {
-                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
-                    await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
+                if (zaloClassId.includes('N')) {
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloClassId);
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.slice(-6));
 
-                    // set trang thai phu huynh di hoc lai trong Zalo Coll
+                    // set trang thai di hoc lai trong Zalo Coll
                     await MongoDB.updateOneUser(
                         zaloColl,
-                        { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
-                        { $set: { 'students.$.zaloClassId': `${zaloClass.slice(-6)}` } }
+                        { zaloUserId: zaloUserId, 'students.zaloStudentId': parseInt(studentId) },
+                        { $set: { 'students.$.zaloClassId': `${zaloClassId.slice(-6)}` } }
                     );
                 }
             }
         }
 
-        // Dung vong lap de thay doi het tag cua HS lien ket voi studentId
-        if (zaloStudentIdArr.length > 0) {
-            for (let i = 0; i < zaloIdArr.length; i++) {
-                const [zaloId, zaloClass] = zaloStudentIdArr[i];
-
-                if (zaloClass.includes('N')) {
-                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloId, zaloClass);
-                    await ZaloAPI.tagFollower(accessToken, zaloId, zaloClass.slice(-6));
-
-                    // set trang thai hoc sinh di hoc trong Zalo Coll
-                    await MongoDB.updateOneUser(
-                        zaloColl,
-                        { zaloUserId: zaloId, 'students.zaloStudentId': parseInt(studentId) },
-                        { $set: { 'students.$.zaloClassId': `${zaloClass}` } }
-                    );
-                }
-            }
-        }
-
-        // set trang thai di hoc lai trong Student Info Coll
+        // set trang thai di hoc lai trong StudentInfo Coll
         await MongoDB.updateOneUser(
             studentInfoColl,
             { studentId: parseInt(studentId) },
