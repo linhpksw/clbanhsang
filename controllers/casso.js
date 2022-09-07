@@ -30,7 +30,7 @@ export const syncTuition = async (req, res) => {
         let allTransaction = [];
 
         for (let i = 0; i < studentList.length; i++) {
-            const [studentId, studentName] = studentList[i];
+            const [studentId] = studentList[i];
 
             const cursor = transactionsColl.find(
                 {
@@ -60,13 +60,7 @@ export const syncTuition = async (req, res) => {
                     year: 'numeric',
                 });
 
-                allTransaction.push([
-                    parseInt(studentId),
-                    studentName,
-                    totalAmount,
-                    paymentType,
-                    formatWhenDate,
-                ]);
+                allTransaction.push([totalAmount, paymentType, formatWhenDate]);
             }
         }
 
@@ -93,12 +87,12 @@ async function processSyncTuition(client, ssId, sheetName, allTransaction) {
 
     const updateRequest = {
         spreadsheetId: ssId,
-        range: `${sheetName}!A4:E${3 + totalStudent}`,
+        range: `${sheetName}!C4:E${3 + totalStudent}`,
         valueInputOption: 'USER_ENTERED',
 
         resource: {
             majorDimension: 'ROWS',
-            range: `${sheetName}!A4:E${3 + totalStudent}`,
+            range: `${sheetName}!C4:E${3 + totalStudent}`,
             values: allTransaction,
         },
     };
