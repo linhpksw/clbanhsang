@@ -107,12 +107,6 @@ export const cashRequest = async (req, res) => {
             year: 'numeric',
         });
 
-        const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        });
-
         const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${name} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin và biên lai như sau:
 -----------------------------------
 - Thời gian: ${formatWhenDateTime}
@@ -131,7 +125,7 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         const invoiceMessage = `Biên lai thu học phí đợt ${term} của học sinh ${name}`;
         await ZaloAPI.sendImageByUrl(accessToken, '4966494673333610309', invoiceMessage, invoice);
 
-        // Day len Co Phu Trach (sheet Giao dịch) + Chia ve moi lop + Kiem tra Quota
+        //  Chia ve moi lop
         client.authorize((err) => {
             if (err) {
                 console.error(err);
@@ -141,34 +135,18 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             }
         });
 
-        // Cap nhat hoc phi trong StudentInfoColl
-        const grade = {
-            '2004A1': 100000,
-            '2005A0': 100000,
-            '2005A1': 100000,
-            '2006A0': 100000,
-            '2006A1': 100000,
-            '2007A0': 100000,
-            '2007A1': 100000,
-            '2008A0': 120000,
-            '2008A1': 120000,
-            '2008A2': 100000,
-            '2009A0': 120000,
-            '2009A1': 120000,
+        // Day giao dich vao Transactions Coll
+        const doc = {
+            when: new Date(when),
+            id: null,
+            tid: null,
+            type: 'TM',
+            description: `${name} ${studentId} HPD${term} đóng tại lớp`,
+            amount: parseInt(amount),
+            cuSumBalance: null,
+            extractId: parseInt(studentId),
         };
-
-        const updateDoc = {
-            'terms.$.payment': formatAmount,
-            'terms.$.type': 'CK',
-            'terms.$.paidDate': formatWhenDate,
-            'terms.$.remainder': formatAmount - study * grade[classId] + remainderBefore,
-        };
-
-        MongoDB.updateOneUser(
-            studentInfoColl,
-            { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
-            { $set: updateDoc }
-        );
+        MongoDB.insertOneUser(transactionsColl, doc);
 
         res.send('Success');
     } catch (err) {
@@ -210,7 +188,7 @@ async function processInGoogleSheetsForAppSheet(client, classId, term, index, wh
         '2009A1': 8,
     };
 
-    const formatWhen = new Date(when).toLocaleDateString('vi-VN', {
+    const formatWhenDate = new Date(when).toLocaleDateString('vi-VN', {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
@@ -224,11 +202,31 @@ async function processInGoogleSheetsForAppSheet(client, classId, term, index, wh
         resource: {
             majorDimension: 'ROWS',
             range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-            values: [[formatAmount, 'TM', formatWhen]],
+            values: [[formatAmount, 'TM', formatWhenDate]],
         },
     };
 
-    sheets.spreadsheets.values.update(updateRequest);
+    // Cho cap nhat giao dich len sheet tro giang truoc khi trigger
+    await sheets.spreadsheets.values.update(updateRequest);
+
+    const formUrl = {
+        '2004A1': 'https://docs.google.com/forms/d/1HnasP-K1tkx7ihhOuf2-0JOm36EdKuOgTbdolUYm5ac/formResponse',
+        '2005A0': 'https://docs.google.com/forms/d/1QXrydf4tnstORVYKi9apuEf2cFZi5GKaMEViJ27Kz0M/formResponse',
+        '2005A1': 'https://docs.google.com/forms/d/1nOESXV1E89UlejetrUd5LUDEKKWWh8VYhRp_4QezEzc/formResponse',
+        '2006A0': 'https://docs.google.com/forms/d/1ZgntyY1vLEVpi1AZtnLG6x1fFjH3LsMWPaeU0mSLZ-s/formResponse',
+        '2006A1': 'https://docs.google.com/forms/d/1rAdDc_KU3RfJgANSzSPogYtE6R25NrUxCunaigEZuXM/formResponse',
+        '2007A0': 'https://docs.google.com/forms/d/1SonkiEyV3ceJsxRVXg7QZK0vLo29ih50GgvnRm7t83E/formResponse',
+        '2007A1': 'https://docs.google.com/forms/d/1-QnECtC9BoRn3TTSsLusuFz6K1IGB9aAkY0tu8-AMmI/formResponse',
+        '2008A0': 'https://docs.google.com/forms/d/1vAf8s6lNXJWvhhiRj0AkfuRk0KGBr4Xq0aHp-aHsY4M/formResponse',
+        '2008A1': 'https://docs.google.com/forms/d/1vA_LqZXNYHMt7XYy1lICPFslldYLymOEglNkq4aI-E0/formResponse',
+        '2008A2': 'https://docs.google.com/forms/d/1otWyCk9MYRuu9rDF2Zz3vc8-PXtuBhbkgpj7kuObj3U/formResponse',
+        '2009A0': 'https://docs.google.com/forms/d/1xZknFWSUIAgNLbKn9hbXJlGWOFklgJGaeXTa-LRISmo/formResponse',
+        '2009A1': 'https://docs.google.com/forms/d/1ok6rZ52nm0SW6QYCns6_PDQpA0yYcj9rwOkP96WNwD0/formResponse',
+    };
+
+    const URL = `${formUrl[classId]}`;
+
+    await fetch(URL, { method: 'post' });
 }
 
 export const createStudentRequest = async (req, res) => {
