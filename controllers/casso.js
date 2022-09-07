@@ -367,7 +367,7 @@ async function processTransaction(
 ) {
     for (let i = 0; i < data.length; i++) {
         const { id, tid, description, amount, cusum_balance, when } = data[i];
-        // kiem tra giao dich da ton tai trong CSDL chua (Bang ma tham chieu tid)
+        // kiem tra giao dich da ton tai trong CSDL chua (Bang ma Casso id)
         const isExist = await MongoDB.findOneUser(transactionsColl, { id: id }, { projection: { _id: 0 } });
 
         // Neu ton tai thi bo qua
@@ -399,6 +399,7 @@ async function processTransaction(
             description: description,
             amount: parseInt(amount),
             cuSumBalance: parseInt(cusum_balance),
+            extractId: parseInt(extractId),
         };
         MongoDB.insertOneUser(transactionsColl, doc);
 
