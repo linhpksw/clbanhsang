@@ -202,8 +202,8 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
                 spreadsheetId: ssId[classId],
                 range: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
             };
-
-            sheets.spreadsheets.values.clear(clearRequest);
+            // Cho xoa tren sheet Tro giang xong moi trigger script
+            await sheets.spreadsheets.values.clear(clearRequest);
 
             // (Khong can cap nhat trong StudentInfo Coll vi trigger script tren sheet Tro giang roi)
             const formUrl = {
@@ -589,8 +589,8 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                 values: [[amount + paid, 'CK', formatWhenDate]],
             },
         };
-
-        sheets.spreadsheets.values.update(updateRequest);
+        // Cho cap nhat len sheet xong moi trigger script
+        await sheets.spreadsheets.values.update(updateRequest);
 
         // Kiem tra Quota
         // Neu tu dong thi moi check Quota
