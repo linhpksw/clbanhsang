@@ -115,6 +115,59 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             sheets.spreadsheets.values.update(updateRequest);
 
             // Xoa giao dich tren sheet Tro giang
+            const pipeline = [
+                {
+                    $match: {
+                        studentId: parseInt(studentId),
+                    },
+                },
+                {
+                    $project: {
+                        studentId: 1,
+                        studentName: 1,
+                        classId: 1,
+                        terms: {
+                            $filter: {
+                                input: '$terms',
+                                as: 'item',
+                                cond: {
+                                    $eq: [
+                                        '$$item.term',
+                                        {
+                                            $max: '$terms.term',
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            ];
+
+            const aggCursor = studentInfoColl.aggregate(pipeline);
+            const result = await aggCursor.toArray();
+
+            const { terms, classId } = result[0];
+
+            const {
+                index, // vi tri hoc sinh
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = terms[0];
+
             const ssId = {
                 '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
                 '2005A0': '1BBzudjOkjJT6uf9_Ma0kWSXgzEkRRfXnjibqKoeNciA',
@@ -184,59 +237,6 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             fetch(URL, { method: 'post' });
 
             // Cap nhat lai hoc phi trong StudentInfo Coll
-
-            // const pipeline = [
-            //     {
-            //         $match: {
-            //             studentId: parseInt(studentId),
-            //         },
-            //     },
-            //     {
-            //         $project: {
-            //             studentId: 1,
-            //             studentName: 1,
-            //             classId: 1,
-            //             terms: {
-            //                 $filter: {
-            //                     input: '$terms',
-            //                     as: 'item',
-            //                     cond: {
-            //                         $eq: [
-            //                             '$$item.term',
-            //                             {
-            //                                 $max: '$terms.term',
-            //                             },
-            //                         ],
-            //                     },
-            //                 },
-            //             },
-            //         },
-            //     },
-            // ];
-
-            // const aggCursor = studentInfoColl.aggregate(pipeline);
-            // const result = await aggCursor.toArray();
-
-            // const { terms, classId } = result[0];
-
-            // const {
-            //     index, // vi tri hoc sinh
-            //     term, // dot hien tai
-            //     start, // bat dau dot
-            //     end, // ket thuc dot
-            //     total, // so buoi trong dot
-            //     study, // so buoi hoc
-            //     absent, // so buoi nghi
-            //     subject, // mon hoc
-            //     remainderBefore, // du dot truoc
-            //     billing, // phai nop
-            //     payment, // da nop
-            //     type, // hinh thuc nop
-            //     paidDate, // ngay nop
-            //     remainder, // con thua
-            //     attendances,
-            //     absences,
-            // } = terms[0];
 
             // const gradeTuition = {
             //     '2004A1': 100000,
