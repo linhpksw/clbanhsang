@@ -138,6 +138,11 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         });
 
         // Day giao dich vao Transactions Coll
+        // Check xem da ton tai giao dich tien mat trong dot chua
+        // Neu co roi thi update || tao moi
+        const isoStart = new Date(start);
+        const isoEnd = new Date(end);
+
         const doc = {
             when: new Date(when),
             id: null,
@@ -148,8 +153,15 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             cuSumBalance: null,
             extractId: parseInt(studentId),
         };
-
-        MongoDB.insertOneUser(transactionsColl, doc);
+        await transactionsColl.updateOne(
+            {
+                when: { $gte: isoStart, $lte: isoEnd },
+                extractId: parseInt(studentId),
+                type: 'TM',
+            },
+            { $set: doc },
+            { upsert: true }
+        );
 
         res.send('Success');
     } catch (err) {
