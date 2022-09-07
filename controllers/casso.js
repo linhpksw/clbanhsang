@@ -20,28 +20,54 @@ export const syncTuition = async (req, res) => {
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
-        const tokenColl = db.collection('tokens');
-        const classColl = db.collection('classUsers');
         const transactionsColl = db.collection('transactions');
-        const studentInfoColl = db.collection('studentInfo');
-        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const { data } = req.body;
+        const { startTerm, endTerm, studentList, ssId, sheetName } = req.body;
+
+        const isoStart = new Date(startTerm);
+        const isoEnd = new Date(endTerm);
+
+        let allTransaction = [];
+
+        for (let i = 0; i < studentList.length; i++) {
+            const [studentId, studentName] = studentList[i];
+
+            const cursor = transactionsColl.find(
+                {
+                    when: { $gte: isoStart, $lte: isoEnd },
+                    extractId: parseInt(studentId),
+                },
+                { projection: { _id: 0 } }
+            );
+
+            const result = await cursor.toArray();
+
+            let totalAmount = '';
+            let finalWhen = '';
+            let paymentType = '';
+
+            for (let v = 0; v < result.length; v++) {
+                const { amount, when, type } = result[v];
+                totalAmount += amount;
+                finalWhen = when;
+                paymentType = type;
+            }
+
+            const formatWhenDate = new Date(finalWhen).toLocaleString('vi-VN', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+            });
+
+            allTransaction.push([parseInt(studentId), studentName, totalAmount, paymentType, formatWhenDate]);
+        }
 
         client.authorize((err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
-                processTransaction(
-                    client,
-                    data,
-                    transactionsColl,
-                    classColl,
-                    studentInfoColl,
-                    accessToken,
-                    false
-                );
+                processSyncTuition(client, ssId, sheetName, allTransaction);
             }
         });
 
@@ -51,6 +77,26 @@ export const syncTuition = async (req, res) => {
     } finally {
     }
 };
+
+async function processSyncTuition(client, ssId, sheetName, allTransaction) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const totalStudent = allTransaction.length;
+
+    const updateRequest = {
+        spreadsheetId: ssId,
+        range: `${sheetName}!A4:E${3 + totalStudent}`,
+        valueInputOption: 'USER_ENTERED',
+
+        resource: {
+            majorDimension: 'ROWS',
+            range: `${sheetName}!A4:E${3 + totalStudent}`,
+            values: allTransaction,
+        },
+    };
+
+    sheets.spreadsheets.values.update(updateRequest);
+}
 
 export const cassoRequest = async (req, res) => {
     try {
@@ -435,6 +481,7 @@ async function processTransaction(
             when: new Date(when),
             id: id,
             tid: parseInt(tid),
+            type: 'CK',
             description: description,
             amount: parseInt(amount),
             cuSumBalance: parseInt(cusum_balance),
