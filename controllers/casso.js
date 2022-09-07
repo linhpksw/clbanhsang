@@ -49,7 +49,7 @@ export const syncTuition = async (req, res) => {
 
                 for (let v = 0; v < result.length; v++) {
                     const { amount, when, type } = result[v];
-                    totalAmount += amount;
+                    parseInt(totalAmount) += amount;
                     finalWhen = when;
                     paymentType = type;
                 }
