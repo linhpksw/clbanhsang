@@ -368,7 +368,7 @@ async function processTransaction(
     for (let i = 0; i < data.length; i++) {
         const { id, tid, description, amount, cusum_balance, when } = data[i];
         // kiem tra giao dich da ton tai trong CSDL chua (Bang ma tham chieu tid)
-        const isExist = await MongoDB.findOneUser(transactionsColl, { tid: tid }, { projection: { _id: 0 } });
+        const isExist = await MongoDB.findOneUser(transactionsColl, { id: id }, { projection: { _id: 0 } });
 
         // Neu ton tai thi bo qua
         if (isExist !== null) continue;
