@@ -27,7 +27,7 @@ export const cashRequest = async (req, res) => {
 
         const data = req.body;
 
-        const { studentId, classId, paymentMethod, amount, date, time, invoice, name } = data;
+        const { studentId, classId, amount, date, time, invoice, name } = data;
 
         const [day, month, year] = date.split('/');
         const [hour, minute, second] = time.split(' ')[0].split(':');
@@ -144,10 +144,11 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             tid: null,
             type: 'TM',
             description: `${name} ${studentId} HPD${term} đóng tại lớp`,
-            amount: parseInt(amount),
+            amount: formatAmount,
             cuSumBalance: null,
             extractId: parseInt(studentId),
         };
+
         MongoDB.insertOneUser(transactionsColl, doc);
 
         res.send('Success');
