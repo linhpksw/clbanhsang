@@ -42,24 +42,32 @@ export const syncTuition = async (req, res) => {
 
             const result = await cursor.toArray();
 
-            let totalAmount = '';
-            let finalWhen = '';
-            let paymentType = '';
+            if (result.length > 0) {
+                let totalAmount = '';
+                let finalWhen = '';
+                let paymentType = '';
 
-            for (let v = 0; v < result.length; v++) {
-                const { amount, when, type } = result[v];
-                totalAmount += amount;
-                finalWhen = when;
-                paymentType = type;
+                for (let v = 0; v < result.length; v++) {
+                    const { amount, when, type } = result[v];
+                    totalAmount += amount;
+                    finalWhen = when;
+                    paymentType = type;
+                }
+
+                const formatWhenDate = new Date(finalWhen).toLocaleString('vi-VN', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                });
+
+                allTransaction.push([
+                    parseInt(studentId),
+                    studentName,
+                    totalAmount,
+                    paymentType,
+                    formatWhenDate,
+                ]);
             }
-
-            const formatWhenDate = new Date(finalWhen).toLocaleString('vi-VN', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric',
-            });
-
-            allTransaction.push([parseInt(studentId), studentName, totalAmount, paymentType, formatWhenDate]);
         }
 
         client.authorize((err) => {
