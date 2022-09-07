@@ -227,10 +227,8 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             };
 
             const clearRequest = {
-                spreadsheetId: ssId[grade],
-                resource: {
-                    ranges: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
-                },
+                spreadsheetId: ssId[classId],
+                ranges: `Hocphi_L${grade[classId]}_D${term}!C${index}:E${index}`,
             };
 
             sheets.spreadsheets.values.clear(clearRequest);
