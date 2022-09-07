@@ -16,6 +16,42 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
+export const syncTuition = async (req, res) => {
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const tokenColl = db.collection('tokens');
+        const classColl = db.collection('classUsers');
+        const transactionsColl = db.collection('transactions');
+        const studentInfoColl = db.collection('studentInfo');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        const { data } = req.body;
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                processTransaction(
+                    client,
+                    data,
+                    transactionsColl,
+                    classColl,
+                    studentInfoColl,
+                    accessToken,
+                    false
+                );
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const cassoRequest = async (req, res) => {
     try {
         await MongoDB.client.connect();
@@ -234,7 +270,7 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             };
             const URL = `${formUrl[classId]}`;
 
-            fetch(URL, { method: 'post' });
+            await fetch(URL, { method: 'post' });
 
             // Cap nhat lai hoc phi trong StudentInfo Coll
 
@@ -510,12 +546,6 @@ async function processTransaction(
             year: 'numeric',
         });
 
-        const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        });
-
         const confirmTuition = `Trung tâm Toán Ánh Sáng xác nhận phụ huynh ${studentName} ${studentId} đã nộp thành công học phí đợt ${term} với thông tin như sau:
 -----------------------------------
 - Thời gian: ${formatWhenDateTime}
@@ -528,7 +558,7 @@ async function processTransaction(
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
 
         // Gui tin nhan xac nhan den phu huynh
-        ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
         // Day len Co Phu Trach (sheet Giao dịch)
         const sheets = google.sheets({ version: 'v4', auth: client });
@@ -579,6 +609,12 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
             '2009A1': 8,
         };
 
+        const formatWhenDate = new Date(when).toLocaleString('vi-VN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+
         const updateRequest = {
             spreadsheetId: ssId[classId],
             range: `Hocphi_L${gradeIndex[classId]}_D${term}!C${index}:E${index}`,
@@ -590,8 +626,39 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
                 values: [[amount + paid, 'CK', formatWhenDate]],
             },
         };
+
         // Cho cap nhat len sheet xong moi trigger script
         await sheets.spreadsheets.values.update(updateRequest);
+
+        const formUrl = {
+            '2004A1':
+                'https://docs.google.com/forms/d/1HnasP-K1tkx7ihhOuf2-0JOm36EdKuOgTbdolUYm5ac/formResponse',
+            '2005A0':
+                'https://docs.google.com/forms/d/1QXrydf4tnstORVYKi9apuEf2cFZi5GKaMEViJ27Kz0M/formResponse',
+            '2005A1':
+                'https://docs.google.com/forms/d/1nOESXV1E89UlejetrUd5LUDEKKWWh8VYhRp_4QezEzc/formResponse',
+            '2006A0':
+                'https://docs.google.com/forms/d/1ZgntyY1vLEVpi1AZtnLG6x1fFjH3LsMWPaeU0mSLZ-s/formResponse',
+            '2006A1':
+                'https://docs.google.com/forms/d/1rAdDc_KU3RfJgANSzSPogYtE6R25NrUxCunaigEZuXM/formResponse',
+            '2007A0':
+                'https://docs.google.com/forms/d/1SonkiEyV3ceJsxRVXg7QZK0vLo29ih50GgvnRm7t83E/formResponse',
+            '2007A1':
+                'https://docs.google.com/forms/d/1-QnECtC9BoRn3TTSsLusuFz6K1IGB9aAkY0tu8-AMmI/formResponse',
+            '2008A0':
+                'https://docs.google.com/forms/d/1vAf8s6lNXJWvhhiRj0AkfuRk0KGBr4Xq0aHp-aHsY4M/formResponse',
+            '2008A1':
+                'https://docs.google.com/forms/d/1vA_LqZXNYHMt7XYy1lICPFslldYLymOEglNkq4aI-E0/formResponse',
+            '2008A2':
+                'https://docs.google.com/forms/d/1otWyCk9MYRuu9rDF2Zz3vc8-PXtuBhbkgpj7kuObj3U/formResponse',
+            '2009A0':
+                'https://docs.google.com/forms/d/1xZknFWSUIAgNLbKn9hbXJlGWOFklgJGaeXTa-LRISmo/formResponse',
+            '2009A1':
+                'https://docs.google.com/forms/d/1ok6rZ52nm0SW6QYCns6_PDQpA0yYcj9rwOkP96WNwD0/formResponse',
+        };
+        const URL = `${formUrl[classId]}`;
+
+        await fetch(URL, { method: 'post' });
 
         // Kiem tra Quota
         // Neu tu dong thi moi check Quota
@@ -648,36 +715,6 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         }
 
         // (Khong can cap nhat trong StudentInfo Coll vi trigger script tren sheet Tro giang roi)
-        const formUrl = {
-            '2004A1':
-                'https://docs.google.com/forms/d/1HnasP-K1tkx7ihhOuf2-0JOm36EdKuOgTbdolUYm5ac/formResponse',
-            '2005A0':
-                'https://docs.google.com/forms/d/1QXrydf4tnstORVYKi9apuEf2cFZi5GKaMEViJ27Kz0M/formResponse',
-            '2005A1':
-                'https://docs.google.com/forms/d/1nOESXV1E89UlejetrUd5LUDEKKWWh8VYhRp_4QezEzc/formResponse',
-            '2006A0':
-                'https://docs.google.com/forms/d/1ZgntyY1vLEVpi1AZtnLG6x1fFjH3LsMWPaeU0mSLZ-s/formResponse',
-            '2006A1':
-                'https://docs.google.com/forms/d/1rAdDc_KU3RfJgANSzSPogYtE6R25NrUxCunaigEZuXM/formResponse',
-            '2007A0':
-                'https://docs.google.com/forms/d/1SonkiEyV3ceJsxRVXg7QZK0vLo29ih50GgvnRm7t83E/formResponse',
-            '2007A1':
-                'https://docs.google.com/forms/d/1-QnECtC9BoRn3TTSsLusuFz6K1IGB9aAkY0tu8-AMmI/formResponse',
-            '2008A0':
-                'https://docs.google.com/forms/d/1vAf8s6lNXJWvhhiRj0AkfuRk0KGBr4Xq0aHp-aHsY4M/formResponse',
-            '2008A1':
-                'https://docs.google.com/forms/d/1vA_LqZXNYHMt7XYy1lICPFslldYLymOEglNkq4aI-E0/formResponse',
-            '2008A2':
-                'https://docs.google.com/forms/d/1otWyCk9MYRuu9rDF2Zz3vc8-PXtuBhbkgpj7kuObj3U/formResponse',
-            '2009A0':
-                'https://docs.google.com/forms/d/1xZknFWSUIAgNLbKn9hbXJlGWOFklgJGaeXTa-LRISmo/formResponse',
-            '2009A1':
-                'https://docs.google.com/forms/d/1ok6rZ52nm0SW6QYCns6_PDQpA0yYcj9rwOkP96WNwD0/formResponse',
-        };
-        const URL = `${formUrl[classId]}`;
-
-        fetch(URL, { method: 'post' });
-
         // Cap nhat hoc phi trong StudentInfoColl
         // const gradeTuition = {
         //     '2004A1': 100000,
