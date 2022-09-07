@@ -22,7 +22,7 @@ export const syncTuition = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const transactionsColl = db.collection('transactions');
 
-        const { startTerm, endTerm, studentList, ssId, sheetName } = req.body;
+        const { startTerm, endTerm, studentList, ssId, sheetName, classId } = req.body;
 
         const isoStart = new Date(startTerm);
         const isoEnd = new Date(endTerm);
@@ -70,7 +70,7 @@ export const syncTuition = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                processSyncTuition(client, ssId, sheetName, allTransaction);
+                processSyncTuition(client, ssId, sheetName, classId, allTransaction);
             }
         });
 
@@ -81,7 +81,7 @@ export const syncTuition = async (req, res) => {
     }
 };
 
-async function processSyncTuition(client, ssId, sheetName, allTransaction) {
+async function processSyncTuition(client, ssId, sheetName, classId, allTransaction) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const totalStudent = allTransaction.length;
