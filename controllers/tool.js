@@ -1420,7 +1420,9 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
         const zaloId = await findZaloIdFromUserPhone(zaloColl, UID.split(' ')[1]);
         const zaloMessageId = MID.split(' ')[1];
 
-        await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
+        if (zaloId !== null) {
+            await ZaloAPI.sendReaction(accessToken, zaloId, zaloMessageId, reactIcon);
+        }
     }
 }
 
@@ -1444,7 +1446,11 @@ async function findZaloIdFromUserPhone(zaloColl, userPhone) {
         { projection: { _id: 0, zaloUserId: 1 } }
     );
 
-    return result.zaloUserId;
+    if (result !== null) {
+        return result.zaloUserId;
+    } else {
+        return null;
+    }
 }
 
 async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId, zaloColl) {
