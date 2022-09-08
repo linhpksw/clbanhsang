@@ -125,6 +125,7 @@ export const cassoRequest = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
+        const zaloColl = db.collection('zaloUsers');
         const transactionsColl = db.collection('transactions');
         const studentInfoColl = db.collection('studentInfo');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
@@ -143,6 +144,7 @@ export const cassoRequest = async (req, res) => {
                     data,
                     transactionsColl,
                     classColl,
+                    zaloColl,
                     studentInfoColl,
                     accessToken,
                     false
@@ -340,36 +342,6 @@ async function processUnsendTransaction(client, transactionsColl, studentInfoCol
             };
 
             sheets.spreadsheets.values.update(updateRequest);
-
-            // Cap nhat lai hoc phi trong StudentInfo Coll
-
-            // const gradeTuition = {
-            //     '2004A1': 100000,
-            //     '2005A0': 100000,
-            //     '2005A1': 100000,
-            //     '2006A0': 100000,
-            //     '2006A1': 100000,
-            //     '2007A0': 100000,
-            //     '2007A1': 100000,
-            //     '2008A0': 120000,
-            //     '2008A1': 120000,
-            //     '2008A2': 100000,
-            //     '2009A0': 120000,
-            //     '2009A1': 120000,
-            // };
-
-            // const updateDoc = {
-            //     'terms.$.payment': null,
-            //     'terms.$.type': null,
-            //     'terms.$.paidDate': null,
-            //     'terms.$.remainder': -study * gradeTuition[classId] + remainderBefore,
-            // };
-
-            // MongoDB.updateOneUser(
-            //     studentInfoColl,
-            //     { studentId: parseInt(studentId), 'terms.term': parseInt(term) },
-            //     { $set: updateDoc }
-            // );
         }
     }
 }
@@ -380,6 +352,7 @@ export const failExtract = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const tokenColl = db.collection('tokens');
         const classColl = db.collection('classUsers');
+        const zaloColl = db.collection('zaloUsers');
         const transactionsColl = db.collection('transactions');
         const studentInfoColl = db.collection('studentInfo');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
@@ -389,7 +362,14 @@ export const failExtract = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                processIdManually(client, transactionsColl, classColl, studentInfoColl, accessToken);
+                processIdManually(
+                    client,
+                    transactionsColl,
+                    classColl,
+                    studentInfoColl,
+                    zaloColl,
+                    accessToken
+                );
             }
         });
         res.send('Done!');
@@ -399,7 +379,14 @@ export const failExtract = async (req, res) => {
     }
 };
 
-async function processIdManually(client, transactionsColl, classColl, studentInfoColl, accessToken) {
+async function processIdManually(
+    client,
+    transactionsColl,
+    classColl,
+    studentInfoColl,
+    zaloColl,
+    accessToken
+) {
     const sheets = google.sheets({ version: 'v4', auth: client });
     const ssIdCoPhuTrach = '1-8aVO7j4Pu9vJ9h9ewha18UHA9z6BJy2909g8I1RrPM';
 
@@ -458,7 +445,16 @@ async function processIdManually(client, transactionsColl, classColl, studentInf
     await sheets.spreadsheets.values.batchClear(clearRequest);
 
     // Gui cac giao dich da them Id den server nhu Casso lam
-    processTransaction(client, data, transactionsColl, classColl, studentInfoColl, accessToken, true);
+    processTransaction(
+        client,
+        data,
+        transactionsColl,
+        classColl,
+        zaloColl,
+        studentInfoColl,
+        accessToken,
+        true
+    );
 }
 
 async function processTransaction(
@@ -466,6 +462,7 @@ async function processTransaction(
     data,
     transactionsColl,
     classColl,
+    zaloColl,
     studentInfoColl,
     accessToken,
     isManual
@@ -619,7 +616,21 @@ async function processTransaction(
 Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại cho OA để trung tâm kịp thời xử lý. Cảm ơn quý phụ huynh!`;
 
         // Gui tin nhan xac nhan den phu huynh
-        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
+        const parentIdList = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+
+        if (parentIdList.length > 0) {
+            for (let i = 0; i < parentIdList.length; i++) {
+                const { zaloUserId, students } = parentIdList[i];
+
+                for (let v = 0; v < students.length; v++) {
+                    const { role } = students[v];
+                    // Chi gui tin nhan xac nhan den PH
+                    if (role === 'Phụ huynh') {
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, confirmTuition);
+                    }
+                }
+            }
+        }
 
         // Day len Co Phu Trach (sheet Giao dịch)
         const appendRequest = {

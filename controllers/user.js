@@ -165,8 +165,7 @@ export const userRequest = async (req, res) => {
                     zaloUserId,
                     zaloColl,
                     classInfoColl,
-                    mediaInfo,
-                    localeTimeStamp
+                    mediaInfo
                 );
             }
         }
@@ -197,20 +196,7 @@ export const userRequest = async (req, res) => {
                     zaloUserId,
                     zaloColl,
                     classInfoColl,
-                    imageInfo,
-                    localeTimeStamp
-                );
-
-                const mediaInfo = webhook.message;
-
-                await Tools.forwardOtherMedia2Assistant(
-                    res,
-                    accessToken,
-                    zaloUserId,
-                    zaloColl,
-                    classInfoColl,
-                    mediaInfo,
-                    localeTimeStamp
+                    imageInfo
                 );
             }
             // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh

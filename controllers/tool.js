@@ -1342,6 +1342,36 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId, role) {
     return zaloIdArr;
 }
 
+async function findZaloUserIdFromStudentId(zaloColl, studentId) {
+    const pipeline = [
+        {
+            $match: {
+                'students.zaloStudentId': parseInt(studentId),
+            },
+        },
+        {
+            $project: {
+                zaloUserId: 1,
+                _id: 0,
+                students: {
+                    $filter: {
+                        input: '$students',
+                        as: 'item',
+                        cond: {
+                            $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                        },
+                    },
+                },
+            },
+        },
+    ];
+
+    const aggCursor = zaloColl.aggregate(pipeline);
+    const result = await aggCursor.toArray();
+
+    return result;
+}
+
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
     const { assistants } = await MongoDB.findOneUser(
         classInfoColl,
@@ -1470,15 +1500,7 @@ async function sendImage2Assistant(
     return;
 }
 
-async function forwardOtherMedia2Assistant(
-    res,
-    accessToken,
-    zaloUserId,
-    zaloColl,
-    classInfoColl,
-    mediaInfo,
-    localeTimeStamp
-) {
+async function forwardOtherMedia2Assistant(res, accessToken, zaloUserId, zaloColl, classInfoColl, mediaInfo) {
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
@@ -1572,32 +1594,24 @@ async function forwardOtherMedia2Assistant(
                 }
                 break;
 
-            case 'image':
-                const { url: urlImage } = payload;
+            // case 'image':
+            //     const { url: urlImage } = payload;
 
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+            //     // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+            //     for (let i = 0; i < isRegister.students.length; i++) {
+            //         const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh: ${urlImage}\n\nUID: ${userPhone}\nMID: ${messageId}`;
+            //         // chuyen tiep tin nhan den tro giang tuong ung
+            //         const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh: ${urlImage}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-                break;
+            //         await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
+            //     }
+            //     break;
         }
     }
 }
 
-async function forwardImage2Assistant(
-    res,
-    accessToken,
-    zaloUserId,
-    zaloColl,
-    classInfoColl,
-    imageInfo,
-    localeTimeStamp
-) {
+async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, classInfoColl, imageInfo) {
     const isRegister = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
@@ -1619,10 +1633,9 @@ async function forwardImage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            // Tro giang khong can rep vi he thong gui tu dong roi
-            // const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
-            //     content === undefined ? ':' : ` với nội dung: ${content}.`
-            // }\n\nUID: ${userPhone}`;
+            const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
+                content === undefined ? ':' : ` với nội dung: ${content}.`
+            }\n\nUID: ${userPhone}`;
 
             await sendImage2Assistant(
                 res,
@@ -2041,4 +2054,5 @@ export {
     getStudyDate,
     alarmStudentNotPayment2Parent,
     listStudentNotPayment,
+    findZaloUserIdFromStudentId,
 };
