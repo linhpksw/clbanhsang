@@ -131,6 +131,8 @@ export const cassoRequest = async (req, res) => {
 
         const { data } = req.body;
 
+        console.log(data);
+
         client.authorize((err) => {
             if (err) {
                 console.error(err);

@@ -1619,9 +1619,10 @@ async function forwardImage2Assistant(
             const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
             // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
-                content === undefined ? ':' : ` với nội dung: ${content}.`
-            }\n\nUID: ${userPhone}`;
+            // Tro giang khong can rep vi he thong gui tu dong roi
+            // const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
+            //     content === undefined ? ':' : ` với nội dung: ${content}.`
+            // }\n\nUID: ${userPhone}`;
 
             await sendImage2Assistant(
                 res,
