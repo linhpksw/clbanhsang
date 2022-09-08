@@ -499,18 +499,6 @@ async function processTransaction(
         }
 
         // Neu tach thanh cong
-        // Day du lieu vao Transactions Coll
-        const doc = {
-            when: new Date(when),
-            id: id,
-            tid: parseInt(tid),
-            type: 'CK',
-            description: description,
-            amount: parseInt(amount),
-            cuSumBalance: parseInt(cusum_balance),
-            extractId: parseInt(extractId),
-        };
-        MongoDB.insertOneUser(transactionsColl, doc);
 
         // Check thong tin hoc phi cua HS dot hien tai
         const pipeline = [
@@ -633,6 +621,88 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         // Gui tin nhan xac nhan den phu huynh
         await ZaloAPI.sendMessage(accessToken, '4966494673333610309', confirmTuition);
 
+        // Day len Co Phu Trach (sheet Giao dịch)
+        const appendRequest = {
+            spreadsheetId: ssIdCoPhuTrach,
+            range: 'Giao dịch',
+            valueInputOption: 'USER_ENTERED',
+            insertDataOption: 'INSERT_ROWS',
+            responseDateTimeRenderOption: 'FORMATTED_STRING',
+            resource: {
+                majorDimension: 'ROWS',
+                values: uploadTransasction,
+            },
+        };
+
+        sheets.spreadsheets.values.append(appendRequest);
+
+        // Kiem tra Quota
+        // Neu tu dong thi moi check Quota
+        if (!isManual) {
+            const getRequest = {
+                spreadsheetId: ssIdCoPhuTrach,
+                range: 'Quota',
+            };
+
+            const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
+
+            const { values } = getResponse;
+
+            let currentAcc = [];
+
+            for (let i = 0; i < values.length; i++) {
+                const [no, account, quota, dayLeft, status, warning] = values[i];
+                if (status === 'Đang dùng') {
+                    const quotaLeft = quota - 1;
+                    if (quotaLeft < 10) {
+                        // Gui canh bao qua Zalo toi Admin va Co giao
+                        const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
+                        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
+
+                        currentAcc.push(
+                            no,
+                            account,
+                            quotaLeft,
+                            dayLeft,
+                            status,
+                            'Chuyển sang tài khoản bên dưới!'
+                        );
+                    } else {
+                        currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
+                    }
+                }
+            }
+
+            const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
+            const iQuota = parseInt(no, 10);
+            const updateQuotaRequest = {
+                spreadsheetId: ssIdCoPhuTrach,
+                range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+                valueInputOption: 'USER_ENTERED',
+                responseDateTimeRenderOption: 'FORMATTED_STRING',
+                resource: {
+                    majorDimension: 'ROWS',
+                    range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
+                    values: [[no, account, quotaLeft, dayLeft, status, warning]],
+                },
+            };
+
+            sheets.spreadsheets.values.update(updateQuotaRequest);
+        }
+
+        // Day du lieu vao Transactions Coll
+        const doc = {
+            when: new Date(when),
+            id: id,
+            tid: parseInt(tid),
+            type: 'CK',
+            description: description,
+            amount: parseInt(amount),
+            cuSumBalance: parseInt(cusum_balance),
+            extractId: parseInt(extractId),
+        };
+        MongoDB.insertOneUser(transactionsColl, doc);
+
         // Chia ve moi lop
         const ssId = {
             '2004A1': '1tjS890ZbldMlX6yKbn0EksroCU5Yrpi--6OQ5ll1On4',
@@ -714,75 +784,6 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
         const URL = `${formUrl[classId]}`;
 
         await fetch(URL, { method: 'post' });
-
-        // Day len Co Phu Trach (sheet Giao dịch)
-        const appendRequest = {
-            spreadsheetId: ssIdCoPhuTrach,
-            range: 'Giao dịch',
-            valueInputOption: 'USER_ENTERED',
-            insertDataOption: 'INSERT_ROWS',
-            responseDateTimeRenderOption: 'FORMATTED_STRING',
-            resource: {
-                majorDimension: 'ROWS',
-                values: uploadTransasction,
-            },
-        };
-
-        sheets.spreadsheets.values.append(appendRequest);
-
-        // Kiem tra Quota
-        // Neu tu dong thi moi check Quota
-        if (!isManual) {
-            const getRequest = {
-                spreadsheetId: ssIdCoPhuTrach,
-                range: 'Quota',
-            };
-
-            const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
-
-            const { values } = getResponse;
-
-            let currentAcc = [];
-
-            for (let i = 0; i < values.length; i++) {
-                const [no, account, quota, dayLeft, status, warning] = values[i];
-                if (status === 'Đang dùng') {
-                    const quotaLeft = quota - 1;
-                    if (quotaLeft < 10) {
-                        // Gui canh bao qua Zalo toi Admin va Co giao
-                        const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
-                        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
-
-                        currentAcc.push(
-                            no,
-                            account,
-                            quotaLeft,
-                            dayLeft,
-                            status,
-                            'Chuyển sang tài khoản bên dưới!'
-                        );
-                    } else {
-                        currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
-                    }
-                }
-            }
-
-            const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
-            const iQuota = parseInt(no, 10);
-            const updateQuotaRequest = {
-                spreadsheetId: ssIdCoPhuTrach,
-                range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-                valueInputOption: 'USER_ENTERED',
-                responseDateTimeRenderOption: 'FORMATTED_STRING',
-                resource: {
-                    majorDimension: 'ROWS',
-                    range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-                    values: [[no, account, quotaLeft, dayLeft, status, warning]],
-                },
-            };
-
-            sheets.spreadsheets.values.update(updateQuotaRequest);
-        }
 
         // (Khong can cap nhat trong StudentInfo Coll vi trigger script tren sheet Tro giang roi)
         // Cap nhat hoc phi trong StudentInfoColl
