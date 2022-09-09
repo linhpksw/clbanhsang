@@ -1704,9 +1704,9 @@ async function isManager(zaloUserId, classInfoColl) {
 
     if (result === null) {
         return false;
+    } else {
+        return true;
     }
-
-    return true;
 }
 
 async function isFollow(zaloUserId, zaloColl) {

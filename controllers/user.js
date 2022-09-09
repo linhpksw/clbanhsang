@@ -149,12 +149,17 @@ export const userRequest = async (req, res) => {
 
                 // Neu da follow
                 if (isFollowImage) {
-                    const isParent = !(await Tools.isManager(zaloUserId, classInfoColl));
+                    const isManager = await Tools.isManager(zaloUserId, classInfoColl);
 
-                    console.log(isParent);
+                    console.log(isManager);
+
+                    // // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+                    // if (isManager) {
+                    //     await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                    // }
 
                     // // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    // if (isParent) {
+                    // else {
                     //     await Tools.forwardImage2Assistant(
                     //         res,
                     //         accessToken,
@@ -174,10 +179,6 @@ export const userRequest = async (req, res) => {
                     //         classInfoColl,
                     //         mediaInfo
                     //     );
-                    // }
-                    // // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
-                    // else {
-                    //     await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
                     // }
                 }
 
