@@ -61,7 +61,7 @@ export const userRequest = async (req, res) => {
                 const isExistInZaloColl = await MongoDB.findOneUser(
                     zaloColl,
                     { zaloUserId: `${zaloUserId}` },
-                    { projection: { _id: 0, userPhone: 1 } }
+                    { projection: { _id: 0 } }
                 );
 
                 // Neu nguoi dung quan tam lan dau
@@ -213,7 +213,6 @@ export const userRequest = async (req, res) => {
 
                     if (isDKPH) {
                         Tools.signUp(
-                            res,
                             accessToken,
                             zaloUserId,
                             zaloColl,
@@ -223,9 +222,10 @@ export const userRequest = async (req, res) => {
                             messageId,
                             'Phụ huynh'
                         );
+
+                        res.send('Done');
                     } else if (isDKHS) {
                         Tools.signUp(
-                            res,
                             accessToken,
                             zaloUserId,
                             zaloColl,
