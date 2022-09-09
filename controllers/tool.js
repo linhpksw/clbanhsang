@@ -1834,15 +1834,17 @@ async function deleteAccount(
                 { $set: { userPhone: null, students: [] } }
             );
 
-            const sendResponse2DeleteUser = `Zalo ${displayName} đã xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} bởi trợ giảng.`;
+            // Gui xac nhan den PHHS
+            const sendResponse2DeleteUser = `Trợ giảng đã xoá số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
 
             await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
 
+            // Gui xac nhan den Tro giang
             const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
 
-            await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
+            await ZaloAPI.sendReaction(accessToken, taZaloId, messageId, 'heart');
 
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, successContent);
+            await ZaloAPI.sendMessage(accessToken, taZaloId, successContent);
         }
 
         // Neu cu phap sai
