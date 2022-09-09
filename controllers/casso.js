@@ -647,60 +647,6 @@ Nếu thông tin trên chưa chính xác, phụ huynh vui lòng nhắn tin lại
 
         sheets.spreadsheets.values.append(appendRequest);
 
-        // Kiem tra Quota
-        // Neu tu dong thi moi check Quota
-        if (!isManual) {
-            const getRequest = {
-                spreadsheetId: ssIdCoPhuTrach,
-                range: 'Quota',
-            };
-
-            const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
-
-            const { values } = getResponse;
-
-            let currentAcc = [];
-
-            for (let i = 0; i < values.length; i++) {
-                const [no, account, quota, dayLeft, status, warning] = values[i];
-                if (status === 'Đang dùng') {
-                    const quotaLeft = quota - 1;
-                    if (quotaLeft < 10) {
-                        // Gui canh bao qua Zalo toi Admin va Co giao
-                        const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
-                        await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
-
-                        currentAcc.push(
-                            no,
-                            account,
-                            quotaLeft,
-                            dayLeft,
-                            status,
-                            'Chuyển sang tài khoản bên dưới!'
-                        );
-                    } else {
-                        currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
-                    }
-                }
-            }
-
-            const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
-            const iQuota = parseInt(no, 10);
-            const updateQuotaRequest = {
-                spreadsheetId: ssIdCoPhuTrach,
-                range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-                valueInputOption: 'USER_ENTERED',
-                responseDateTimeRenderOption: 'FORMATTED_STRING',
-                resource: {
-                    majorDimension: 'ROWS',
-                    range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-                    values: [[no, account, quotaLeft, dayLeft, status, warning]],
-                },
-            };
-
-            sheets.spreadsheets.values.update(updateQuotaRequest);
-        }
-
         // Day du lieu vao Transactions Coll
         const doc = {
             when: new Date(when),
@@ -846,50 +792,6 @@ async function processFail2ExtractId(client, uploadTransasction, accessToken) {
     };
 
     sheets.spreadsheets.values.append(appendRequest);
-
-    // Kiem tra Quota
-    const getRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: 'Quota',
-    };
-
-    const getResponse = (await sheets.spreadsheets.values.get(getRequest)).data;
-
-    const { values } = getResponse;
-
-    let currentAcc = [];
-
-    for (let i = 0; i < values.length; i++) {
-        const [no, account, quota, dayLeft, status, warning] = values[i];
-        if (status === 'Đang dùng') {
-            const quotaLeft = quota - 1;
-            if (quotaLeft < 10) {
-                // Gui canh bao qua Zalo toi Admin va Co giao
-                const warningMessage = `Hạn mức còn lại là ${quotaLeft}. Cần thực hiện thay đổi ngay!`;
-                await ZaloAPI.sendMessage(accessToken, '4966494673333610309', warningMessage);
-
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, 'Chuyển sang tài khoản bên dưới!');
-            } else {
-                currentAcc.push(no, account, quotaLeft, dayLeft, status, warning);
-            }
-        }
-    }
-
-    const [no, account, quotaLeft, dayLeft, status, warning] = currentAcc;
-    const iQuota = parseInt(no);
-    const updateQuotaRequest = {
-        spreadsheetId: ssIdCoPhuTrach,
-        range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-        valueInputOption: 'USER_ENTERED',
-        responseDateTimeRenderOption: 'FORMATTED_STRING',
-        resource: {
-            majorDimension: 'ROWS',
-            range: `Quota!A${iQuota + 1}:F${iQuota + 1}`,
-            values: [[no, account, quotaLeft, dayLeft, status, warning]],
-        },
-    };
-
-    sheets.spreadsheets.values.update(updateQuotaRequest);
 }
 
 async function extractStudentId(str, classColl) {
