@@ -1683,7 +1683,7 @@ async function forwardMessage2Assistant(
     const isExist = zaloInfo !== null;
 
     if (isExist) {
-        const isRegister = isExist.students.length !== 0;
+        const isRegister = zaloInfo.students.length !== 0;
 
         // PHHS da dang ki tai khoan
         if (isRegister) {
