@@ -182,9 +182,9 @@ export const userRequest = async (req, res) => {
                 // Neu chua follow
                 else {
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-                }
 
-                res.send('Done!');
+                    res.send('Done!');
+                }
 
                 break;
 
