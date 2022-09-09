@@ -1687,10 +1687,13 @@ async function forwardMessage2Assistant(
 
         // PHHS da dang ki tai khoan
         if (isRegister) {
-            const { userPhone, displayName } = isRegister;
-            for (let i = 0; i < isRegister.students.length; i++) {
+            const { userPhone, displayName } = zaloInfo;
+
+            const totalStudent = zaloInfo.students.length;
+
+            for (let i = 0; i < totalStudent; i++) {
                 // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+                const { zaloStudentId, zaloClassId, aliasName } = zaloInfo.students[i];
 
                 // chuyen tiep tin nhan den tro giang tuong ung
                 const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
