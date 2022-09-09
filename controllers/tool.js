@@ -355,7 +355,7 @@ async function checkRegister(
     syntax
 ) {
     // Check xem co phai tu Tro giang nhan khong
-    if (!(await isManager(zaloUserId, classInfoColl))) {
+    if (!(await isManagerCheck(zaloUserId, classInfoColl))) {
         const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
         await ZaloAPI.sendMessage(accessToken, zaloUserId, warningMessage);
 
@@ -1373,17 +1373,23 @@ async function findZaloUserIdFromStudentId(zaloColl, studentId) {
 }
 
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
-    const { assistants } = await MongoDB.findOneUser(
+    const result = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },
         { projection: { _id: 0, assistants: 1 } }
     );
 
-    for (let i = 0; i < assistants.length; i++) {
-        const assistant = assistants[i];
-        const { taZaloId } = assistant;
+    const isExistAssistant = result !== null;
 
-        await ZaloAPI.sendMessage(accessToken, taZaloId, forwardContent);
+    if (isExistAssistant) {
+        const { assistants } = result;
+
+        for (let i = 0; i < assistants.length; i++) {
+            const assistant = assistants[i];
+            const { taZaloId } = assistant;
+
+            await ZaloAPI.sendMessage(accessToken, taZaloId, forwardContent);
+        }
     }
 }
 
@@ -1462,7 +1468,7 @@ async function findZaloIdFromUserPhone(zaloColl, userPhone) {
     }
 }
 
-async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent, quoteMessageId, zaloColl) {
+async function sendMessageBack2Parent(accessToken, zaloUserId, replyContent, quoteMessageId, zaloColl) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
 
     for (let i = 0; i < conversation.length; i++) {
@@ -1481,10 +1487,6 @@ async function sendMessageBack2Parent(res, accessToken, zaloUserId, replyContent
             }
         }
     }
-
-    res.send('Done');
-
-    return;
 }
 
 async function sendImage2Assistant(
@@ -1665,57 +1667,48 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
 }
 
 async function forwardMessage2Assistant(
-    res,
     accessToken,
     zaloUserId,
     messageId,
     zaloColl,
     classInfoColl,
-    content,
-    localeTimeStamp
+    content
 ) {
-    const isRegister = await MongoDB.findOneUser(
+    const zaloInfo = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
+        { projection: { _id: 0 } }
     );
 
-    if (isRegister.students.length === 0) {
-        // PHHS chua dang ki tai khoan
-        await res.send('Done');
+    const isExist = zaloInfo !== null;
 
-        return;
-    } else {
+    if (isExist) {
+        const isRegister = isExist.students.length !== 0;
+
         // PHHS da dang ki tai khoan
-        const { userPhone, displayName } = isRegister;
-        for (let i = 0; i < isRegister.students.length; i++) {
-            // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-            const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+        if (isRegister) {
+            const { userPhone, displayName } = isRegister;
+            for (let i = 0; i < isRegister.students.length; i++) {
+                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+                const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
+                // chuyen tiep tin nhan den tro giang tuong ung
+                const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
-            await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
+                await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
+            }
         }
-
-        await res.send('Done');
-
-        return;
     }
 }
 
-async function isManager(zaloUserId, classInfoColl) {
+async function isManagerCheck(zaloUserId, classInfoColl) {
     const result = await MongoDB.findOneUser(
         classInfoColl,
         { 'assistants.taZaloId': zaloUserId },
         { projection: { _id: 0 } }
     );
 
-    if (result === null) {
-        return false;
-    } else {
-        return true;
-    }
+    return result === null ? false : true;
 }
 
 async function isFollow(zaloUserId, zaloColl) {
@@ -1790,7 +1783,6 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
 }
 
 async function deleteAccount(
-    res,
     formatContent,
     accessToken,
     taZaloId,
@@ -1800,54 +1792,72 @@ async function deleteAccount(
     zaloRole
 ) {
     // Check xem co phai do Tro giang nhan khong
-    if (!(await isManager(taZaloId, classInfoColl))) {
+    const isManager = await isManagerCheck(taZaloId, classInfoColl);
+
+    // Neu tu tro giang
+    if (isManager) {
+        const TOTAL_DELETE_SYNTAX = 20;
+        const isValidDeleteSyntax = formatContent.length === TOTAL_DELETE_SYNTAX;
+
+        // Neu cu phap dung
+        if (isValidDeleteSyntax) {
+            const targetStudentId = parseInt(formatContent.substring(3, 10));
+            const registerPhone = formatContent.slice(-10);
+
+            // Xoa tag va thong tin tren Zalo OA chat
+            const result = await MongoDB.findOneUser(
+                zaloColl,
+                { userPhone: registerPhone },
+                { projection: { _id: 0 } }
+            );
+
+            const { zaloUserId, students, displayName } = result;
+
+            // Xoa tag lop hoc
+            for (let i = 0; i < students.length; i++) {
+                const removeTag = students[i].zaloClassId;
+
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
+            }
+
+            // Xoa tag Phu huynh/Hoc sinh
+            ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
+            ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+
+            // Xoa dang ki tai khoan trong Zalo Coll
+            MongoDB.updateOneUser(
+                zaloColl,
+                { userPhone: registerPhone },
+                { $set: { userPhone: null, students: [] } }
+            );
+
+            const sendResponse2DeleteUser = `Zalo ${displayName} đã xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} bởi trợ giảng.`;
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
+
+            const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
+
+            await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, successContent);
+        }
+
+        // Neu cu phap sai
+        else {
+            const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
+
+            await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+        }
+    }
+
+    // Neu tu PHHS thi khong co hieu luc
+    else {
         const warningMessage = 'Tính năng tính năng này chỉ dành cho tài khoản là trợ giảng của lớp toán.';
+
         await ZaloAPI.sendMessage(accessToken, taZaloId, warningMessage);
-
-        res.send('Done!');
-        return;
     }
-
-    if (formatContent.length !== 20) {
-        const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
-        sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
-        return;
-    }
-
-    const targetStudentId = parseInt(formatContent.substring(3, 10));
-    const registerPhone = formatContent.slice(-10);
-
-    // Xoa tag va thong tin tren Zalo OA chat
-    const { zaloUserId, students, displayName } = await MongoDB.findOneUser(
-        zaloColl,
-        { userPhone: registerPhone },
-        { projection: { _id: 0, zaloUserId: 1, students: 1, displayName: 1 } }
-    );
-
-    for (let i = 0; i < students.length; i++) {
-        const removeTag = students[i].zaloClassId;
-
-        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
-    }
-    ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
-    ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
-
-    // Xoa dang ki tai khoan trong Zalo Coll
-    MongoDB.updateOneUser(
-        zaloColl,
-        { userPhone: registerPhone },
-        { $set: { userPhone: null, students: [] } }
-    );
-
-    const sendResponse2DeleteUser = `Zalo ${displayName} đã xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} bởi trợ giảng.`;
-
-    await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
-
-    const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
-
-    await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
-
-    return;
 }
 
 async function signUp(
@@ -2038,7 +2048,7 @@ export {
     isFollow,
     signUp4Assistant,
     forwardMessage2Assistant,
-    isManager,
+    isManagerCheck,
     sendMessageBack2Parent,
     sendMessage2Assistant,
     findZaloIdFromStudentId,

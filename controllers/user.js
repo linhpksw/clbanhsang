@@ -118,7 +118,7 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.sender.id;
 
                 // Check xem tha tym den OA co tu phia Tro giang khong
-                const isAssistant = await Tools.isManager(zaloUserId, classInfoColl);
+                const isAssistant = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
                 // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
                 if (isAssistant) {
@@ -149,7 +149,7 @@ export const userRequest = async (req, res) => {
 
                 // Neu da follow
                 if (isFollowImage) {
-                    const isManager = await Tools.isManager(zaloUserId, classInfoColl);
+                    const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
                     // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
                     if (isManager) {
@@ -199,8 +199,609 @@ export const userRequest = async (req, res) => {
 
                 const formatContent = Tools.nomarlizeSyntax(content);
 
-                // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
+                const isFollowOA = await Tools.isFollow(zaloUserId, zaloColl);
+
+                if (isFollowOA) {
+                    // Kiem tra cu phap co phai tra cuu khong
+                    const isSyntax = formatContent.includes('#');
+
+                    const isDKPH = formatContent.slice(0, 4) === 'dkph';
+                    const isDKHS = formatContent.slice(0, 4) === 'dkhs';
+                    const isXPH = formatContent.slice(0, 3) === 'xph';
+                    const isXHS = formatContent.slice(0, 3) === 'xhs';
+                    const isDKTG = formatContent.slice(0, 4) === 'dktg';
+
+                    if (isDKPH) {
+                        Tools.signUp(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classColl,
+                            classInfoColl,
+                            formatContent,
+                            messageId,
+                            'Phụ huynh'
+                        );
+                    } else if (isDKHS) {
+                        Tools.signUp(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classColl,
+                            classInfoColl,
+                            formatContent,
+                            messageId,
+                            'Học sinh'
+                        );
+                    } else if (isXPH) {
+                        Tools.deleteAccount(
+                            formatContent,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            messageId,
+                            'Phụ huynh'
+                        );
+
+                        res.send('Done!');
+                    } else if (isXHS) {
+                        Tools.deleteAccount(
+                            formatContent,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            messageId,
+                            'Học sinh'
+                        );
+
+                        res.send('Done!');
+                    } else if (isDKTG) {
+                        Tools.signUp4Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            classInfoColl,
+                            zaloColl,
+                            content,
+                            messageId
+                        );
+                    } else if (!isSyntax) {
+                        // Check xem tin nhan den OA co tu phia Tro giang khong
+                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+
+                        // Neu tu phia tro giang thi phan hoi lai cho phu huynh
+                        if (isManager) {
+                            const quoteMessageId = webhook.message.quote_msg_id || null;
+
+                            if (quoteMessageId !== null) {
+                                const replyContent = webhook.message.text;
+
+                                await Tools.sendMessageBack2Parent(
+                                    accessToken,
+                                    zaloUserId,
+                                    replyContent,
+                                    quoteMessageId,
+                                    zaloColl
+                                );
+                            }
+                        }
+
+                        // Neu tu phia phu huynh thi phan hoi lai cho tro giang
+                        else {
+                            await Tools.forwardMessage2Assistant(
+                                accessToken,
+                                zaloUserId,
+                                messageId,
+                                zaloColl,
+                                classInfoColl,
+                                content
+                            );
+                        }
+
+                        res.send('Done');
+                    } else if (isSyntax) {
+                        /*  Cac tinh nang tra cuu */
+                        // 1a Dang ki tai khoan
+                        if (formatContent === '#dktk') {
+                            await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
+                        }
+
+                        // 1b Vai tro dang ki
+                        else if (formatContent === '#vtdk') {
+                            await Tools.signUpRole(res, accessToken, zaloUserId);
+                        }
+
+                        // 1c Dang ki cho phu huynh
+                        else if (formatContent === '#dkph') {
+                            await Tools.signUp4Parent(res, accessToken, zaloUserId);
+                        }
+
+                        // 1d Dang ki cho hoc sinh
+                        else if (formatContent === '#dkhs') {
+                            await Tools.signUp4Student(res, accessToken, zaloUserId);
+                        }
+
+                        // 1) Thong tin cac lop
+                        else if (formatContent === '#ttcl') {
+                            const attachMessage = {
+                                text: 'Hiện tại lớp toán đang tổ chức cả 2 khối THCS và THPT. Cụ thể, khối THCS ôn luyện toán từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Tôi muốn đăng kí khối THCS',
+                                                payload: '#thcs',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Tôi muốn đăng kí khối THPT',
+                                                payload: '#thpt',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        }
+
+                        // Dia chi hoc
+                        else if (formatContent === '#dc') {
+                            const attachMessage = {
+                                text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong, số 27 Tô Hiệu, Nguyễn Trãi, Hà Đông.`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Xem cụ thể trên bản đồ',
+                                                payload: { url: 'https://goo.gl/maps/3NnMdTo7x2RYDxMG9' },
+                                                type: 'oa.open.url',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        }
+
+                        // Thong tin khoi THCS
+                        else if (formatContent === '#thcs') {
+                            const attachMessage = {
+                                text: 'Phụ huynh chọn khối con muốn theo học?',
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Khối 8',
+                                                payload: '#k8',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Khối 9',
+                                                payload: '#k9',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+                        } else if (formatContent === '#k8') {
+                            const attachMessage = {
+                                text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Lớp 8A0 chuyên toán',
+                                                payload: '#tt2009A0',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Lớp 8A1 chuyên toán',
+                                                payload: '#tt2009A1',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        } else if (formatContent === '#K9') {
+                            const attachMessage = {
+                                text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Lớp 9A0 chuyên toán + chuyên tin',
+                                                payload: '#TT2008A0',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Lớp 9A1 chuyên toán + chuyên tin',
+                                                payload: '#TT2008A1',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Lớp 9A2 toán điều kiện và nâng cao',
+                                                payload: '#TT2008A2',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        }
+
+                        // Thong tin khoi THPT
+                        else if (formatContent === '#thpt') {
+                            const attachMessage = {
+                                text: 'Phụ huynh chọn khối con muốn theo học?',
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Khối 10',
+                                                payload: '#k10',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Khối 11',
+                                                payload: '#k11',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Khối 12',
+                                                payload: '#k12',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+                        } else if (formatContent === '#k10') {
+                            const attachMessage = {
+                                text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 1 lớp 10 ôn thi THPTQG. Phụ huynh nhấn vào lớp bên dưới để tìm hiểu thông tin cụ thể ạ.`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Lớp 10A1 nâng cao',
+                                                payload: '#tt2007A1',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        } else if (formatContent === '#k11') {
+                            const attachMessage = {
+                                text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Lớp 11A0 vận dụng cao',
+                                                payload: '#tt2006A0',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Lớp 11A1 nâng cao',
+                                                payload: '#tt2006A1',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        } else if (formatContent === '#k12') {
+                            const attachMessage = {
+                                text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
+                                attachment: {
+                                    type: 'template',
+                                    payload: {
+                                        buttons: [
+                                            {
+                                                title: 'Lớp 12A0 vận dụng cao',
+                                                payload: '#tt2005A0',
+                                                type: 'oa.query.show',
+                                            },
+                                            {
+                                                title: 'Lớp 12A1 nâng cao',
+                                                payload: '#tt2005A1',
+                                                type: 'oa.query.show',
+                                            },
+                                        ],
+                                    },
+                                },
+                            };
+
+                            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+                            res.send('Done!');
+
+                            return;
+                        } else if (formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9) {
+                            // #TT2007A0
+                            const classId = content.slice(-6).toUpperCase();
+
+                            await Tools.sendPublicClassInfo(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classInfoColl,
+                                classId
+                            );
+                        }
+
+                        // 2) Thong tin lop đang hoc
+                        else if (formatContent === '#ldh') {
+                            await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
+                        }
+
+                        // 3) Hoc phi dot hien tai
+                        else if (formatContent === '#hpht') {
+                            await Tools.sendPaymentInfo(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classInfoColl,
+                                studentInfoColl
+                            );
+                        }
+
+                        // 4) Thong tin chuyen khoan
+                        else if (formatContent === '#ttck') {
+                            await Tools.sendPaymentTypeInfo(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classInfoColl,
+                                studentInfoColl
+                            );
+                        }
+
+                        // 5) Cu phap chuyen khoan
+                        else if (formatContent === '#cpck') {
+                            await Tools.sendSyntaxPayment(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classInfoColl
+                            );
+                        }
+
+                        // 6) Diem danh dot hien tai
+                        else if (formatContent === '#ddht') {
+                            await Tools.sendAttendanceInfo(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classInfoColl,
+                                studentInfoColl
+                            );
+                        }
+
+                        // Lien he tro giang
+                        else if (formatContent === '#lhtg') {
+                            await Tools.sendAssistantInfo(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classInfoColl
+                            );
+                        }
+
+                        // Danh cho tro giang
+                        else if (formatContent === '#dctg') {
+                            await Tools.assistantMenu(res, accessToken, zaloUserId, classInfoColl);
+                        }
+
+                        // Danh sach hoc sinh da co phu huynh dang ki
+                        else if (formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11) {
+                            const classId = content.slice(5).toUpperCase();
+                            const syntax = formatContent.slice(0, 5);
+
+                            await Tools.checkRegister(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classInfoColl,
+                                zaloColl,
+                                classColl,
+                                classId,
+                                syntax
+                            );
+                        }
+
+                        // Danh sach hoc sinh chua co phu huynh dang ki
+                        else if (formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12) {
+                            const classId = content.slice(6).toUpperCase();
+                            const syntax = formatContent.slice(0, 6);
+
+                            await Tools.checkRegister(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classInfoColl,
+                                zaloColl,
+                                classColl,
+                                classId,
+                                syntax
+                            );
+                        }
+
+                        // Danh sach hoc sinh da dang ki
+                        else if (formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11) {
+                            const classId = content.slice(5).toUpperCase();
+                            const syntax = formatContent.slice(0, 5);
+
+                            await Tools.checkRegister(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classInfoColl,
+                                zaloColl,
+                                classColl,
+                                classId,
+                                syntax
+                            );
+                        }
+
+                        // Danh sach hoc sinh chua dang ki
+                        else if (formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12) {
+                            const classId = content.slice(6).toUpperCase();
+                            const syntax = formatContent.slice(0, 6);
+
+                            await Tools.checkRegister(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classInfoColl,
+                                zaloColl,
+                                classColl,
+                                classId,
+                                syntax
+                            );
+                        }
+
+                        // Danh sach phu huynh chua nop hoc #cnh2004A1
+                        else if (formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10) {
+                            const classId = formatContent.slice(4).toUpperCase();
+
+                            await Tools.sendStudentNotPayment(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classId,
+                                studentInfoColl,
+                                classInfoColl
+                            );
+                        }
+
+                        // Nhac tat ca phu huynh chua nop hoc #cnhph2004A1
+                        else if (formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12) {
+                            const classId = formatContent.slice(6).toUpperCase();
+
+                            await Tools.alarmStudentNotPayment2Parent(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classId,
+                                zaloColl,
+                                studentInfoColl,
+                                classInfoColl
+                            );
+                        }
+
+                        // Nhac tat ca tru 1 so HS cu the #cnhph2004A1-2004001,2004003
+                        else if (
+                            formatContent.slice(0, 6) === '#cnhph' &&
+                            formatContent.slice(0, 13).length === 13 &&
+                            formatContent.slice(12, 13) === '-'
+                        ) {
+                            const classId = formatContent.slice(6, 12).toUpperCase();
+
+                            const excludeStudentLists = formatContent.slice(13).split(',');
+
+                            await Tools.alarmStudentNotPayment2Parent(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classId,
+                                zaloColl,
+                                studentInfoColl,
+                                classInfoColl,
+                                'excludeStudent',
+                                excludeStudentLists
+                            );
+                        }
+
+                        // Nhac cu the rieng 1 so hoc sinh #cnhph2004A1+2004001, 2004003
+                        else if (
+                            formatContent.slice(0, 6) === '#cnhph' &&
+                            formatContent.slice(0, 13).length === 13 &&
+                            formatContent.slice(12, 13) === '+'
+                        ) {
+                            const classId = formatContent.slice(6, 12).toUpperCase();
+
+                            const onlyStudentLists = formatContent.slice(13).split(',');
+
+                            await Tools.alarmStudentNotPayment2Parent(
+                                res,
+                                accessToken,
+                                zaloUserId,
+                                classId,
+                                zaloColl,
+                                studentInfoColl,
+                                classInfoColl,
+                                'onlyStudent',
+                                onlyStudentLists
+                            );
+                        }
+                    }
+                }
+
+                // Neu chua follow OA
+                else {
                     const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
@@ -211,580 +812,6 @@ export const userRequest = async (req, res) => {
                     return;
                 }
 
-                if (formatContent.slice(0, 4) === 'dkph') {
-                    Tools.signUp(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classColl,
-                        classInfoColl,
-                        formatContent,
-                        messageId,
-                        'Phụ huynh'
-                    );
-                } else if (formatContent.slice(0, 4) === 'dkhs') {
-                    Tools.signUp(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classColl,
-                        classInfoColl,
-                        formatContent,
-                        messageId,
-                        'Học sinh'
-                    );
-                } else if (formatContent.slice(0, 3) === 'xph') {
-                    Tools.deleteAccount(
-                        res,
-                        formatContent,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        messageId,
-                        'Phụ huynh'
-                    );
-                } else if (formatContent.slice(0, 3) === 'xhs') {
-                    Tools.deleteAccount(
-                        res,
-                        formatContent,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        messageId,
-                        'Học sinh'
-                    );
-                } else if (formatContent.slice(0, 4) === 'dktg') {
-                    Tools.signUp4Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        classInfoColl,
-                        zaloColl,
-                        content,
-                        messageId
-                    );
-                }
-
-                // Meu cu phap khong phai tra cuu
-                else if (!formatContent.includes('#')) {
-                    // Check xem tin nhan den OA co tu phia Tro giang khong
-                    // Neu tu phia phu huynh thi phan hoi lai cho tro giang
-                    if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                        await Tools.forwardMessage2Assistant(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            messageId,
-                            zaloColl,
-                            classInfoColl,
-                            content,
-                            localeTimeStamp
-                        );
-                    }
-                    // Neu tu phia tro giang thi phan hoi lai cho phu huynh
-                    else {
-                        const quoteMessageId = webhook.message.quote_msg_id || null;
-
-                        if (quoteMessageId !== null) {
-                            const replyContent = webhook.message.text;
-
-                            await Tools.sendMessageBack2Parent(
-                                res,
-                                accessToken,
-                                zaloUserId,
-                                replyContent,
-                                quoteMessageId,
-                                zaloColl
-                            );
-                        } else {
-                            res.send('Done!');
-                            return;
-                        }
-                    }
-                }
-
-                // Neu cu phap la tra cuu
-                else if (formatContent.includes('#')) {
-                    /*  Cac tinh nang tra cuu */
-                    // 1a Dang ki tai khoan
-                    if (formatContent === '#dktk') {
-                        await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
-                    }
-
-                    // 1b Vai tro dang ki
-                    else if (formatContent === '#vtdk') {
-                        await Tools.signUpRole(res, accessToken, zaloUserId);
-                    }
-
-                    // 1c Dang ki cho phu huynh
-                    else if (formatContent === '#dkph') {
-                        await Tools.signUp4Parent(res, accessToken, zaloUserId);
-                    }
-
-                    // 1d Dang ki cho hoc sinh
-                    else if (formatContent === '#dkhs') {
-                        await Tools.signUp4Student(res, accessToken, zaloUserId);
-                    }
-
-                    // 1) Thong tin cac lop
-                    else if (formatContent === '#ttcl') {
-                        const attachMessage = {
-                            text: 'Hiện tại lớp toán đang tổ chức cả 2 khối THCS và THPT. Cụ thể, khối THCS ôn luyện toán từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Tôi muốn đăng kí khối THCS',
-                                            payload: '#thcs',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Tôi muốn đăng kí khối THPT',
-                                            payload: '#thpt',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    }
-
-                    // Dia chi hoc
-                    else if (formatContent === '#dc') {
-                        const attachMessage = {
-                            text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong, số 27 Tô Hiệu, Nguyễn Trãi, Hà Đông.`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Xem cụ thể trên bản đồ',
-                                            payload: { url: 'https://goo.gl/maps/3NnMdTo7x2RYDxMG9' },
-                                            type: 'oa.open.url',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    }
-
-                    // Thong tin khoi THCS
-                    else if (formatContent === '#thcs') {
-                        const attachMessage = {
-                            text: 'Phụ huynh chọn khối con muốn theo học?',
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Khối 8',
-                                            payload: '#k8',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Khối 9',
-                                            payload: '#k9',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-                    } else if (formatContent === '#k8') {
-                        const attachMessage = {
-                            text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Lớp 8A0 chuyên toán',
-                                            payload: '#tt2009A0',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Lớp 8A1 chuyên toán',
-                                            payload: '#tt2009A1',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    } else if (formatContent === '#K9') {
-                        const attachMessage = {
-                            text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Lớp 9A0 chuyên toán + chuyên tin',
-                                            payload: '#TT2008A0',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Lớp 9A1 chuyên toán + chuyên tin',
-                                            payload: '#TT2008A1',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Lớp 9A2 toán điều kiện và nâng cao',
-                                            payload: '#TT2008A2',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    }
-
-                    // Thong tin khoi THPT
-                    else if (formatContent === '#thpt') {
-                        const attachMessage = {
-                            text: 'Phụ huynh chọn khối con muốn theo học?',
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Khối 10',
-                                            payload: '#k10',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Khối 11',
-                                            payload: '#k11',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Khối 12',
-                                            payload: '#k12',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-                    } else if (formatContent === '#k10') {
-                        const attachMessage = {
-                            text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 1 lớp 10 ôn thi THPTQG. Phụ huynh nhấn vào lớp bên dưới để tìm hiểu thông tin cụ thể ạ.`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Lớp 10A1 nâng cao',
-                                            payload: '#tt2007A1',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    } else if (formatContent === '#k11') {
-                        const attachMessage = {
-                            text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Lớp 11A0 vận dụng cao',
-                                            payload: '#tt2006A0',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Lớp 11A1 nâng cao',
-                                            payload: '#tt2006A1',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    } else if (formatContent === '#k12') {
-                        const attachMessage = {
-                            text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                            attachment: {
-                                type: 'template',
-                                payload: {
-                                    buttons: [
-                                        {
-                                            title: 'Lớp 12A0 vận dụng cao',
-                                            payload: '#tt2005A0',
-                                            type: 'oa.query.show',
-                                        },
-                                        {
-                                            title: 'Lớp 12A1 nâng cao',
-                                            payload: '#tt2005A1',
-                                            type: 'oa.query.show',
-                                        },
-                                    ],
-                                },
-                            },
-                        };
-
-                        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                        res.send('Done!');
-
-                        return;
-                    } else if (formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9) {
-                        // #TT2007A0
-                        const classId = content.slice(-6).toUpperCase();
-
-                        await Tools.sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId);
-                    }
-
-                    // 2) Thong tin lop đang hoc
-                    else if (formatContent === '#ldh') {
-                        await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
-                    }
-
-                    // 3) Hoc phi dot hien tai
-                    else if (formatContent === '#hpht') {
-                        await Tools.sendPaymentInfo(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            studentInfoColl
-                        );
-                    }
-
-                    // 4) Thong tin chuyen khoan
-                    else if (formatContent === '#ttck') {
-                        await Tools.sendPaymentTypeInfo(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            studentInfoColl
-                        );
-                    }
-
-                    // 5) Cu phap chuyen khoan
-                    else if (formatContent === '#cpck') {
-                        await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
-                    }
-
-                    // 6) Diem danh dot hien tai
-                    else if (formatContent === '#ddht') {
-                        await Tools.sendAttendanceInfo(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            studentInfoColl
-                        );
-                    }
-
-                    // Lien he tro giang
-                    else if (formatContent === '#lhtg') {
-                        await Tools.sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
-                    }
-
-                    // Danh cho tro giang
-                    else if (formatContent === '#dctg') {
-                        await Tools.assistantMenu(res, accessToken, zaloUserId, classInfoColl);
-                    }
-
-                    // Danh sach hoc sinh da co phu huynh dang ki
-                    else if (formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11) {
-                        const classId = content.slice(5).toUpperCase();
-                        const syntax = formatContent.slice(0, 5);
-
-                        await Tools.checkRegister(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classInfoColl,
-                            zaloColl,
-                            classColl,
-                            classId,
-                            syntax
-                        );
-                    }
-
-                    // Danh sach hoc sinh chua co phu huynh dang ki
-                    else if (formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12) {
-                        const classId = content.slice(6).toUpperCase();
-                        const syntax = formatContent.slice(0, 6);
-
-                        await Tools.checkRegister(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classInfoColl,
-                            zaloColl,
-                            classColl,
-                            classId,
-                            syntax
-                        );
-                    }
-
-                    // Danh sach hoc sinh da dang ki
-                    else if (formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11) {
-                        const classId = content.slice(5).toUpperCase();
-                        const syntax = formatContent.slice(0, 5);
-
-                        await Tools.checkRegister(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classInfoColl,
-                            zaloColl,
-                            classColl,
-                            classId,
-                            syntax
-                        );
-                    }
-
-                    // Danh sach hoc sinh chua dang ki
-                    else if (formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12) {
-                        const classId = content.slice(6).toUpperCase();
-                        const syntax = formatContent.slice(0, 6);
-
-                        await Tools.checkRegister(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classInfoColl,
-                            zaloColl,
-                            classColl,
-                            classId,
-                            syntax
-                        );
-                    }
-
-                    // Danh sach phu huynh chua nop hoc #cnh2004A1
-                    else if (formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10) {
-                        const classId = formatContent.slice(4).toUpperCase();
-
-                        await Tools.sendStudentNotPayment(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classId,
-                            studentInfoColl,
-                            classInfoColl
-                        );
-                    }
-
-                    // Nhac tat ca phu huynh chua nop hoc #cnhph2004A1
-                    else if (formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12) {
-                        const classId = formatContent.slice(6).toUpperCase();
-
-                        await Tools.alarmStudentNotPayment2Parent(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classId,
-                            zaloColl,
-                            studentInfoColl,
-                            classInfoColl
-                        );
-                    }
-
-                    // Nhac tat ca tru 1 so HS cu the #cnhph2004A1-2004001,2004003
-                    else if (
-                        formatContent.slice(0, 6) === '#cnhph' &&
-                        formatContent.slice(0, 13).length === 13 &&
-                        formatContent.slice(12, 13) === '-'
-                    ) {
-                        const classId = formatContent.slice(6, 12).toUpperCase();
-
-                        const excludeStudentLists = formatContent.slice(13).split(',');
-
-                        await Tools.alarmStudentNotPayment2Parent(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classId,
-                            zaloColl,
-                            studentInfoColl,
-                            classInfoColl,
-                            'excludeStudent',
-                            excludeStudentLists
-                        );
-                    }
-
-                    // Nhac cu the rieng 1 so hoc sinh #cnhph2004A1+2004001, 2004003
-                    else if (
-                        formatContent.slice(0, 6) === '#cnhph' &&
-                        formatContent.slice(0, 13).length === 13 &&
-                        formatContent.slice(12, 13) === '+'
-                    ) {
-                        const classId = formatContent.slice(6, 12).toUpperCase();
-
-                        const onlyStudentLists = formatContent.slice(13).split(',');
-
-                        await Tools.alarmStudentNotPayment2Parent(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            classId,
-                            zaloColl,
-                            studentInfoColl,
-                            classInfoColl,
-                            'onlyStudent',
-                            onlyStudentLists
-                        );
-                    }
-                }
                 break;
 
             // eventName = 'user_send_link', 'user_send_audio', 'user_send_video',  'user_send_file'
@@ -796,7 +823,7 @@ export const userRequest = async (req, res) => {
 
                 if (isFollow) {
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    const isParent = !(await Tools.isManager(zaloUserId, classInfoColl));
+                    const isParent = !(await Tools.isManagerCheck(zaloUserId, classInfoColl));
                     if (isParent) {
                         const mediaInfo = webhook.message;
 
