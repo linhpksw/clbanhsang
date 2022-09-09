@@ -1896,8 +1896,8 @@ async function signUp(
         if (isExistZaloInfo) {
             const { userPhone, students, displayName } = zaloInfo;
 
-            // Kiem tra sdt dang ki co match voi so da dang ki khong
-            const isMatch = userPhone === registerPhone;
+            // Kiem tra sdt dang ki co match voi so da ton tai hoac chua ton tai so nao
+            const isMatch = userPhone === registerPhone || userPhone === null;
 
             if (isMatch) {
                 // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
