@@ -144,6 +144,8 @@ export const userRequest = async (req, res) => {
 
                 const imageInfo = webhook.message;
 
+                console.log(imageInfo);
+
                 // Check xem nguoi dung da follow OA chua
                 const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
 
@@ -153,33 +155,33 @@ export const userRequest = async (req, res) => {
 
                     console.log(isManager);
 
-                    // // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
-                    // if (isManager) {
-                    //     await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
-                    // }
+                    // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+                    if (isManager) {
+                        await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                    }
 
-                    // // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    // else {
-                    //     await Tools.forwardImage2Assistant(
-                    //         res,
-                    //         accessToken,
-                    //         zaloUserId,
-                    //         zaloColl,
-                    //         classInfoColl,
-                    //         imageInfo
-                    //     );
+                    // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+                    else {
+                        await Tools.forwardImage2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            imageInfo
+                        );
 
-                    //     const mediaInfo = webhook.message;
+                        const mediaInfo = webhook.message;
 
-                    //     await Tools.forwardOtherMedia2Assistant(
-                    //         res,
-                    //         accessToken,
-                    //         zaloUserId,
-                    //         zaloColl,
-                    //         classInfoColl,
-                    //         mediaInfo
-                    //     );
-                    // }
+                        await Tools.forwardOtherMedia2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            mediaInfo
+                        );
+                    }
                 }
 
                 // Neu chua follow

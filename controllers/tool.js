@@ -1428,11 +1428,14 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
 
 async function sendImageBack2Parent(res, accessToken, imageInfo, zaloColl) {
     const { attachments, text: userPhone } = imageInfo;
+
     const imageUrl = attachments[0].payload.url;
 
     const zaloUserId = await findZaloIdFromUserPhone(zaloColl, userPhone);
 
-    await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
+    console.log(zaloUserId);
+
+    // await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
 
     res.send('Done');
 
