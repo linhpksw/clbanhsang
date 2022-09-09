@@ -64,15 +64,20 @@ export const userRequest = async (req, res) => {
                     { projection: { _id: 0, userPhone: 1 } }
                 );
 
+                // Neu nguoi dung quan tam lan dau
                 if (isExistInZaloColl === null) {
                     const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
-                    console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
+
+                    // console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
                     MongoDB.insertOneUser(zaloColl, profileDoc);
-                } else {
+                }
+
+                // Nguoi dung quan tam tro lai
+                else {
                     MongoDB.updateOneUser(
                         zaloColl,
                         { zaloUserId: `${zaloUserId}` },
@@ -86,7 +91,7 @@ export const userRequest = async (req, res) => {
                         await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                     }
 
-                    console.log('Nguời dùng quan tâm trở lại');
+                    // console.log('Nguời dùng quan tâm trở lại');
                 }
 
                 res.send('Done!');
@@ -104,18 +109,19 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { $set: { status: 'unfollow' } }
                 );
-                console.log('Người dùng bỏ quan tâm OA');
+
+                res.send('Done!');
 
                 break;
 
             case 'user_reacted_message':
-                // Check xem tha tym den OA co tu phia Tro giang khong
                 zaloUserId = webhook.sender.id;
 
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    res.send('Done!');
-                } else {
-                    // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
+                // Check xem tha tym den OA co tu phia Tro giang khong
+                const isAssistant = await Tools.isManager(zaloUserId, classInfoColl);
+
+                // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
+                if (isAssistant) {
                     const reactMessageId = webhook.message.msg_id;
 
                     const reactIcon = webhook.message.react_icon;
@@ -127,177 +133,58 @@ export const userRequest = async (req, res) => {
                         reactIcon,
                         zaloColl
                     );
-
-                    res.send('Done!');
-                }
-                break;
-
-            case 'user_send_link':
-                zaloUserId = webhook.sender.id;
-
-                // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
-
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
-                    return;
                 }
 
-                // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const mediaInfo = webhook.message;
-
-                    await Tools.forwardOtherMedia2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        mediaInfo
-                    );
-                }
-
-                break;
-
-            case 'user_send_audio':
-                zaloUserId = webhook.sender.id;
-
-                // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
-
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
-                    return;
-                }
-
-                // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const mediaInfo = webhook.message;
-
-                    await Tools.forwardOtherMedia2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        mediaInfo
-                    );
-                }
-
-                break;
-
-            case 'user_send_video':
-                zaloUserId = webhook.sender.id;
-
-                // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
-
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
-                    return;
-                }
-
-                // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const mediaInfo = webhook.message;
-
-                    await Tools.forwardOtherMedia2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        mediaInfo
-                    );
-                }
-                break;
-
-            case 'user_send_file':
-                zaloUserId = webhook.sender.id;
-
-                // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
-
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
-                    return;
-                }
-
-                // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    const mediaInfo = webhook.message;
-
-                    await Tools.forwardOtherMedia2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        mediaInfo
-                    );
-                }
+                res.send('Done!');
 
                 break;
 
             case 'user_send_image':
                 zaloUserId = webhook.sender.id;
+
                 const imageInfo = webhook.message;
 
                 // Check xem nguoi dung da follow OA chua
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+                const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
 
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                // Neu da follow
+                if (isFollowImage) {
+                    const isParent = !(await Tools.isManager(zaloUserId, classInfoColl));
 
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                    // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+                    if (isParent) {
+                        await Tools.forwardImage2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            imageInfo
+                        );
 
-                    res.send('Done!');
-                    return;
+                        const mediaInfo = webhook.message;
+
+                        await Tools.forwardOtherMedia2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            mediaInfo
+                        );
+                    }
+                    // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+                    else {
+                        await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                    }
                 }
 
-                // Check xem tin nhan hinh anh den OA co tu phia Tro giang khong
-                // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                if (!(await Tools.isManager(zaloUserId, classInfoColl))) {
-                    await Tools.forwardImage2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        imageInfo
-                    );
-
-                    const mediaInfo = webhook.message;
-
-                    await Tools.forwardOtherMedia2Assistant(
-                        res,
-                        accessToken,
-                        zaloUserId,
-                        zaloColl,
-                        classInfoColl,
-                        mediaInfo
-                    );
-                }
-                // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+                // Neu chua follow
                 else {
-                    await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }
+
+                res.send('Done!');
 
                 break;
 
@@ -896,6 +783,34 @@ export const userRequest = async (req, res) => {
                     }
                 }
                 break;
+
+            // eventName = 'user_send_link', 'user_send_audio', 'user_send_video',  'user_send_file'
+            default:
+                zaloUserId = webhook.sender.id;
+
+                // Check xem nguoi dung da follow OA chua
+                const isFollow = await Tools.isFollow(zaloUserId, zaloColl);
+
+                if (isFollow) {
+                    // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+                    const isParent = !(await Tools.isManager(zaloUserId, classInfoColl));
+                    if (isParent) {
+                        const mediaInfo = webhook.message;
+
+                        await Tools.forwardOtherMedia2Assistant(
+                            res,
+                            accessToken,
+                            zaloUserId,
+                            zaloColl,
+                            classInfoColl,
+                            mediaInfo
+                        );
+                    }
+                } else {
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                }
+
+                res.send('Done!');
         }
     } catch (err) {
         console.error(err);
