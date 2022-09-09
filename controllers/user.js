@@ -151,32 +151,34 @@ export const userRequest = async (req, res) => {
                 if (isFollowImage) {
                     const isParent = !(await Tools.isManager(zaloUserId, classInfoColl));
 
-                    // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    if (isParent) {
-                        await Tools.forwardImage2Assistant(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            imageInfo
-                        );
+                    console.log(isParent);
 
-                        const mediaInfo = webhook.message;
+                    // // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
+                    // if (isParent) {
+                    //     await Tools.forwardImage2Assistant(
+                    //         res,
+                    //         accessToken,
+                    //         zaloUserId,
+                    //         zaloColl,
+                    //         classInfoColl,
+                    //         imageInfo
+                    //     );
 
-                        await Tools.forwardOtherMedia2Assistant(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            mediaInfo
-                        );
-                    }
-                    // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
-                    else {
-                        await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
-                    }
+                    //     const mediaInfo = webhook.message;
+
+                    //     await Tools.forwardOtherMedia2Assistant(
+                    //         res,
+                    //         accessToken,
+                    //         zaloUserId,
+                    //         zaloColl,
+                    //         classInfoColl,
+                    //         mediaInfo
+                    //     );
+                    // }
+                    // // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
+                    // else {
+                    //     await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                    // }
                 }
 
                 // Neu chua follow
