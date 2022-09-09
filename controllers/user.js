@@ -144,8 +144,6 @@ export const userRequest = async (req, res) => {
 
                 const imageInfo = webhook.message;
 
-                console.log(imageInfo);
-
                 // Check xem nguoi dung da follow OA chua
                 const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
 
@@ -153,11 +151,11 @@ export const userRequest = async (req, res) => {
                 if (isFollowImage) {
                     const isManager = await Tools.isManager(zaloUserId, classInfoColl);
 
-                    console.log(isManager);
-
                     // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
                     if (isManager) {
-                        await Tools.sendImageBack2Parent(res, accessToken, imageInfo, zaloColl);
+                        await Tools.sendImageBack2Parent(accessToken, imageInfo, zaloColl);
+
+                        res.send('Done!');
                     }
 
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang

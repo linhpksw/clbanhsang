@@ -1426,20 +1426,26 @@ async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIco
     }
 }
 
-async function sendImageBack2Parent(res, accessToken, imageInfo, zaloColl) {
-    const { attachments, text: userPhone } = imageInfo;
+async function sendImageBack2Parent(accessToken, imageInfo, zaloColl) {
+    // Kiem tra noi dung anh co chua noi dung khong
+    const isContainPhoneNum = imageInfo.hasOwnProperty('text');
 
-    const imageUrl = attachments[0].payload.url;
+    // Kiem tra xem co chua so dien thoai khong
+    if (isContainPhoneNum) {
+        const isValidPhone = imageInfo.text.length === 10;
 
-    const zaloUserId = await findZaloIdFromUserPhone(zaloColl, userPhone);
+        if (isValidPhone) {
+            const { attachments, text: userPhone } = imageInfo;
 
-    console.log(zaloUserId);
+            const imageUrl = attachments[0].payload.url;
 
-    // await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
+            const zaloUserId = await findZaloIdFromUserPhone(zaloColl, userPhone);
 
-    res.send('Done');
+            console.log(zaloUserId);
 
-    return;
+            await ZaloAPI.sendImageByUrl(accessToken, zaloUserId, '', imageUrl);
+        }
+    }
 }
 
 async function findZaloIdFromUserPhone(zaloColl, userPhone) {
