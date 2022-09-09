@@ -1899,6 +1899,8 @@ async function signUp(
             // Kiem tra sdt dang ki co match voi so da ton tai hoac chua ton tai so nao
             const isMatch = userPhone === registerPhone || userPhone === null;
 
+            console.log(isMatch);
+
             if (isMatch) {
                 // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
                 for (let i = 0; i < students.length; i++) {
