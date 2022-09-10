@@ -858,10 +858,6 @@ Học phí mỗi buổi: ${tuition}`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
