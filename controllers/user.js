@@ -923,6 +923,8 @@ export const tokenRequest = async (req, res) => {
 export const updateRequest = async (req, res) => {
     const webhook = req.body;
 
+    console.log(webhook);
+
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
