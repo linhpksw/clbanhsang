@@ -273,6 +273,8 @@ export const userRequest = async (req, res) => {
                         // Check xem tin nhan den OA co tu phia Tro giang khong
                         const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
+                        console.log(isManager);
+
                         // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                         if (isManager) {
                             const quoteMessageId = webhook.message.quote_msg_id || null;
@@ -292,6 +294,7 @@ export const userRequest = async (req, res) => {
 
                         // Neu tu phia phu huynh thi phan hoi lai cho tro giang
                         else {
+                            console.log('Tu phia phu huynh');
                             await Tools.forwardMessage2Assistant(
                                 accessToken,
                                 zaloUserId,
