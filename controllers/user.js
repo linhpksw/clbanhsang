@@ -444,6 +444,8 @@ export const userRequest = async (req, res) => {
                                 await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
+
+                                break;
                             }
 
                             case isK8: {
@@ -563,6 +565,7 @@ export const userRequest = async (req, res) => {
                                 await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
+
                                 break;
                             }
 
@@ -594,6 +597,7 @@ export const userRequest = async (req, res) => {
 
                                 break;
                             }
+
                             case isK12: {
                                 const attachMessage = {
                                     text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
@@ -622,6 +626,7 @@ export const userRequest = async (req, res) => {
 
                                 break;
                             }
+
                             case isTTL: {
                                 // #TT2007A0
                                 const classId = content.slice(-6).toUpperCase();
@@ -680,6 +685,7 @@ export const userRequest = async (req, res) => {
                                     zaloColl,
                                     classInfoColl
                                 );
+
                                 break;
 
                             case isDDHT:
@@ -736,6 +742,8 @@ export const userRequest = async (req, res) => {
                                     classId,
                                     syntax
                                 );
+
+                                break;
                             }
 
                             case isCheckDKHS: {
