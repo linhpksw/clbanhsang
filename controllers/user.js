@@ -29,6 +29,8 @@ import * as MongoDB from './mongo.js';
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
+
+    console.log(webhook);
     const eventName = webhook.event_name;
     const unixTimestamp = parseInt(webhook.timestamp);
     const localeTimeStamp = Tools.formatDateTime(unixTimestamp);
