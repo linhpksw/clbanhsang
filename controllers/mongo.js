@@ -25,7 +25,7 @@ async function updateTokenInDB(tokenColl, refreshToken) {
 
     await tokenColl.replaceOne(query, replacement);
 
-    console.log('Đã update token trong DB.');
+    console.log('Successfully updated token.');
 }
 
 async function readTokenFromDB(tokenColl) {
@@ -66,6 +66,7 @@ async function insertManyToDB(coll, docs) {
     let ids = result.insertedIds;
 
     console.log(`${result.insertedCount} users were inserted.`);
+
     for (let id of Object.values(ids)) {
         console.log(`Inserted an user with id ${id}`);
     }
@@ -73,19 +74,24 @@ async function insertManyToDB(coll, docs) {
 
 async function updateOneUser(coll, filter, updateDoc) {
     const result = await coll.updateOne(filter, updateDoc);
-    console.log(
-        `${result.matchedCount} tài liệu khớp với filter, cập nhật ${result.modifiedCount} tài liệu.`
-    );
+
+    console.log(`${result.matchedCount} document(s) matched the query criteria.`);
+    console.log(`${result.modifiedCount} document(s) was/were updated.`);
 }
 
 async function upsertOneUser(coll, filter, updateDoc) {
     const result = await coll.updateOne(filter, { $set: updateDoc }, { upsert: true });
-    console.log(`${result.matchedCount} tài liệu khớp với query, cập nhật ${result.modifiedCount} tài liệu.`);
+    // console.log(`${result.matchedCount} tài liệu khớp với query, cập nhật ${result.modifiedCount} tài liệu.`);
+
+    console.log(`${result.matchedCount} document(s) matched the query criteria.`);
+    console.log(`${result.modifiedCount} document(s) was/were updated.`);
 }
 
 async function insertOneUser(coll, doc) {
     const result = await coll.insertOne(doc);
-    console.log(`Tạo thành công user mới với id: ${result.insertedId}`);
+
+    console.log(`One document was inserted with the id ${result.upsertedId._id}`);
+    // console.log(`Tạo thành công user mới với id: ${result.insertedId}`);
 }
 
 async function findOneUser(coll, query, options) {
