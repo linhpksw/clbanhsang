@@ -226,11 +226,11 @@ async function sendMessage(accessToken, zaloUserId, message) {
         body: JSON.stringify(content),
     });
 
-    const jsonResponse = await response.json();
+    // const jsonResponse = await response.json();
 
-    console.log(jsonResponse);
+    // console.log(jsonResponse);
 
-    return jsonResponse;
+    // return jsonResponse;
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {
