@@ -115,9 +115,9 @@ async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, ali
         body: JSON.stringify(data),
     });
 
-    // const jsonResponse = await result.json();
+    const jsonResponse = await result.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 }
 
 async function getConversation(accessToken, zaloUserId) {
@@ -162,11 +162,11 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
         body: JSON.stringify(content),
     });
 
-    // const jsonResponse = await response.json();
+    const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 
-    // return jsonResponse;
+    return jsonResponse;
 }
 
 async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
@@ -202,9 +202,9 @@ async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
         body: JSON.stringify(content),
     });
 
-    // const jsonResponse = await response.json();
+    const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 }
 
 async function sendMessage(accessToken, zaloUserId, message) {
@@ -226,11 +226,11 @@ async function sendMessage(accessToken, zaloUserId, message) {
         body: JSON.stringify(content),
     });
 
-    // const jsonResponse = await response.json();
+    const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 
-    // return jsonResponse;
+    return jsonResponse;
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {
@@ -269,9 +269,9 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
         body: JSON.stringify(data),
     });
 
-    // const jsonResponse = await response.json();
+    const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 }
 
 async function sendReaction(accessToken, zaloUserId, messageId, action) {
@@ -311,9 +311,9 @@ async function sendReaction(accessToken, zaloUserId, messageId, action) {
         body: JSON.stringify(data),
     });
 
-    // const jsonResponse = await response.json();
+    const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse);
 }
 
 export {
