@@ -201,45 +201,22 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const classInfoColl = db.collection('classInfo');
         const studentInfoColl = db.collection('studentInfo');
+        const zaloColl = db.collection('zaloUsers');
+        const tokenColl = db.collection('tokens');
 
-        const { currentTerm } = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: classId },
-            { projection: { _id: 0, currentTerm: 1 } }
-        );
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const studentNotPayment = await Tools.listStudentNotPayment(
-            classId,
-            currentTerm,
-            studentInfoColl
-        );
-
-        // console.log(studentNotPayment);
-
-        // let zaloList = [];
-
-        // studentNotPayment.forEach((v, i) => {
-        //     const { studentId, studentName, terms } = v;
-
-        //     const { billing } = terms[0];
-
-        //     const formatBilling = Tools.formatCurrency(billing);
-
-        //     zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
-        // });
-
-        // Tra ve sheet cho tro giang
-        // client.authorize((err) => {
-        //     if (err) {
-        //         console.error(err);
-        //         return;
-        //     } else {
-        //         getUserBulk(client, sourceId, sheetName, zaloList);
-        //     }
-        // });
-
+        res.send(accessToken);
         // res.send('Done!');
-        res.send(studentNotPayment);
+
+        // await Tools.alarmStudentNotPayment2Parent(
+        //     res,
+        //     accessToken,
+        //     classId,
+        //     zaloColl,
+        //     studentInfoColl,
+        //     classInfoColl
+        // );
     } catch (err) {
         console.error(err);
     } finally {

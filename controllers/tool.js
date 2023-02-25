@@ -140,13 +140,13 @@ async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
 async function alarmStudentNotPayment2Parent(
     res,
     accessToken,
-    zaloUserId,
+    // zaloUserId,
     classId,
     zaloColl,
     studentInfoColl,
-    classInfoColl,
-    option,
-    specificStudentLists
+    classInfoColl
+    // option,
+    // specificStudentLists
 ) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
@@ -204,15 +204,15 @@ async function alarmStudentNotPayment2Parent(
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
 
-        if (option === 'excludeStudent') {
-            if (specificStudentLists.includes(`${studentId}`)) {
-                continue;
-            }
-        } else if (option === 'onlyStudent') {
-            if (!specificStudentLists.includes(`${studentId}`)) {
-                continue;
-            }
-        }
+        // if (option === 'excludeStudent') {
+        //     if (specificStudentLists.includes(`${studentId}`)) {
+        //         continue;
+        //     }
+        // } else if (option === 'onlyStudent') {
+        //     if (!specificStudentLists.includes(`${studentId}`)) {
+        //         continue;
+        //     }
+        // }
 
         const parentIdArr = await findZaloIdFromStudentId(
             zaloColl,
@@ -277,30 +277,28 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
                 attachMessage
             );
 
-            if (jsonResponse.error === 0) {
-                listSendSuccess.push(
-                    `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
-                );
-            } else {
-                listSendFail.push(
-                    `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
-                );
-            }
+            // if (jsonResponse.error === 0) {
+            //     listSendSuccess.push(
+            //         `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
+            //     );
+            // } else {
+            //     listSendFail.push(
+            //         `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
+            //     );
+            // }
         }
     }
 
-    const sendingResult = `Kết quả gửi tin nhắn thông báo học phí lớp ${classId}:
+    //     const sendingResult = `Kết quả gửi tin nhắn thông báo học phí lớp ${classId}:
 
-A, Số tin gửi thành công: ${listSendSuccess.length}
-${listSendSuccess.join(`\n\n`)}
+    // A, Số tin gửi thành công: ${listSendSuccess.length}
+    // ${listSendSuccess.join(`\n\n`)}
 
-B, Số tin gửi thất bại: ${listSendFail.length}
-${listSendFail.join(`\n\n`)}`;
+    // B, Số tin gửi thất bại: ${listSendFail.length}
+    // ${listSendFail.join(`\n\n`)}`;
 
-    // Gui lai thong ke ket qua gui cho tro giang
-    await ZaloAPI.sendMessage(accessToken, zaloUserId, sendingResult);
-
-    res.send('Done!');
+    //     // Gui lai thong ke ket qua gui cho tro giang
+    //     await ZaloAPI.sendMessage(accessToken, zaloUserId, sendingResult);
 
     return;
 }
