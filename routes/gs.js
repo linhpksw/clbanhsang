@@ -9,6 +9,7 @@ import {
     createMockMessageFromClassId,
     getIncludeUser,
     sendBulk,
+    alarmStudentNotPayment2Parent,
 } from '../controllers/gs.js';
 
 const router = express.Router();
@@ -22,6 +23,8 @@ router.post('/getListUserFromClassId', getListUserFromClassId);
 router.post('/getNotRegisterFromClassId', getNotRegisterFromClassId);
 router.post('/getNotPaymentUserFromClassId', getNotPaymentUserFromClassId);
 router.post('/createMockMessageFromClassId', createMockMessageFromClassId);
+
+router.post('/alarmStudentNotPayment2Parent', alarmStudentNotPayment2Parent);
 
 // Share
 router.post('/getIncludeUser', getIncludeUser);

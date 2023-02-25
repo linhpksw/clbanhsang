@@ -34,7 +34,18 @@ export const createMockMessageFromClassId = async (req, res) => {
         const { className, assistants } = result;
         const { taName, taZaloId } = assistants[0];
 
-        const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', role, 2000999, classId, className]];
+        const zaloList = [
+            [
+                1,
+                taZaloId,
+                taName,
+                'Nguyễn Văn An',
+                role,
+                2000999,
+                classId,
+                className,
+            ],
+        ];
 
         client.authorize((err) => {
             if (err) {
@@ -63,7 +74,14 @@ export const sendBulk = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template);
+                sendMessageBulk(
+                    client,
+                    sourceId,
+                    sheetName,
+                    lastCol,
+                    lastRow,
+                    template
+                );
             }
         });
 
@@ -103,7 +121,12 @@ export const getIncludeUser = async (req, res) => {
                                 as: 'item',
                                 cond: {
                                     $and: [
-                                        { $eq: ['$$item.zaloStudentId', parseInt(studentId)] },
+                                        {
+                                            $eq: [
+                                                '$$item.zaloStudentId',
+                                                parseInt(studentId),
+                                            ],
+                                        },
                                         { $eq: ['$$item.role', role] },
                                     ],
                                 },
@@ -120,10 +143,12 @@ export const getIncludeUser = async (req, res) => {
             if (result.length === 0) continue; // Neu hoc sinh khong co tren CSDL
 
             for (let i = 0; i < result.length; i++) {
-                const { zaloUserId, displayName, userPhone, students } = result[i];
+                const { zaloUserId, displayName, userPhone, students } =
+                    result[i];
 
                 for (let v = 0; v < students.length; v++) {
-                    const { zaloStudentId, zaloClassId, aliasName, role } = students[v];
+                    const { zaloStudentId, zaloClassId, aliasName, role } =
+                        students[v];
                     const studentName = aliasName.slice(3);
 
                     const resutlClassId = await MongoDB.findOneUser(
@@ -166,6 +191,54 @@ export const getIncludeUser = async (req, res) => {
     }
 };
 
+export const alarmStudentNotPayment2Parent = async (req, res) => {
+    const data = req.body;
+
+    const { sourceId, sheetName, lastCol, lastRow, template } = data;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfo');
+
+        // const { currentTerm } = await MongoDB.findOneUser(
+        //     classInfoColl,
+        //     { classId: classId },
+        //     { projection: { _id: 0, currentTerm: 1 } }
+        // );
+
+        // const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
+
+        // let zaloList = [];
+
+        // studentNotPayment.forEach((v, i) => {
+        //     const { studentId, studentName, terms } = v;
+
+        //     const { billing } = terms[0];
+
+        //     const formatBilling = Tools.formatCurrency(billing);
+
+        //     zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
+        // });
+
+        // Tra ve sheet cho tro giang
+        // client.authorize((err) => {
+        //     if (err) {
+        //         console.error(err);
+        //         return;
+        //     } else {
+        //         getUserBulk(client, sourceId, sheetName, zaloList);
+        //     }
+        // });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const getNotPaymentUserFromClassId = async (req, res) => {
     const data = req.body;
 
@@ -183,7 +256,11 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             { projection: { _id: 0, currentTerm: 1 } }
         );
 
-        const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
+        const studentNotPayment = await Tools.listStudentNotPayment(
+            classId,
+            currentTerm,
+            studentInfoColl
+        );
 
         let zaloList = [];
 
@@ -194,7 +271,16 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
             const formatBilling = Tools.formatCurrency(billing);
 
-            zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
+            zaloList.push([
+                i + 1,
+                '',
+                '',
+                studentName,
+                formatBilling,
+                studentId,
+                '',
+                '',
+            ]);
         });
 
         // Tra ve sheet cho tro giang
@@ -238,7 +324,14 @@ export const getNotRegisterFromAdmin = async (req, res) => {
 
         const cursorRegister = zaloColl.find(
             { 'students.zaloClassId': classId, 'students.role': role },
-            { projection: { _id: 0, students: 1, displayName: 1, userPhone: 1 } }
+            {
+                projection: {
+                    _id: 0,
+                    students: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                },
+            }
         );
 
         let registers = [];
@@ -273,7 +366,9 @@ export const getNotRegisterFromAdmin = async (req, res) => {
         });
 
         // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
+        const notRegisters = studentLists.filter(
+            (v) => !registers.includes(v[0])
+        );
 
         notRegisters.forEach((v) => {
             const [studentId, fullName] = v;
@@ -310,7 +405,14 @@ export const getNotRegisterFromClassId = async (req, res) => {
 
         const cursorRegister = zaloColl.find(
             { 'students.zaloClassId': classId, 'students.role': role },
-            { projection: { _id: 0, students: 1, displayName: 1, userPhone: 1 } }
+            {
+                projection: {
+                    _id: 0,
+                    students: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                },
+            }
         );
 
         let registers = [];
@@ -345,7 +447,9 @@ export const getNotRegisterFromClassId = async (req, res) => {
         });
 
         // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
+        const notRegisters = studentLists.filter(
+            (v) => !registers.includes(v[0])
+        );
 
         let zaloList = [];
 
@@ -531,7 +635,12 @@ export const getListUserFromAdmin = async (req, res) => {
                                 as: 'item',
                                 cond: {
                                     $and: [
-                                        { $eq: ['$$item.zaloClassId', classId] },
+                                        {
+                                            $eq: [
+                                                '$$item.zaloClassId',
+                                                classId,
+                                            ],
+                                        },
                                         { $eq: ['$$item.role', role] },
                                     ],
                                 },
@@ -594,7 +703,14 @@ export const getListUserFromAdmin = async (req, res) => {
     }
 };
 
-async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
+async function sendMessageBulk(
+    client,
+    sourceId,
+    sheetName,
+    lastCol,
+    lastRow,
+    template
+) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestData = {
@@ -609,11 +725,14 @@ async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, te
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+        const responseData = (await sheets.spreadsheets.values.get(requestData))
+            .data;
         const data = responseData.values;
         const heads = data.shift();
 
-        const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
+        const obj = data.map((r) =>
+            heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {})
+        );
         // Creates an array to record sent zalo message
         const out = [];
 
@@ -624,9 +743,15 @@ async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, te
 
             const content = fillInTemplateFromObject(template, row);
 
-            const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+            const result = await ZaloAPI.sendMessage(
+                accessToken,
+                zaloUserId,
+                content
+            );
 
-            result.error === 0 ? out.push([result.message]) : out.push([result.message]);
+            result.error === 0
+                ? out.push([result.message])
+                : out.push([result.message]);
         }
 
         const requestUpdate = {
@@ -639,7 +764,9 @@ async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, te
             },
         };
 
-        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
+        const responseUpdate = (
+            await sheets.spreadsheets.values.update(requestUpdate)
+        ).data;
 
         console.log(responseUpdate);
     } catch (err) {
@@ -652,7 +779,10 @@ async function getUserBulk(client, sourceId, sheetName, zaloList) {
 
     const totalList = zaloList.length;
 
-    const requestClear = { spreadsheetId: sourceId, range: `${sheetName}!A8:Z` };
+    const requestClear = {
+        spreadsheetId: sourceId,
+        range: `${sheetName}!A8:Z`,
+    };
 
     const requestUpdate = {
         spreadsheetId: sourceId,

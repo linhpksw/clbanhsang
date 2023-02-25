@@ -51,7 +51,11 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.user_id;
 
                 if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                    ZaloAPI.tagFollower(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa quan tâm'
+                    );
                 }
                 break;
 
@@ -66,12 +70,23 @@ export const userRequest = async (req, res) => {
 
                 // Neu nguoi dung quan tam lan dau
                 if (isExistInZaloColl === null) {
-                    const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+                    const profileDoc = await ZaloAPI.getProfile(
+                        accessToken,
+                        zaloUserId
+                    );
 
                     // console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
-                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+                    await ZaloAPI.removeFollowerFromTag(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa quan tâm'
+                    );
+                    await ZaloAPI.tagFollower(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa đăng kí'
+                    );
 
                     MongoDB.insertOneUser(zaloColl, profileDoc);
                 }
@@ -85,10 +100,22 @@ export const userRequest = async (req, res) => {
                     );
 
                     if (isExistInZaloColl.userPhone === null) {
-                        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
-                        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+                        await ZaloAPI.removeFollowerFromTag(
+                            accessToken,
+                            zaloUserId,
+                            'Chưa quan tâm'
+                        );
+                        await ZaloAPI.tagFollower(
+                            accessToken,
+                            zaloUserId,
+                            'Chưa đăng kí'
+                        );
                     } else {
-                        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+                        await ZaloAPI.removeFollowerFromTag(
+                            accessToken,
+                            zaloUserId,
+                            'Chưa quan tâm'
+                        );
                     }
 
                     // console.log('Nguời dùng quan tâm trở lại');
@@ -101,8 +128,16 @@ export const userRequest = async (req, res) => {
             case 'unfollow':
                 zaloUserId = webhook.follower.id;
 
-                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
-                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                await ZaloAPI.removeFollowerFromTag(
+                    accessToken,
+                    zaloUserId,
+                    'Chưa đăng kí'
+                );
+                await ZaloAPI.tagFollower(
+                    accessToken,
+                    zaloUserId,
+                    'Chưa quan tâm'
+                );
 
                 MongoDB.updateOneUser(
                     zaloColl,
@@ -118,7 +153,10 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.sender.id;
 
                 // Check xem tha tym den OA co tu phia Tro giang khong
-                const isAssistant = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+                const isAssistant = await Tools.isManagerCheck(
+                    zaloUserId,
+                    classInfoColl
+                );
 
                 // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
                 if (isAssistant) {
@@ -145,15 +183,25 @@ export const userRequest = async (req, res) => {
                 const imageInfo = webhook.message;
 
                 // Check xem nguoi dung da follow OA chua
-                const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
+                const isFollowImage = await Tools.isFollow(
+                    zaloUserId,
+                    zaloColl
+                );
 
                 // Neu da follow
                 if (isFollowImage) {
-                    const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+                    const isManager = await Tools.isManagerCheck(
+                        zaloUserId,
+                        classInfoColl
+                    );
 
                     // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
                     if (isManager) {
-                        await Tools.sendImageBack2Parent(accessToken, imageInfo, zaloColl);
+                        await Tools.sendImageBack2Parent(
+                            accessToken,
+                            imageInfo,
+                            zaloColl
+                        );
 
                         res.send('Done!');
                     }
@@ -184,7 +232,11 @@ export const userRequest = async (req, res) => {
 
                 // Neu chua follow
                 else {
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                    await ZaloAPI.tagFollower(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa quan tâm'
+                    );
 
                     res.send('Done!');
                 }
@@ -271,11 +323,15 @@ export const userRequest = async (req, res) => {
                         );
                     } else if (!isSyntax) {
                         // Check xem tin nhan den OA co tu phia Tro giang khong
-                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+                        const isManager = await Tools.isManagerCheck(
+                            zaloUserId,
+                            classInfoColl
+                        );
 
                         // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                         if (isManager) {
-                            const quoteMessageId = webhook.message.quote_msg_id || null;
+                            const quoteMessageId =
+                                webhook.message.quote_msg_id || null;
 
                             if (quoteMessageId !== null) {
                                 const replyContent = webhook.message.text;
@@ -319,7 +375,9 @@ export const userRequest = async (req, res) => {
                         const isK10 = formatContent === '#k10';
                         const isK11 = formatContent === '#k11';
                         const isK12 = formatContent === '#k12';
-                        const isTTL = formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9;
+                        const isTTL =
+                            formatContent.substring(0, 5) === '#tt20' &&
+                            formatContent.length === 9;
 
                         const isLDH = formatContent === '#ldh';
                         const isHPHT = formatContent === '#hpht';
@@ -329,41 +387,62 @@ export const userRequest = async (req, res) => {
                         const isLHTG = formatContent === '#lhtg';
 
                         const isCheckDKPH =
-                            formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11;
+                            formatContent.slice(0, 5) === '#dkph' &&
+                            formatContent.length === 11;
                         const isCheckCDKPH =
-                            formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12;
+                            formatContent.slice(0, 6) === '#cdkph' &&
+                            formatContent.length === 12;
                         const isCheckDKHS =
-                            formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11;
+                            formatContent.slice(0, 5) === '#dkhs' &&
+                            formatContent.length === 11;
                         const isCheckCDKHS =
-                            formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12;
+                            formatContent.slice(0, 6) === '#cdkhs' &&
+                            formatContent.length === 12;
 
-                        const isCNH = formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10;
-                        const isCNHPH = formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12;
-                        const isExCludeCNHPH =
-                            formatContent.slice(0, 6) === '#cnhph' &&
-                            formatContent.slice(0, 13).length === 13 &&
-                            formatContent.slice(12, 13) === '-';
+                        // const isCNH = formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10;
+                        // const isCNHPH = formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12;
+                        // const isExCludeCNHPH =
+                        //     formatContent.slice(0, 6) === '#cnhph' &&
+                        //     formatContent.slice(0, 13).length === 13 &&
+                        //     formatContent.slice(12, 13) === '-';
 
-                        const isIncludeCNHPH =
-                            formatContent.slice(0, 6) === '#cnhph' &&
-                            formatContent.slice(0, 13).length === 13 &&
-                            formatContent.slice(12, 13) === '+';
+                        // const isIncludeCNHPH =
+                        //     formatContent.slice(0, 6) === '#cnhph' &&
+                        //     formatContent.slice(0, 13).length === 13 &&
+                        //     formatContent.slice(12, 13) === '+';
 
                         switch (true) {
                             case isDKTK:
-                                await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
+                                await Tools.signUpAlert(
+                                    res,
+                                    accessToken,
+                                    zaloUserId,
+                                    zaloColl
+                                );
                                 break;
 
                             case isVTDK:
-                                await Tools.signUpRole(res, accessToken, zaloUserId);
+                                await Tools.signUpRole(
+                                    res,
+                                    accessToken,
+                                    zaloUserId
+                                );
                                 break;
 
                             case isDKPH:
-                                await Tools.signUp4Parent(res, accessToken, zaloUserId);
+                                await Tools.signUp4Parent(
+                                    res,
+                                    accessToken,
+                                    zaloUserId
+                                );
                                 break;
 
                             case isDKHS:
-                                await Tools.signUp4Student(res, accessToken, zaloUserId);
+                                await Tools.signUp4Student(
+                                    res,
+                                    accessToken,
+                                    zaloUserId
+                                );
                                 break;
 
                             case isTTCL: {
@@ -388,7 +467,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -404,7 +487,9 @@ export const userRequest = async (req, res) => {
                                             buttons: [
                                                 {
                                                     title: 'Xem cụ thể trên bản đồ',
-                                                    payload: { url: 'https://goo.gl/maps/3NnMdTo7x2RYDxMG9' },
+                                                    payload: {
+                                                        url: 'https://goo.gl/maps/3NnMdTo7x2RYDxMG9',
+                                                    },
                                                     type: 'oa.open.url',
                                                 },
                                             ],
@@ -412,7 +497,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -441,7 +530,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -470,7 +563,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -504,7 +601,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -538,7 +639,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -562,7 +667,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -591,7 +700,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -620,7 +733,11 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                                await ZaloAPI.sendMessageWithButton(
+                                    accessToken,
+                                    zaloUserId,
+                                    attachMessage
+                                );
 
                                 res.send('Done!');
 
@@ -785,7 +902,9 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isCNH: {
-                                const classId = formatContent.slice(4).toUpperCase();
+                                const classId = formatContent
+                                    .slice(4)
+                                    .toUpperCase();
 
                                 await Tools.sendStudentNotPayment(
                                     res,
@@ -799,7 +918,9 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isCNHPH: {
-                                const classId = formatContent.slice(6).toUpperCase();
+                                const classId = formatContent
+                                    .slice(6)
+                                    .toUpperCase();
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -815,9 +936,13 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isExCludeCNHPH: {
-                                const classId = formatContent.slice(6, 12).toUpperCase();
+                                const classId = formatContent
+                                    .slice(6, 12)
+                                    .toUpperCase();
 
-                                const excludeStudentLists = formatContent.slice(13).split(',');
+                                const excludeStudentLists = formatContent
+                                    .slice(13)
+                                    .split(',');
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -835,9 +960,13 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isIncludeCNHPH: {
-                                const classId = formatContent.slice(6, 12).toUpperCase();
+                                const classId = formatContent
+                                    .slice(6, 12)
+                                    .toUpperCase();
 
-                                const onlyStudentLists = formatContent.slice(13).split(',');
+                                const onlyStudentLists = formatContent
+                                    .slice(13)
+                                    .split(',');
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -861,9 +990,17 @@ export const userRequest = async (req, res) => {
                 else {
                     const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
-                    await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                    await ZaloAPI.sendMessage(
+                        accessToken,
+                        zaloUserId,
+                        failContent
+                    );
 
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                    await ZaloAPI.tagFollower(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa quan tâm'
+                    );
 
                     res.send('Done!');
                     return;
@@ -880,7 +1017,10 @@ export const userRequest = async (req, res) => {
 
                 if (isFollow) {
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    const isParent = !(await Tools.isManagerCheck(zaloUserId, classInfoColl));
+                    const isParent = !(await Tools.isManagerCheck(
+                        zaloUserId,
+                        classInfoColl
+                    ));
                     if (isParent) {
                         const mediaInfo = webhook.message;
 
@@ -894,7 +1034,11 @@ export const userRequest = async (req, res) => {
                         );
                     }
                 } else {
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+                    await ZaloAPI.tagFollower(
+                        accessToken,
+                        zaloUserId,
+                        'Chưa quan tâm'
+                    );
                 }
 
                 res.send('Done!');
@@ -1021,7 +1165,10 @@ export const updateRequest = async (req, res) => {
             if (studentTermData.includes(studentId)) {
                 bulkWriteStudentInfo.push({
                     updateOne: {
-                        filter: { studentId: studentId, 'terms.term': parseInt(term) },
+                        filter: {
+                            studentId: studentId,
+                            'terms.term': parseInt(term),
+                        },
                         update: { $set: { 'terms.$': doc.terms[0] } }, // cap nhat dot dau tien
                     },
                 });
