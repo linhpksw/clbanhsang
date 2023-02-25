@@ -194,7 +194,7 @@ export const getIncludeUser = async (req, res) => {
 export const alarmStudentNotPayment2Parent = async (req, res) => {
     const data = req.body;
 
-    const { sourceId, sheetName, lastCol, lastRow, template } = data;
+    const { sourceId, sheetName, classId } = data;
 
     try {
         await MongoDB.client.connect();
