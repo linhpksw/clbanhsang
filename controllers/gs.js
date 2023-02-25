@@ -202,13 +202,19 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
         const classInfoColl = db.collection('classInfo');
         const studentInfoColl = db.collection('studentInfo');
 
-        // const { currentTerm } = await MongoDB.findOneUser(
-        //     classInfoColl,
-        //     { classId: classId },
-        //     { projection: { _id: 0, currentTerm: 1 } }
-        // );
+        const { currentTerm } = await MongoDB.findOneUser(
+            classInfoColl,
+            { classId: classId },
+            { projection: { _id: 0, currentTerm: 1 } }
+        );
 
-        // const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
+        const studentNotPayment = await Tools.listStudentNotPayment(
+            classId,
+            currentTerm,
+            studentInfoColl
+        );
+
+        // console.log(studentNotPayment);
 
         // let zaloList = [];
 
@@ -232,7 +238,8 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
         //     }
         // });
 
-        res.send('Done!');
+        // res.send('Done!');
+        res.send(studentNotPayment);
     } catch (err) {
         console.error(err);
     } finally {
