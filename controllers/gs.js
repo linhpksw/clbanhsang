@@ -206,17 +206,15 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        res.send(accessToken);
-        // res.send('Done!');
-
-        // await Tools.alarmStudentNotPayment2Parent(
-        //     res,
-        //     accessToken,
-        //     classId,
-        //     zaloColl,
-        //     studentInfoColl,
-        //     classInfoColl
-        // );
+        await Tools.alarmStudentNotPayment2Parent(
+            res,
+            accessToken,
+            classId,
+            zaloColl,
+            studentInfoColl,
+            classInfoColl
+        );
+        res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
