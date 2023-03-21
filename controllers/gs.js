@@ -200,7 +200,11 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             { projection: { _id: 0, currentTerm: 1 } }
         );
 
+        console.log(currentTerm, classId);
+
         const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
+
+        console.log(studentNotPayment);
 
         let zaloList = [];
 
