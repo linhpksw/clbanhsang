@@ -200,11 +200,7 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             { projection: { _id: 0, currentTerm: 1 } }
         );
 
-        console.log(currentTerm, classId);
-
         const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
-
-        console.log(studentNotPayment);
 
         let zaloList = [];
 
@@ -217,8 +213,6 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
             zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
         });
-
-        console.log(zaloList);
 
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
