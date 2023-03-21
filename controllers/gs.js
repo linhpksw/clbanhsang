@@ -34,18 +34,7 @@ export const createMockMessageFromClassId = async (req, res) => {
         const { className, assistants } = result;
         const { taName, taZaloId } = assistants[0];
 
-        const zaloList = [
-            [
-                1,
-                taZaloId,
-                taName,
-                'Nguyễn Văn An',
-                role,
-                2000999,
-                classId,
-                className,
-            ],
-        ];
+        const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', role, 2000999, classId, className]];
 
         client.authorize((err) => {
             if (err) {
@@ -74,14 +63,7 @@ export const sendBulk = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                sendMessageBulk(
-                    client,
-                    sourceId,
-                    sheetName,
-                    lastCol,
-                    lastRow,
-                    template
-                );
+                sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template);
             }
         });
 
@@ -122,10 +104,7 @@ export const getIncludeUser = async (req, res) => {
                                 cond: {
                                     $and: [
                                         {
-                                            $eq: [
-                                                '$$item.zaloStudentId',
-                                                parseInt(studentId),
-                                            ],
+                                            $eq: ['$$item.zaloStudentId', parseInt(studentId)],
                                         },
                                         { $eq: ['$$item.role', role] },
                                     ],
@@ -143,12 +122,10 @@ export const getIncludeUser = async (req, res) => {
             if (result.length === 0) continue; // Neu hoc sinh khong co tren CSDL
 
             for (let i = 0; i < result.length; i++) {
-                const { zaloUserId, displayName, userPhone, students } =
-                    result[i];
+                const { zaloUserId, displayName, userPhone, students } = result[i];
 
                 for (let v = 0; v < students.length; v++) {
-                    const { zaloStudentId, zaloClassId, aliasName, role } =
-                        students[v];
+                    const { zaloStudentId, zaloClassId, aliasName, role } = students[v];
                     const studentName = aliasName.slice(3);
 
                     const resutlClassId = await MongoDB.findOneUser(
@@ -160,15 +137,7 @@ export const getIncludeUser = async (req, res) => {
                     if (resutlClassId === null) continue;
                     const { className } = resutlClassId;
 
-                    zaloList.push([
-                        zaloUserId,
-                        displayName,
-                        studentName,
-                        role,
-                        zaloStudentId,
-                        zaloClassId,
-                        className,
-                    ]);
+                    zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
                 }
             }
         }
@@ -206,14 +175,7 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        await Tools.alarmStudentNotPayment2Parent(
-            res,
-            accessToken,
-            classId,
-            zaloColl,
-            studentInfoColl,
-            classInfoColl
-        );
+        await Tools.alarmStudentNotPayment2Parent(res, accessToken, classId, zaloColl, studentInfoColl, classInfoColl);
         res.send('Done!');
     } catch (err) {
         console.error(err);
@@ -238,11 +200,7 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
             { projection: { _id: 0, currentTerm: 1 } }
         );
 
-        const studentNotPayment = await Tools.listStudentNotPayment(
-            classId,
-            currentTerm,
-            studentInfoColl
-        );
+        const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
         let zaloList = [];
 
@@ -253,17 +211,10 @@ export const getNotPaymentUserFromClassId = async (req, res) => {
 
             const formatBilling = Tools.formatCurrency(billing);
 
-            zaloList.push([
-                i + 1,
-                '',
-                '',
-                studentName,
-                formatBilling,
-                studentId,
-                '',
-                '',
-            ]);
+            zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
         });
+
+        console.log(zaloList);
 
         // Tra ve sheet cho tro giang
         client.authorize((err) => {
@@ -348,9 +299,7 @@ export const getNotRegisterFromAdmin = async (req, res) => {
         });
 
         // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter(
-            (v) => !registers.includes(v[0])
-        );
+        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
 
         notRegisters.forEach((v) => {
             const [studentId, fullName] = v;
@@ -429,9 +378,7 @@ export const getNotRegisterFromClassId = async (req, res) => {
         });
 
         // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter(
-            (v) => !registers.includes(v[0])
-        );
+        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
 
         let zaloList = [];
 
@@ -470,10 +417,7 @@ export const getSeekInfoFromAdmin = async (req, res) => {
 
         let zaloList = [];
 
-        const result = zaloColl.find(
-            { userPhone: null },
-            { projection: { _id: 0, zaloUserId: 1, displayName: 1 } }
-        );
+        const result = zaloColl.find({ userPhone: null }, { projection: { _id: 0, zaloUserId: 1, displayName: 1 } });
 
         const seekInfoList = await result.toArray();
 
@@ -530,10 +474,7 @@ export const getListUserFromClassId = async (req, res) => {
                             input: '$students',
                             as: 'item',
                             cond: {
-                                $and: [
-                                    { $eq: ['$$item.zaloClassId', classId] },
-                                    { $eq: ['$$item.role', role] },
-                                ],
+                                $and: [{ $eq: ['$$item.zaloClassId', classId] }, { $eq: ['$$item.role', role] }],
                             },
                         },
                     },
@@ -551,15 +492,7 @@ export const getListUserFromClassId = async (req, res) => {
                 const { zaloStudentId, zaloClassId, aliasName, role } = e;
                 const studentName = aliasName.slice(3);
 
-                zaloList.push([
-                    zaloUserId,
-                    displayName,
-                    studentName,
-                    role,
-                    zaloStudentId,
-                    zaloClassId,
-                    className,
-                ]);
+                zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
             });
         });
 
@@ -618,10 +551,7 @@ export const getListUserFromAdmin = async (req, res) => {
                                 cond: {
                                     $and: [
                                         {
-                                            $eq: [
-                                                '$$item.zaloClassId',
-                                                classId,
-                                            ],
+                                            $eq: ['$$item.zaloClassId', classId],
                                         },
                                         { $eq: ['$$item.role', role] },
                                     ],
@@ -654,15 +584,7 @@ export const getListUserFromAdmin = async (req, res) => {
                     //     className: className,
                     // });
 
-                    zaloList.push([
-                        zaloUserId,
-                        displayName,
-                        studentName,
-                        role,
-                        zaloStudentId,
-                        zaloClassId,
-                        className,
-                    ]);
+                    zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
                 });
             });
         }
@@ -685,14 +607,7 @@ export const getListUserFromAdmin = async (req, res) => {
     }
 };
 
-async function sendMessageBulk(
-    client,
-    sourceId,
-    sheetName,
-    lastCol,
-    lastRow,
-    template
-) {
+async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestData = {
@@ -707,14 +622,11 @@ async function sendMessageBulk(
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const responseData = (await sheets.spreadsheets.values.get(requestData))
-            .data;
+        const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
         const data = responseData.values;
         const heads = data.shift();
 
-        const obj = data.map((r) =>
-            heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {})
-        );
+        const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
         // Creates an array to record sent zalo message
         const out = [];
 
@@ -725,15 +637,9 @@ async function sendMessageBulk(
 
             const content = fillInTemplateFromObject(template, row);
 
-            const result = await ZaloAPI.sendMessage(
-                accessToken,
-                zaloUserId,
-                content
-            );
+            const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
 
-            result.error === 0
-                ? out.push([result.message])
-                : out.push([result.message]);
+            result.error === 0 ? out.push([result.message]) : out.push([result.message]);
         }
 
         const requestUpdate = {
@@ -746,9 +652,7 @@ async function sendMessageBulk(
             },
         };
 
-        const responseUpdate = (
-            await sheets.spreadsheets.values.update(requestUpdate)
-        ).data;
+        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
 
         console.log(responseUpdate);
     } catch (err) {
