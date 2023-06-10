@@ -90,7 +90,7 @@ async function upsertOneUser(coll, filter, updateDoc) {
 async function insertOneUser(coll, doc) {
     const result = await coll.insertOne(doc);
 
-    console.log(`One document was inserted with the id ${result.upsertedId._id}`);
+    console.log(`One document was inserted with the id ${result.insertedId}`);
     // console.log(`Tạo thành công user mới với id: ${result.insertedId}`);
 }
 
