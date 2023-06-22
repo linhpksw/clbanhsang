@@ -1865,7 +1865,6 @@ export {
     deleteAccount,
     notifyRegister,
     sendClassInfo,
-    sendPublicClassInfo,
     createDate,
     formatDate,
     formatDateTime,
