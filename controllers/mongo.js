@@ -81,7 +81,6 @@ async function updateOneUser(coll, filter, updateDoc) {
 
 async function upsertOneUser(coll, filter, updateDoc) {
     const result = await coll.updateOne(filter, { $set: updateDoc }, { upsert: true });
-    // console.log(`${result.matchedCount} tài liệu khớp với query, cập nhật ${result.modifiedCount} tài liệu.`);
 
     console.log(`${result.matchedCount} document(s) matched the query criteria.`);
     console.log(`${result.modifiedCount} document(s) was/were updated.`);
@@ -91,7 +90,6 @@ async function insertOneUser(coll, doc) {
     const result = await coll.insertOne(doc);
 
     console.log(`One document was inserted with the id ${result.insertedId}`);
-    // console.log(`Tạo thành công user mới với id: ${result.insertedId}`);
 }
 
 async function findOneUser(coll, query, options) {

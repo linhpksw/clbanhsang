@@ -807,34 +807,11 @@ export const userRequest = async (req, res) => {
 
                 break;
 
-            // eventName = 'user_send_link', 'user_send_audio', 'user_send_video',  'user_send_file'
             default:
-                zaloUserId = webhook.sender.id;
-
-                // Check xem nguoi dung da follow OA chua
-                const isFollow = await Tools.isFollow(zaloUserId, zaloColl);
-
-                if (isFollow) {
-                    // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    const isParent = !(await Tools.isManagerCheck(zaloUserId, classInfoColl));
-                    if (isParent) {
-                        const mediaInfo = webhook.message;
-
-                        await Tools.forwardOtherMedia2Assistant(
-                            res,
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classInfoColl,
-                            mediaInfo
-                        );
-                    }
-                } else {
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-                }
-
-                res.send('Done!');
+                break;
         }
+
+        res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
