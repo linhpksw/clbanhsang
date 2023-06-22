@@ -1883,7 +1883,6 @@ export {
     sendImageBack2Parent,
     forwardOtherMedia2Assistant,
     sendAssistantInfo,
-    checkRegister,
     sendStudentNotPayment,
     getStudyDate,
     alarmStudentNotPayment2Parent,
