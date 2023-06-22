@@ -15,8 +15,10 @@ async function getFollowers(accessToken) {
 
     const jsonResponse = await response.json();
 
-    // console.log(jsonResponse);
-    // return;
+    if (jsonResponse.error) {
+        console.log(jsonResponse);
+        return [];
+    }
 
     const { total, followers } = jsonResponse.data;
     totalFollowers.push(...followers);
@@ -63,11 +65,16 @@ async function getProfile(accessToken, zaloUserId) {
         headers: { access_token: accessToken },
     });
 
+    if (jsonResponse.error != 0) {
+        console.log(jsonResponse);
+        return null;
+    }
+
     const jsonResponse = (await response.json()).data;
 
     let { user_gender: userGender, display_name: displayName } = jsonResponse;
 
-    userGender === 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
+    userGender == 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
 
     const result = {
         zaloUserId: zaloUserId,
@@ -77,20 +84,9 @@ async function getProfile(accessToken, zaloUserId) {
         userPhone: null,
         students: [],
     };
+
     return result;
 }
-
-// async function test() {
-//     const accessToken = 'D7A95A-AlsSoSuCQgO2yPpXnX1UfdxyrSoUTHFRUmcC_BgXKvw_cU2u9fmZgXUzqD2E_GAZQzdvkVefEgj-pHqaiqakdsenaPbBD4upQZXDUSTPacuYJOMTzotoTpuPW343mQCFuoMadTV5ZoV6mPG1PqMd9u8fRL4toAhdwp5XMI9eheVpSFZ5sXYB6ZhfVEJhSBw2Yb2vOFS9Vd8wOAmmf-GBXgg0J6I3jEiMte3e7GzuvrhgKBXC0y2FfgP4XDZhf3VEelnyw4VWKqRYwEYywWZJKlECI5HgV5EgHr0WoV8akwkFg8G5AhX2TkkSLMXIh6Ok5mp9eShmweT6B77n_iMsZtFfTDAZ03qIedBHY'
-//     const zaloStudentId = '';
-//     const zaloUserId = '4966494673333610309';
-//     const registerPhone = '';
-//     const aliasName = '';
-
-//     await updateFollowerInfo(accessToken, zaloStudentId, zaloUserId, registerPhone, aliasName);
-// }
-
-// test().catch(console.dir);
 
 async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, aliasName) {
     const URL = `https://openapi.zalo.me/v2.0/oa/updatefollowerinfo`;
@@ -138,6 +134,11 @@ async function getConversation(accessToken, zaloUserId) {
 
     const jsonResponse = await response.json();
 
+    if (jsonResponse.error != 0) {
+        console.log(jsonResponse);
+        return null;
+    }
+
     return jsonResponse.data;
 }
 
@@ -147,7 +148,7 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
         'Content-Type': 'application/json',
     };
 
-    const URL = `https://openapi.zalo.me/v2.0/oa/message?`;
+    const URL = `https://openapi.zalo.me/v3.0/oa/message/cs?`;
 
     const content = {
         recipient: {
@@ -165,8 +166,6 @@ async function sendMessageWithButton(accessToken, zaloUserId, attachMessage) {
     const jsonResponse = await response.json();
 
     console.log(jsonResponse);
-
-    return jsonResponse;
 }
 
 async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
@@ -175,7 +174,7 @@ async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
         'Content-Type': 'application/json',
     };
 
-    const URL = `https://openapi.zalo.me/v2.0/oa/message`;
+    const URL = `https://openapi.zalo.me/v3.0/oa/message/cs`;
 
     const content = {
         recipient: { user_id: `${zaloUserId}` },
@@ -213,7 +212,7 @@ async function sendMessage(accessToken, zaloUserId, message) {
         'Content-Type': 'application/json',
     };
 
-    const URL = `https://openapi.zalo.me/v2.0/oa/message?`;
+    const URL = `https://openapi.zalo.me/v3.0/oa/message/cs?`;
 
     const content = {
         recipient: { user_id: `${zaloUserId}` },
@@ -229,8 +228,6 @@ async function sendMessage(accessToken, zaloUserId, message) {
     const jsonResponse = await response.json();
 
     console.log(jsonResponse);
-
-    return jsonResponse;
 }
 
 async function tagFollower(accessToken, zaloUserId, tagName) {
@@ -249,9 +246,9 @@ async function tagFollower(accessToken, zaloUserId, tagName) {
         body: JSON.stringify(data),
     });
 
-    // const jsonResponse = await result.json();
+    const jsonResponse = await result.json();
 
-    // console.log(jsonResponse);
+    console.log(jsonResponse.message);
 }
 
 async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
@@ -271,7 +268,7 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
 
     const jsonResponse = await response.json();
 
-    console.log(jsonResponse);
+    console.log(jsonResponse.message);
 }
 
 async function sendReaction(accessToken, zaloUserId, messageId, action) {

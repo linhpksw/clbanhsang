@@ -1,30 +1,6 @@
 import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
-// async function insertToZaloDB() {
-//     try {
-//         await MongoDB.client.connect();
-//         const db = MongoDB.client.db('zalo_servers');
-//         const tokenColl = db.collection('tokens');
-//         const zaloColl = db.collection('zaloUsers');
-
-//         const { accessToken, refreshToken } = await MongoDB.readTokenFromDB(tokenColl);
-
-//         const followers = await ZaloAPI.getFollowers(accessToken);
-
-//         // console.log(followers);
-//         // return;
-
-//         await MongoDB.insertManyToDB(zaloColl, followers);
-
-//         console.log('Success!');
-//     } catch (err) {
-//         console.error(err);
-//     } finally {
-//     }
-// }
-
-// insertToZaloDB();
 
 export const userRequest = async (req, res) => {
     const webhook = req.body;
@@ -51,11 +27,7 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.user_id;
 
                 if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
-                    ZaloAPI.tagFollower(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa quan tâm'
-                    );
+                    ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }
                 break;
 
@@ -70,52 +42,25 @@ export const userRequest = async (req, res) => {
 
                 // Neu nguoi dung quan tam lan dau
                 if (isExistInZaloColl === null) {
-                    const profileDoc = await ZaloAPI.getProfile(
-                        accessToken,
-                        zaloUserId
-                    );
+                    const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
                     // console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
 
-                    await ZaloAPI.removeFollowerFromTag(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa quan tâm'
-                    );
-                    await ZaloAPI.tagFollower(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa đăng kí'
-                    );
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
                     MongoDB.insertOneUser(zaloColl, profileDoc);
                 }
 
                 // Nguoi dung quan tam tro lai
                 else {
-                    MongoDB.updateOneUser(
-                        zaloColl,
-                        { zaloUserId: `${zaloUserId}` },
-                        { $set: { status: 'follow' } }
-                    );
+                    MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'follow' } });
 
                     if (isExistInZaloColl.userPhone === null) {
-                        await ZaloAPI.removeFollowerFromTag(
-                            accessToken,
-                            zaloUserId,
-                            'Chưa quan tâm'
-                        );
-                        await ZaloAPI.tagFollower(
-                            accessToken,
-                            zaloUserId,
-                            'Chưa đăng kí'
-                        );
+                        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+                        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
                     } else {
-                        await ZaloAPI.removeFollowerFromTag(
-                            accessToken,
-                            zaloUserId,
-                            'Chưa quan tâm'
-                        );
+                        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                     }
 
                     // console.log('Nguời dùng quan tâm trở lại');
@@ -128,22 +73,10 @@ export const userRequest = async (req, res) => {
             case 'unfollow':
                 zaloUserId = webhook.follower.id;
 
-                await ZaloAPI.removeFollowerFromTag(
-                    accessToken,
-                    zaloUserId,
-                    'Chưa đăng kí'
-                );
-                await ZaloAPI.tagFollower(
-                    accessToken,
-                    zaloUserId,
-                    'Chưa quan tâm'
-                );
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
-                MongoDB.updateOneUser(
-                    zaloColl,
-                    { zaloUserId: `${zaloUserId}` },
-                    { $set: { status: 'unfollow' } }
-                );
+                MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'unfollow' } });
 
                 res.send('Done!');
 
@@ -153,10 +86,7 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.sender.id;
 
                 // Check xem tha tym den OA co tu phia Tro giang khong
-                const isAssistant = await Tools.isManagerCheck(
-                    zaloUserId,
-                    classInfoColl
-                );
+                const isAssistant = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
                 // Neu tu phia tro giang thi chuyen tiep tym lai cho phu huynh
                 if (isAssistant) {
@@ -164,13 +94,7 @@ export const userRequest = async (req, res) => {
 
                     const reactIcon = webhook.message.react_icon;
 
-                    await Tools.sendReactBack2Parent(
-                        accessToken,
-                        zaloUserId,
-                        reactMessageId,
-                        reactIcon,
-                        zaloColl
-                    );
+                    await Tools.sendReactBack2Parent(accessToken, zaloUserId, reactMessageId, reactIcon, zaloColl);
                 }
 
                 res.send('Done!');
@@ -183,25 +107,15 @@ export const userRequest = async (req, res) => {
                 const imageInfo = webhook.message;
 
                 // Check xem nguoi dung da follow OA chua
-                const isFollowImage = await Tools.isFollow(
-                    zaloUserId,
-                    zaloColl
-                );
+                const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
 
                 // Neu da follow
                 if (isFollowImage) {
-                    const isManager = await Tools.isManagerCheck(
-                        zaloUserId,
-                        classInfoColl
-                    );
+                    const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
                     // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
                     if (isManager) {
-                        await Tools.sendImageBack2Parent(
-                            accessToken,
-                            imageInfo,
-                            zaloColl
-                        );
+                        await Tools.sendImageBack2Parent(accessToken, imageInfo, zaloColl);
 
                         res.send('Done!');
                     }
@@ -232,11 +146,7 @@ export const userRequest = async (req, res) => {
 
                 // Neu chua follow
                 else {
-                    await ZaloAPI.tagFollower(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa quan tâm'
-                    );
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
                     res.send('Done!');
                 }
@@ -323,15 +233,11 @@ export const userRequest = async (req, res) => {
                         );
                     } else if (!isSyntax) {
                         // Check xem tin nhan den OA co tu phia Tro giang khong
-                        const isManager = await Tools.isManagerCheck(
-                            zaloUserId,
-                            classInfoColl
-                        );
+                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
 
                         // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                         if (isManager) {
-                            const quoteMessageId =
-                                webhook.message.quote_msg_id || null;
+                            const quoteMessageId = webhook.message.quote_msg_id || null;
 
                             if (quoteMessageId !== null) {
                                 const replyContent = webhook.message.text;
@@ -375,9 +281,7 @@ export const userRequest = async (req, res) => {
                         const isK10 = formatContent === '#k10';
                         const isK11 = formatContent === '#k11';
                         const isK12 = formatContent === '#k12';
-                        const isTTL =
-                            formatContent.substring(0, 5) === '#tt20' &&
-                            formatContent.length === 9;
+                        const isTTL = formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9;
 
                         const isLDH = formatContent === '#ldh';
                         const isHPHT = formatContent === '#hpht';
@@ -386,18 +290,10 @@ export const userRequest = async (req, res) => {
                         const isDDHT = formatContent === '#ddht';
                         const isLHTG = formatContent === '#lhtg';
 
-                        const isCheckDKPH =
-                            formatContent.slice(0, 5) === '#dkph' &&
-                            formatContent.length === 11;
-                        const isCheckCDKPH =
-                            formatContent.slice(0, 6) === '#cdkph' &&
-                            formatContent.length === 12;
-                        const isCheckDKHS =
-                            formatContent.slice(0, 5) === '#dkhs' &&
-                            formatContent.length === 11;
-                        const isCheckCDKHS =
-                            formatContent.slice(0, 6) === '#cdkhs' &&
-                            formatContent.length === 12;
+                        const isCheckDKPH = formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11;
+                        const isCheckCDKPH = formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12;
+                        const isCheckDKHS = formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11;
+                        const isCheckCDKHS = formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12;
 
                         // const isCNH = formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10;
                         // const isCNHPH = formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12;
@@ -413,36 +309,19 @@ export const userRequest = async (req, res) => {
 
                         switch (true) {
                             case isDKTK:
-                                await Tools.signUpAlert(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    zaloColl
-                                );
+                                await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
                                 break;
 
                             case isVTDK:
-                                await Tools.signUpRole(
-                                    res,
-                                    accessToken,
-                                    zaloUserId
-                                );
+                                await Tools.signUpRole(res, accessToken, zaloUserId);
                                 break;
 
                             case isDKPH:
-                                await Tools.signUp4Parent(
-                                    res,
-                                    accessToken,
-                                    zaloUserId
-                                );
+                                await Tools.signUp4Parent(res, accessToken, zaloUserId);
                                 break;
 
                             case isDKHS:
-                                await Tools.signUp4Student(
-                                    res,
-                                    accessToken,
-                                    zaloUserId
-                                );
+                                await Tools.signUp4Student(res, accessToken, zaloUserId);
                                 break;
 
                             case isTTCL: {
@@ -467,11 +346,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -497,11 +372,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -530,11 +401,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -563,11 +430,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -601,11 +464,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -639,11 +498,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -667,11 +522,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -700,11 +551,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -733,11 +580,7 @@ export const userRequest = async (req, res) => {
                                     },
                                 };
 
-                                await ZaloAPI.sendMessageWithButton(
-                                    accessToken,
-                                    zaloUserId,
-                                    attachMessage
-                                );
+                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
                                 res.send('Done!');
 
@@ -748,25 +591,13 @@ export const userRequest = async (req, res) => {
                                 // #TT2007A0
                                 const classId = content.slice(-6).toUpperCase();
 
-                                await Tools.sendPublicClassInfo(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    classId
-                                );
+                                await Tools.sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId);
 
                                 break;
                             }
 
                             case isLDH:
-                                await Tools.sendClassInfo(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    zaloColl
-                                );
+                                await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
 
                                 res.send('Done!');
 
@@ -797,13 +628,7 @@ export const userRequest = async (req, res) => {
                                 break;
 
                             case isCPCK:
-                                await Tools.sendSyntaxPayment(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    zaloColl,
-                                    classInfoColl
-                                );
+                                await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
 
                                 break;
 
@@ -820,13 +645,7 @@ export const userRequest = async (req, res) => {
                                 break;
 
                             case isLHTG:
-                                await Tools.sendAssistantInfo(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    zaloColl,
-                                    classInfoColl
-                                );
+                                await Tools.sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                                 break;
 
                             case isCheckDKPH: {
@@ -902,9 +721,7 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isCNH: {
-                                const classId = formatContent
-                                    .slice(4)
-                                    .toUpperCase();
+                                const classId = formatContent.slice(4).toUpperCase();
 
                                 await Tools.sendStudentNotPayment(
                                     res,
@@ -918,9 +735,7 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isCNHPH: {
-                                const classId = formatContent
-                                    .slice(6)
-                                    .toUpperCase();
+                                const classId = formatContent.slice(6).toUpperCase();
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -936,13 +751,9 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isExCludeCNHPH: {
-                                const classId = formatContent
-                                    .slice(6, 12)
-                                    .toUpperCase();
+                                const classId = formatContent.slice(6, 12).toUpperCase();
 
-                                const excludeStudentLists = formatContent
-                                    .slice(13)
-                                    .split(',');
+                                const excludeStudentLists = formatContent.slice(13).split(',');
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -960,13 +771,9 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isIncludeCNHPH: {
-                                const classId = formatContent
-                                    .slice(6, 12)
-                                    .toUpperCase();
+                                const classId = formatContent.slice(6, 12).toUpperCase();
 
-                                const onlyStudentLists = formatContent
-                                    .slice(13)
-                                    .split(',');
+                                const onlyStudentLists = formatContent.slice(13).split(',');
 
                                 await Tools.alarmStudentNotPayment2Parent(
                                     res,
@@ -990,17 +797,9 @@ export const userRequest = async (req, res) => {
                 else {
                     const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
-                    await ZaloAPI.sendMessage(
-                        accessToken,
-                        zaloUserId,
-                        failContent
-                    );
+                    await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-                    await ZaloAPI.tagFollower(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa quan tâm'
-                    );
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
                     res.send('Done!');
                     return;
@@ -1017,10 +816,7 @@ export const userRequest = async (req, res) => {
 
                 if (isFollow) {
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
-                    const isParent = !(await Tools.isManagerCheck(
-                        zaloUserId,
-                        classInfoColl
-                    ));
+                    const isParent = !(await Tools.isManagerCheck(zaloUserId, classInfoColl));
                     if (isParent) {
                         const mediaInfo = webhook.message;
 
@@ -1034,11 +830,7 @@ export const userRequest = async (req, res) => {
                         );
                     }
                 } else {
-                    await ZaloAPI.tagFollower(
-                        accessToken,
-                        zaloUserId,
-                        'Chưa quan tâm'
-                    );
+                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }
 
                 res.send('Done!');
