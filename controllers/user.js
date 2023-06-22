@@ -167,8 +167,6 @@ export const userRequest = async (req, res) => {
                             messageId,
                             'Phụ huynh'
                         );
-
-                        res.send('Done');
                     } else if (isDKHS) {
                         Tools.signUp(
                             accessToken,
@@ -190,8 +188,6 @@ export const userRequest = async (req, res) => {
                             messageId,
                             'Phụ huynh'
                         );
-
-                        res.send('Done!');
                     } else if (isXHS) {
                         Tools.deleteAccount(
                             formatContent,
@@ -202,8 +198,6 @@ export const userRequest = async (req, res) => {
                             messageId,
                             'Học sinh'
                         );
-
-                        res.send('Done!');
                     } else if (isDKTG) {
                         Tools.signUp4Assistant(
                             res,
@@ -246,8 +240,6 @@ export const userRequest = async (req, res) => {
                                 content
                             );
                         }
-
-                        res.send('Done');
                     } else if (isSyntax) {
                         /*  Cac tinh nang tra cuu */
 
@@ -255,40 +247,13 @@ export const userRequest = async (req, res) => {
                         const isVTDK = formatContent === '#vtdk';
                         const isDKPH = formatContent === '#dkph';
                         const isDKHS = formatContent === '#dkhs';
-                        const isTTCL = formatContent === '#ttcl';
                         const isDC = formatContent === '#dc';
-                        const isTHCS = formatContent === '#thcs';
-                        const isK8 = formatContent === '#k8';
-                        const isK9 = formatContent === '#K9';
-                        const isTHPT = formatContent === '#thpt';
-                        const isK10 = formatContent === '#k10';
-                        const isK11 = formatContent === '#k11';
-                        const isK12 = formatContent === '#k12';
-                        const isTTL = formatContent.substring(0, 5) === '#tt20' && formatContent.length === 9;
-
                         const isLDH = formatContent === '#ldh';
                         const isHPHT = formatContent === '#hpht';
                         const isTTCK = formatContent === '#ttck';
                         const isCPCK = formatContent === '#cpck';
                         const isDDHT = formatContent === '#ddht';
                         const isLHTG = formatContent === '#lhtg';
-
-                        const isCheckDKPH = formatContent.slice(0, 5) === '#dkph' && formatContent.length === 11;
-                        const isCheckCDKPH = formatContent.slice(0, 6) === '#cdkph' && formatContent.length === 12;
-                        const isCheckDKHS = formatContent.slice(0, 5) === '#dkhs' && formatContent.length === 11;
-                        const isCheckCDKHS = formatContent.slice(0, 6) === '#cdkhs' && formatContent.length === 12;
-
-                        // const isCNH = formatContent.slice(0, 4) === '#cnh' && formatContent.length === 10;
-                        // const isCNHPH = formatContent.slice(0, 6) === '#cnhph' && formatContent.length === 12;
-                        // const isExCludeCNHPH =
-                        //     formatContent.slice(0, 6) === '#cnhph' &&
-                        //     formatContent.slice(0, 13).length === 13 &&
-                        //     formatContent.slice(12, 13) === '-';
-
-                        // const isIncludeCNHPH =
-                        //     formatContent.slice(0, 6) === '#cnhph' &&
-                        //     formatContent.slice(0, 13).length === 13 &&
-                        //     formatContent.slice(12, 13) === '+';
 
                         switch (true) {
                             case isDKTK:
@@ -306,35 +271,6 @@ export const userRequest = async (req, res) => {
                             case isDKHS:
                                 await Tools.signUp4Student(res, accessToken, zaloUserId);
                                 break;
-
-                            case isTTCL: {
-                                const attachMessage = {
-                                    text: 'Hiện tại lớp toán đang tổ chức cả 2 khối THCS và THPT. Cụ thể, khối THCS ôn luyện toán từ lớp 8 đến lớp 9 còn khối THPT là từ lớp 10 đến lớp 12.\nPhụ huynh có nhu cầu đăng kí cho con khối nào ạ?',
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Tôi muốn đăng kí khối THCS',
-                                                    payload: '#thcs',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Tôi muốn đăng kí khối THPT',
-                                                    payload: '#thpt',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
 
                             case isDC: {
                                 const attachMessage = {
@@ -356,225 +292,6 @@ export const userRequest = async (req, res) => {
                                 };
 
                                 await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isTHCS: {
-                                const attachMessage = {
-                                    text: 'Phụ huynh chọn khối con muốn theo học?',
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Khối 8',
-                                                    payload: '#k8',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Khối 9',
-                                                    payload: '#k9',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isK8: {
-                                const attachMessage = {
-                                    text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 8 ôn thi vào chuyên toán, có kiểm tra đầu vào để xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Lớp 8A0 chuyên toán',
-                                                    payload: '#tt2009A0',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Lớp 8A1 chuyên toán',
-                                                    payload: '#tt2009A1',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isK9: {
-                                const attachMessage = {
-                                    text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 9 ôn thi vào chuyên toán; 1 lớp 9 nâng cao ôn toán điều kiện vào 10.\nĐối với 2 lớp 9 ôn thi chuyên, các con sẽ phải làm một bài kiểm tra đầu vào để được xếp lớp. Với lớp toán nâng cao, ôn toán điều kiện thì không cần kiểm tra xếp lớp.\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Lớp 9A0 chuyên toán + chuyên tin',
-                                                    payload: '#TT2008A0',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Lớp 9A1 chuyên toán + chuyên tin',
-                                                    payload: '#TT2008A1',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Lớp 9A2 toán điều kiện và nâng cao',
-                                                    payload: '#TT2008A2',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isTHPT: {
-                                const attachMessage = {
-                                    text: 'Phụ huynh chọn khối con muốn theo học?',
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Khối 10',
-                                                    payload: '#k10',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Khối 11',
-                                                    payload: '#k11',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Khối 12',
-                                                    payload: '#k12',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isK10: {
-                                const attachMessage = {
-                                    text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 1 lớp 10 ôn thi THPTQG. Phụ huynh nhấn vào lớp bên dưới để tìm hiểu thông tin cụ thể ạ.`,
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Lớp 10A1 nâng cao',
-                                                    payload: '#tt2007A1',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isK11: {
-                                const attachMessage = {
-                                    text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 11 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Lớp 11A0 vận dụng cao',
-                                                    payload: '#tt2006A0',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Lớp 11A1 nâng cao',
-                                                    payload: '#tt2006A1',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isK12: {
-                                const attachMessage = {
-                                    text: `Năm học 2022-2023, Câu lạc bộ Toán Ánh Sáng tổ chức 2 lớp 12 ôn thi THPTQG, xếp lớp dựa trên bài thi đánh giá đầu vào.\n\nPhụ huynh mong muốn con theo học tại lớp nào ạ?`,
-                                    attachment: {
-                                        type: 'template',
-                                        payload: {
-                                            buttons: [
-                                                {
-                                                    title: 'Lớp 12A0 vận dụng cao',
-                                                    payload: '#tt2005A0',
-                                                    type: 'oa.query.show',
-                                                },
-                                                {
-                                                    title: 'Lớp 12A1 nâng cao',
-                                                    payload: '#tt2005A1',
-                                                    type: 'oa.query.show',
-                                                },
-                                            ],
-                                        },
-                                    },
-                                };
-
-                                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                                res.send('Done!');
-
-                                break;
-                            }
-
-                            case isTTL: {
-                                // #TT2007A0
-                                const classId = content.slice(-6).toUpperCase();
-
-                                await Tools.sendPublicClassInfo(res, accessToken, zaloUserId, classInfoColl, classId);
 
                                 break;
                             }
@@ -630,148 +347,6 @@ export const userRequest = async (req, res) => {
                             case isLHTG:
                                 await Tools.sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
                                 break;
-
-                            case isCheckDKPH: {
-                                const classId = content.slice(5).toUpperCase();
-                                const syntax = formatContent.slice(0, 5);
-
-                                await Tools.checkRegister(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    zaloColl,
-                                    classColl,
-                                    classId,
-                                    syntax
-                                );
-
-                                break;
-                            }
-
-                            case isCheckCDKPH: {
-                                const classId = content.slice(6).toUpperCase();
-                                const syntax = formatContent.slice(0, 6);
-
-                                await Tools.checkRegister(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    zaloColl,
-                                    classColl,
-                                    classId,
-                                    syntax
-                                );
-
-                                break;
-                            }
-
-                            case isCheckDKHS: {
-                                const classId = content.slice(5).toUpperCase();
-                                const syntax = formatContent.slice(0, 5);
-
-                                await Tools.checkRegister(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    zaloColl,
-                                    classColl,
-                                    classId,
-                                    syntax
-                                );
-
-                                break;
-                            }
-
-                            case isCheckCDKHS: {
-                                const classId = content.slice(6).toUpperCase();
-                                const syntax = formatContent.slice(0, 6);
-
-                                await Tools.checkRegister(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classInfoColl,
-                                    zaloColl,
-                                    classColl,
-                                    classId,
-                                    syntax
-                                );
-
-                                break;
-                            }
-
-                            case isCNH: {
-                                const classId = formatContent.slice(4).toUpperCase();
-
-                                await Tools.sendStudentNotPayment(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classId,
-                                    studentInfoColl,
-                                    classInfoColl
-                                );
-                                break;
-                            }
-
-                            case isCNHPH: {
-                                const classId = formatContent.slice(6).toUpperCase();
-
-                                await Tools.alarmStudentNotPayment2Parent(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classId,
-                                    zaloColl,
-                                    studentInfoColl,
-                                    classInfoColl
-                                );
-
-                                break;
-                            }
-
-                            case isExCludeCNHPH: {
-                                const classId = formatContent.slice(6, 12).toUpperCase();
-
-                                const excludeStudentLists = formatContent.slice(13).split(',');
-
-                                await Tools.alarmStudentNotPayment2Parent(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classId,
-                                    zaloColl,
-                                    studentInfoColl,
-                                    classInfoColl,
-                                    'excludeStudent',
-                                    excludeStudentLists
-                                );
-
-                                break;
-                            }
-
-                            case isIncludeCNHPH: {
-                                const classId = formatContent.slice(6, 12).toUpperCase();
-
-                                const onlyStudentLists = formatContent.slice(13).split(',');
-
-                                await Tools.alarmStudentNotPayment2Parent(
-                                    res,
-                                    accessToken,
-                                    zaloUserId,
-                                    classId,
-                                    zaloColl,
-                                    studentInfoColl,
-                                    classInfoColl,
-                                    'onlyStudent',
-                                    onlyStudentLists
-                                );
-
-                                break;
-                            }
                         }
                     }
                 }
@@ -783,9 +358,6 @@ export const userRequest = async (req, res) => {
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
-                    return;
                 }
 
                 break;
