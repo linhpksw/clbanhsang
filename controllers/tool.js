@@ -366,10 +366,6 @@ async function signUpRole(res, accessToken, zaloUserId) {
     };
 
     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-    res.send('Done!');
-
-    return;
 }
 
 async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
@@ -431,10 +427,6 @@ dkph 2005xxx 0912345678
 - Mỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã đăng kí.`;
 
     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
-
-    res.send('Done!');
-
-    return;
 }
 
 async function signUp4Student(res, accessToken, zaloUserId) {
@@ -450,10 +442,6 @@ dkhs 2005xxx 0912345678
 - Mỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã đăng kí.`;
 
     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
-
-    res.send('Done!');
-
-    return;
 }
 
 async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
@@ -481,10 +469,6 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
         };
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-        res.send('Done!');
-
-        return;
     } else {
         const studentZaloInfoArr = students.map((v) => {
             return [v.zaloStudentId, v.zaloClassId, v.role, v.aliasName];
@@ -619,10 +603,6 @@ async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classIn
             await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
         }
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
@@ -697,10 +677,6 @@ Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
@@ -723,10 +699,6 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, syntaxPayment);
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
@@ -795,10 +767,6 @@ ${syntaxPayment}
             await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
         }
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 function createQRCodePayment(amount, content) {
@@ -962,10 +930,6 @@ Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ t�
             await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
         }
     }
-
-    res.send('Done!');
-
-    return;
 }
 
 function removeVietNam(str) {

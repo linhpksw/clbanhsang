@@ -299,8 +299,6 @@ export const userRequest = async (req, res) => {
                             case isLDH:
                                 await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
 
-                                res.send('Done!');
-
                                 break;
 
                             case isHPHT:
