@@ -26,7 +26,7 @@ export const userRequest = async (req, res) => {
             case 'user_click_chatnow':
                 zaloUserId = webhook.user_id;
 
-                if (!(await Tools.isFollow(zaloUserId, zaloColl))) {
+                if (await Tools.isFollow(zaloUserId, zaloColl)) {
                     ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }
                 break;
@@ -44,8 +44,6 @@ export const userRequest = async (req, res) => {
                 if (isExistInZaloColl === null) {
                     const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
-                    // console.log(`${profileDoc.displayName} quan tâm OA (${profileDoc.zaloUserId})`);
-
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
@@ -62,11 +60,7 @@ export const userRequest = async (req, res) => {
                     } else {
                         await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
                     }
-
-                    // console.log('Nguời dùng quan tâm trở lại');
                 }
-
-                res.send('Done!');
 
                 break;
 
@@ -74,11 +68,10 @@ export const userRequest = async (req, res) => {
                 zaloUserId = webhook.follower.id;
 
                 await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
+
                 await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
 
                 MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'unfollow' } });
-
-                res.send('Done!');
 
                 break;
 
@@ -97,8 +90,6 @@ export const userRequest = async (req, res) => {
                     await Tools.sendReactBack2Parent(accessToken, zaloUserId, reactMessageId, reactIcon, zaloColl);
                 }
 
-                res.send('Done!');
-
                 break;
 
             case 'user_send_image':
@@ -116,8 +107,6 @@ export const userRequest = async (req, res) => {
                     // Neu tu phia tro giang thi phan hoi lai tin nhan hinh anh cho phu huynh
                     if (isManager) {
                         await Tools.sendImageBack2Parent(accessToken, imageInfo, zaloColl);
-
-                        res.send('Done!');
                     }
 
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
@@ -142,13 +131,6 @@ export const userRequest = async (req, res) => {
                             mediaInfo
                         );
                     }
-                }
-
-                // Neu chua follow
-                else {
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
-
-                    res.send('Done!');
                 }
 
                 break;
