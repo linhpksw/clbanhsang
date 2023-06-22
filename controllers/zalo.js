@@ -15,11 +15,6 @@ async function getFollowers(accessToken) {
 
     const jsonResponse = await response.json();
 
-    if (jsonResponse.error) {
-        console.log(jsonResponse);
-        return [];
-    }
-
     const { total, followers } = jsonResponse.data;
     totalFollowers.push(...followers);
 
@@ -65,14 +60,9 @@ async function getProfile(accessToken, zaloUserId) {
         headers: { access_token: accessToken },
     });
 
-    if (jsonResponse.error != 0) {
-        console.log(jsonResponse);
-        return null;
-    }
+    const jsonResponse = await response.json();
 
-    const jsonResponse = (await response.json()).data;
-
-    let { user_gender: userGender, display_name: displayName } = jsonResponse;
+    let { user_gender: userGender, display_name: displayName } = jsonResponse.data;
 
     userGender == 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
 
@@ -133,11 +123,6 @@ async function getConversation(accessToken, zaloUserId) {
     });
 
     const jsonResponse = await response.json();
-
-    if (jsonResponse.error != 0) {
-        console.log(jsonResponse);
-        return null;
-    }
 
     return jsonResponse.data;
 }
@@ -248,7 +233,7 @@ async function tagFollower(accessToken, zaloUserId, tagName) {
 
     const jsonResponse = await result.json();
 
-    console.log(jsonResponse.message);
+    console.log(jsonResponse);
 }
 
 async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
@@ -268,7 +253,7 @@ async function removeFollowerFromTag(accessToken, zaloUserId, tagName) {
 
     const jsonResponse = await response.json();
 
-    console.log(jsonResponse.message);
+    console.log(jsonResponse);
 }
 
 async function sendReaction(accessToken, zaloUserId, messageId, action) {

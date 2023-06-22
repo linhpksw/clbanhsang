@@ -45,6 +45,7 @@ export const userRequest = async (req, res) => {
                     const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
                     MongoDB.insertOneUser(zaloColl, profileDoc);
