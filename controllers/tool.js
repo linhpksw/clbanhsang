@@ -1279,6 +1279,8 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
         const successContent = `✅ Đăng kí thành công cho trợ giảng ${taName} với mã lớp ${classId} và số điện thoại ${taPhone}.`;
 
         await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
+
+        await ZaloAPI.removeFollowerFromTag(accessToken, taZaloId, 'Chưa đăng kí');
     } else {
         // Neu ton tai roi thi:
 
