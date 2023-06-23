@@ -337,10 +337,6 @@ async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, stud
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
     }
-
-    await res.send('Done');
-
-    return;
 }
 
 async function signUpRole(res, accessToken, zaloUserId) {
@@ -403,10 +399,6 @@ Phụ huynh có muốn đăng kí thêm cho học sinh khác không?
         };
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-        res.send('Done!');
-
-        return;
     }
     // Neu chua thi hien thong bao chon vai tro dang ki
     else {
@@ -1055,8 +1047,6 @@ async function sendResponse2Client(res, accessToken, zaloUserId, messageId, resp
     ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
     await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
-
-    res.send('Done!');
 }
 
 async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
@@ -1162,121 +1152,6 @@ async function sendImage2Assistant(res, accessToken, classInfoColl, zaloClassId,
 
         await ZaloAPI.sendImageByUrl(accessToken, taZaloId, forwardImageContent, imageUrl);
     }
-
-    res.send('Done!');
-
-    return;
-}
-
-async function forwardOtherMedia2Assistant(res, accessToken, zaloUserId, zaloColl, classInfoColl, mediaInfo) {
-    const isRegister = await MongoDB.findOneUser(
-        zaloColl,
-        { zaloUserId: `${zaloUserId}` },
-        { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
-    );
-
-    // PHHS chua dang ki tai khoan thi khong nhan lai
-    if (isRegister.students.length === 0) {
-        await res.send('Done');
-        return;
-    }
-    // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
-    else {
-        const { userPhone, displayName } = isRegister;
-
-        const { attachments, text: content, msg_id: messageId } = mediaInfo;
-        const { payload, type } = attachments[0];
-
-        switch (type) {
-            case 'link':
-                const { description: descLink, url: urlLink } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi link: ${urlLink} \n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-
-                break;
-
-            case 'sticker':
-                const { url: urlSticker } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi sticker: ${urlSticker} \n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-
-                break;
-
-            case 'video':
-                const { description: descVideo, url: urlVideo } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi video: ${urlVideo} \n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-
-                break;
-
-            case 'file':
-                const { url: urlFile, size: sizeFile, name: nameFile, type: typeFile } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi file: ${nameFile}\nLink: ${urlFile} \n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-
-                break;
-
-            case 'audio':
-                const { url: urlAudio } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi voice: ${urlAudio}\n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-                break;
-
-            case 'image':
-                const { url: urlImage } = payload;
-
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                for (let i = 0; i < isRegister.students.length; i++) {
-                    const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
-
-                    // chuyen tiep tin nhan den tro giang tuong ung
-                    const forwardMediaContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh: ${urlImage}\n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                    await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardMediaContent);
-                }
-                break;
-        }
-    }
 }
 
 async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, classInfoColl, imageInfo) {
@@ -1288,7 +1163,6 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
 
     // PHHS chua dang ki tai khoan thi khong nhan lai
     if (isRegister.students.length === 0) {
-        await res.send('Done');
         return;
     }
     // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
@@ -1405,16 +1279,12 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
         const successContent = `✅ Đăng kí thành công cho trợ giảng ${taName} với mã lớp ${classId} và số điện thoại ${taPhone}.`;
 
         await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
-
-        return;
     } else {
         // Neu ton tai roi thi:
 
         const failContent = `❌ Đăng kí thất bại vì trợ giảng ${taName} đã liên kết với mã lớp ${classId}.`;
 
         await sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
-
-        return;
     }
 }
 
