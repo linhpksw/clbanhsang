@@ -1305,39 +1305,48 @@ async function deleteAccount(formatContent, accessToken, taZaloId, zaloColl, cla
             const registerPhone = formatContent.slice(-10);
 
             // Xoa tag va thong tin tren Zalo OA chat
-            const result = await MongoDB.findOneUser(
+            const results = await MongoDB.findUsers(
                 zaloColl,
-                { userPhone: registerPhone },
+                {
+                    userPhone: registerPhone,
+                    'students.zaloStudentId': targetStudentId,
+                },
                 { projection: { _id: 0 } }
             );
 
-            const { zaloUserId, students, displayName } = result;
+            for (const result of results) {
+                const { zaloUserId, students, displayName } = result;
 
-            // Xoa tag lop hoc
-            for (let i = 0; i < students.length; i++) {
-                const removeTag = students[i].zaloClassId;
+                // Xoa tag lop hoc
+                for (let i = 0; i < students.length; i++) {
+                    const removeTag = students[i].zaloClassId;
 
-                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
+                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, removeTag);
+                }
+
+                // Xoa tag Phu huynh/Hoc sinh
+                ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
+                ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+
+                // Xoa dang ki tai khoan trong Zalo Coll
+                MongoDB.updateOneUser(
+                    zaloColl,
+                    { userPhone: registerPhone, 'students.zaloStudentId': targetStudentId },
+                    { $set: { userPhone: null, students: [] } }
+                );
+
+                // Gui xac nhan den PHHS
+                const sendResponse2DeleteUser = `Trợ giảng đã xoá số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
+
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
+
+                // Gui xac nhan den Tro giang
+                const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
+
+                await ZaloAPI.sendReaction(accessToken, taZaloId, messageId, 'heart');
+
+                await ZaloAPI.sendMessage(accessToken, taZaloId, successContent);
             }
-
-            // Xoa tag Phu huynh/Hoc sinh
-            ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloRole);
-            ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
-
-            // Xoa dang ki tai khoan trong Zalo Coll
-            MongoDB.updateOneUser(zaloColl, { userPhone: registerPhone }, { $set: { userPhone: null, students: [] } });
-
-            // Gui xac nhan den PHHS
-            const sendResponse2DeleteUser = `Trợ giảng đã xoá số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
-
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, sendResponse2DeleteUser);
-
-            // Gui xac nhan den Tro giang
-            const successContent = `🗑️ Xoá thành công số điện thoại ${registerPhone} được đăng kí với học sinh ${targetStudentId} trên Zalo ${displayName}.`;
-
-            await ZaloAPI.sendReaction(accessToken, taZaloId, messageId, 'heart');
-
-            await ZaloAPI.sendMessage(accessToken, taZaloId, successContent);
         }
 
         // Neu cu phap sai
