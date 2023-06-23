@@ -1305,17 +1305,18 @@ async function deleteAccount(formatContent, accessToken, taZaloId, zaloColl, cla
             const registerPhone = formatContent.slice(-10);
 
             // Xoa tag va thong tin tren Zalo OA chat
-            const results = await MongoDB.findOneUser(
-                zaloColl,
+
+            const cursor = zaloColl.find(
                 {
-                    userPhone: registerPhone,
                     'students.zaloStudentId': targetStudentId,
+                    userPhone: registerPhone,
                 },
                 { projection: { _id: 0 } }
             );
 
-            for (const result of results) {
-                const { zaloUserId, students, displayName } = result;
+            const documents = await cursor.toArray();
+            for (const v of documents) {
+                const { zaloUserId, students, displayName } = v;
 
                 // Xoa tag lop hoc
                 for (let i = 0; i < students.length; i++) {
