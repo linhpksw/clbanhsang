@@ -1714,7 +1714,6 @@ export {
     signUp4Student,
     forwardImage2Assistant,
     sendImageBack2Parent,
-    forwardOtherMedia2Assistant,
     sendAssistantInfo,
     sendStudentNotPayment,
     getStudyDate,
