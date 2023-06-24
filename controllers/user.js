@@ -453,8 +453,7 @@ export const updateRequest = async (req, res) => {
             return updateDoc;
         });
 
-        const classId = updateStudentDocs[0].classId;
-        const term = updateStudentDocs[0].terms[0].term;
+        const { classId, term } = webhook[0];
 
         // tim kiem tat ca du lieu lop x dot y
         const cursor = studentInfoColl.find(
@@ -472,7 +471,7 @@ export const updateRequest = async (req, res) => {
             const doc = updateStudentDocs[i];
             const { studentId } = doc;
 
-            // Neu da ton tai dot tuong ung thi update
+            // Neu da ton tai hoc sinh voi dot tuong ung thi update
             if (studentTermData.includes(studentId)) {
                 bulkWriteStudentInfo.push({
                     updateOne: {
@@ -480,11 +479,11 @@ export const updateRequest = async (req, res) => {
                             studentId: studentId,
                             'terms.term': parseInt(term),
                         },
-                        update: { $set: { 'terms.$': doc.terms[0] } }, // cap nhat dot dau tien
+                        update: { $set: { 'terms.$': doc.terms[0] } },
                     },
                 });
             }
-            // Neu chua thi kiem tra da co dot nao chua
+            // Neu chua thi kiem tra hoc sinh da co dot nao chua
             else {
                 const isExistTerm = await MongoDB.findOneUser(
                     studentInfoColl,
@@ -492,16 +491,16 @@ export const updateRequest = async (req, res) => {
                     { _id: 0, terms: 1 }
                 );
 
-                // Neu chua co dot nao, tao du lieu tu dau
+                // Neu chua co dot nao, tao du lieu hoc sinh tu dau
                 if (isExistTerm === null) {
                     bulkWriteStudentInfo.push({ insertOne: { document: doc } });
                 }
-                // Neu da co du lieu dot cu, day them vao
+                // Neu da co du lieu hoc sinh dot cu, day them du lieu dot moi vao
                 else {
                     bulkWriteStudentInfo.push({
                         updateOne: {
                             filter: { studentId: studentId },
-                            update: { $push: { terms: doc.terms[0] } }, // chi push dot dau tien
+                            update: { $push: { terms: doc.terms[0] } },
                         },
                     });
                 }
@@ -510,9 +509,225 @@ export const updateRequest = async (req, res) => {
 
         const result = await studentInfoColl.bulkWrite(bulkWriteStudentInfo);
 
+        console.log(result);
+
         res.send('Done');
     } catch (err) {
         console.error(err);
     } finally {
     }
+};
+
+export const invoiceRequest = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const studentInfoColl = db.collection('studentInfo');
+        const tokenColl = db.collection('tokens');
+        const classInfoColl = db.collection('classInfo');
+        const zaloColl = db.collection('zaloUsers');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        const updateStudentDocs = webhook.map((v) => {
+            const {
+                index, // vi tri hoc sinh
+                studentId,
+                classId,
+                studentName,
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = v;
+
+            const newAttendances = attendances.map((v) => {
+                const { no, date, teacher } = v;
+
+                const newDate = Tools.createDate(date);
+
+                return { no, newDate, teacher };
+            });
+
+            const newAbsences = absences.map((v) => {
+                const { no, date, teacher } = v;
+
+                const newDate = Tools.createDate(date);
+
+                return { no, newDate, teacher };
+            });
+
+            const updateDoc = {
+                studentId: studentId,
+                classId: classId,
+                studentName: studentName,
+                terms: [
+                    {
+                        index: index,
+                        term: parseInt(term),
+                        start: Tools.createDate(start),
+                        end: Tools.createDate(end),
+                        total: total,
+                        study: study,
+                        absent: absent,
+                        subject: subject,
+                        remainderBefore: remainderBefore,
+                        billing: billing,
+                        payment: payment,
+                        type: type,
+                        paidDate: paidDate,
+                        remainder: remainder,
+                        attendances: newAttendances,
+                        absences: newAbsences,
+                    },
+                ],
+            };
+
+            return updateDoc;
+        });
+
+        for (let i = 0; i < updateStudentDocs.length; i++) {
+            const doc = updateStudentDocs[i];
+            const { studentId, terms } = doc;
+
+            // Fetch current data for this student and term
+            const currentData = await studentInfoColl.findOne(
+                {
+                    studentId: studentId,
+                    'terms.term': parseInt(terms[0].term),
+                },
+                { projection: { _id: 0, 'terms.$': 1 } }
+            );
+
+            // If there is a difference in the 'payment' value between the current data and the incoming webhook
+            if (currentData && currentData.terms[0].payment !== terms[0].payment) {
+                const existClass = await MongoDB.findOneUser(
+                    classInfoColl,
+                    { classId: classId },
+                    { projection: { _id: 0, className: 1 } }
+                );
+
+                if (existClass === null) {
+                    console.log('Class not exist');
+                    break;
+                }
+
+                const invoice = createInvoice(doc, existClass.className);
+
+                const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+
+                for (let i = 0; i < zaloUserIdArr.length; i++) {
+                    const { zaloUserId } = zaloUserIdArr[i];
+
+                    await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
+                }
+            }
+        }
+
+        res.send('Done');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+const createInvoice = (doc, className) => {
+    const { studentId, studentName, terms } = doc;
+
+    const { term, remainderBefore, billing, payment, paidDate, remainder } = terms[0];
+
+    const remainderValue = Tools.formatCurrency(remainder);
+    let statusKey, statusValue;
+    if (remainder === 0) {
+        statusKey = 'Nộp đủ';
+        statusValue = '';
+    } else if (remainder < 0) {
+        statusKey = 'Nộp thiếu';
+        statusValue = remainderValue;
+    } else {
+        statusKey = 'Nộp dư';
+        statusValue = remainderValue;
+    }
+
+    const invoice = {
+        attachment: {
+            type: 'template',
+            payload: {
+                template_type: 'transaction_billing',
+                language: 'VI',
+                elements: [
+                    {
+                        image_url:
+                            'https://img.freepik.com/free-vector/happy-students-learning-math-college-school-isolated-flat-illustration_74855-10799.jpg?w=900&t=st=1687578435~exp=1687579035~hmac=c2bab6af873f00a495540dde952a0e7dd9331bbf4c6a6db67b5150eb86c5e81f',
+                        type: 'banner',
+                    },
+                    {
+                        type: 'header',
+                        content: 'Xác nhận thanh toán học phí con',
+                        align: 'center',
+                    },
+                    {
+                        type: 'text',
+                        align: 'center',
+                        content: `${studentName}`,
+                    },
+                    {
+                        type: 'table',
+                        content: [
+                            {
+                                value: studentId,
+                                key: 'Mã học sinh',
+                            },
+                            {
+                                value: `${className} - ${term}`,
+                                key: 'Đợt',
+                            },
+                            {
+                                value: paidDate,
+                                key: 'Ngày nộp',
+                            },
+                            {
+                                value: Tools.formatCurrency(billing),
+                                key: 'Học phí',
+                            },
+                            {
+                                value: Tools.formatCurrency(remainderBefore),
+                                key: remainderBefore < 0 ? 'Nợ cũ' : 'Dư cũ',
+                            },
+                            {
+                                value: Tools.formatCurrency(payment),
+                                key: 'Đã nộp',
+                            },
+                            {
+                                style: 'red',
+                                value: `${statusKey} ${statusValue}`,
+                                key: 'Trạng thái',
+                            },
+                        ],
+                    },
+                    {
+                        type: 'text',
+                        align: 'center',
+                        content:
+                            'Cảm ơn quý phụ huynh đã luôn tin tưởng và lựa chọn trung tâm toán Câu lạc bộ Ánh Sáng!',
+                    },
+                ],
+                buttons: [],
+            },
+        },
+    };
+
+    return invoice;
 };

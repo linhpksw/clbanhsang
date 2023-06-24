@@ -215,6 +215,30 @@ async function sendMessage(accessToken, zaloUserId, message) {
     console.log(jsonResponse);
 }
 
+async function sendInvoice(accessToken, zaloUserId, invoice) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const URL = `https://openapi.zalo.me/v3.0/oa/message/transaction?`;
+
+    const content = {
+        recipient: { user_id: zaloUserId },
+        message: invoice,
+    };
+
+    const response = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(content),
+    });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
+}
+
 async function tagFollower(accessToken, zaloUserId, tagName) {
     const URL = `https://openapi.zalo.me/v2.0/oa/tag/tagfollower`;
 
@@ -309,4 +333,5 @@ export {
     getConversation,
     sendMessageWithButton,
     sendImageByUrl,
+    sendInvoice,
 };
