@@ -530,89 +530,21 @@ export const invoiceRequest = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const updateStudentDocs = webhook.map((v) => {
-            const {
-                index, // vi tri hoc sinh
-                studentId,
-                classId,
-                studentName,
-                term, // dot hien tai
-                start, // bat dau dot
-                end, // ket thuc dot
-                total, // so buoi trong dot
-                study, // so buoi hoc
-                absent, // so buoi nghi
-                subject, // mon hoc
-                remainderBefore, // du dot truoc
-                billing, // phai nop
-                payment, // da nop
-                type, // hinh thuc nop
-                paidDate, // ngay nop
-                remainder, // con thua
-                attendances,
-                absences,
-            } = v;
-
-            const newAttendances = attendances.map((v) => {
-                const { no, date, teacher } = v;
-
-                const newDate = Tools.createDate(date);
-
-                return { no, newDate, teacher };
-            });
-
-            const newAbsences = absences.map((v) => {
-                const { no, date, teacher } = v;
-
-                const newDate = Tools.createDate(date);
-
-                return { no, newDate, teacher };
-            });
-
-            const updateDoc = {
-                studentId: studentId,
-                classId: classId,
-                studentName: studentName,
-                terms: [
-                    {
-                        index: index,
-                        term: parseInt(term),
-                        start: Tools.createDate(start),
-                        end: Tools.createDate(end),
-                        total: total,
-                        study: study,
-                        absent: absent,
-                        subject: subject,
-                        remainderBefore: remainderBefore,
-                        billing: billing,
-                        payment: payment,
-                        type: type,
-                        paidDate: paidDate,
-                        remainder: remainder,
-                        attendances: newAttendances,
-                        absences: newAbsences,
-                    },
-                ],
-            };
-
-            return updateDoc;
-        });
-
-        for (let i = 0; i < updateStudentDocs.length; i++) {
-            const doc = updateStudentDocs[i];
-            const { studentId, terms } = doc;
+        for (let i = 0; i < webhook.length; i++) {
+            const doc = webhook[i];
+            const { studentId, classId, term, payment } = doc;
 
             // Fetch current data for this student and term
             const currentData = await studentInfoColl.findOne(
                 {
                     studentId: studentId,
-                    'terms.term': parseInt(terms[0].term),
+                    'terms.term': parseInt(term),
                 },
                 { projection: { _id: 0, 'terms.$': 1 } }
             );
 
             // If there is a difference in the 'payment' value between the current data and the incoming webhook
-            if (currentData && currentData.terms[0].payment !== terms[0].payment) {
+            if (currentData && currentData.terms[0].payment !== payment) {
                 const existClass = await MongoDB.findOneUser(
                     classInfoColl,
                     { classId: classId },
@@ -644,9 +576,7 @@ export const invoiceRequest = async (req, res) => {
 };
 
 const createInvoice = (doc, className) => {
-    const { studentId, studentName, terms } = doc;
-
-    const { term, remainderBefore, billing, payment, paidDate, remainder } = terms[0];
+    const { studentId, studentName, term, remainderBefore, billing, payment, paidDate, remainder } = doc;
 
     const remainderValue = Tools.formatCurrency(remainder);
     let statusKey, statusValue;
