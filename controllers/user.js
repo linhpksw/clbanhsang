@@ -480,7 +480,7 @@ export const updateRequest = async (req, res) => {
                             studentId: studentId,
                             'terms.term': parseInt(term),
                         },
-                        update: { $set: { 'terms.$': doc.terms[0] }, $setOnInsert: { 'terms.$.check': '' } },
+                        update: { $set: { 'terms.$': doc.terms[0] } },
                     },
                 });
             }
@@ -571,14 +571,12 @@ export const invoiceRequest = async (req, res) => {
                 await studentInfoColl.updateOne(
                     {
                         studentId: studentId,
+                        'terms.term': parseInt(term),
                     },
                     {
                         $set: {
-                            'terms.$[term].check': payment,
+                            'terms.$.check': payment,
                         },
-                    },
-                    {
-                        arrayFilters: [{ 'term.term': parseInt(term) }],
                     }
                 );
             }
