@@ -594,16 +594,19 @@ const createInvoice = (doc, className) => {
 
     const remainder = remainderBefore + billing - payment;
     const remainderValue = Tools.formatCurrency(remainder);
-    let statusKey, statusValue;
+    let statusKey, statusValue, statusStyle;
     if (remainder === 0) {
         statusKey = 'Nộp đủ';
         statusValue = '';
+        statusStyle = 'green';
     } else if (remainder < 0) {
         statusKey = 'Nộp thiếu';
         statusValue = remainderValue;
+        statusStyle = 'red';
     } else {
         statusKey = 'Nộp dư';
         statusValue = remainderValue;
+        statusStyle = 'yellow';
     }
 
     const invoice = {
@@ -656,7 +659,7 @@ const createInvoice = (doc, className) => {
                                 key: 'Đã nộp',
                             },
                             {
-                                style: 'red',
+                                style: statusStyle,
                                 value: `${statusKey} ${statusValue}`,
                                 key: 'Trạng thái',
                             },
