@@ -612,7 +612,7 @@ export const invoiceRequest = async (req, res) => {
 const createInvoice = (doc, className) => {
     const { studentId, studentName, term, remainderBefore, billing, payment, paidDate } = doc;
 
-    const remainder = remainderBefore + payment - billing;
+    const remainder = payment - billing;
     const remainderValue = Tools.formatCurrency(remainder);
     let statusKey, statusValue, statusStyle;
     if (remainder === 0) {
