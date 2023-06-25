@@ -479,7 +479,26 @@ export const updateRequest = async (req, res) => {
                             studentId: studentId,
                             'terms.term': parseInt(term),
                         },
-                        update: { $set: { 'terms.$': doc.terms[0] } },
+                        update: {
+                            $set: {
+                                'terms.$.index': doc.terms[0].index,
+                                'terms.$.term': doc.terms[0].term,
+                                'terms.$.start': doc.terms[0].start,
+                                'terms.$.end': doc.terms[0].end,
+                                'terms.$.total': doc.terms[0].total,
+                                'terms.$.study': doc.terms[0].study,
+                                'terms.$.absent': doc.terms[0].absent,
+                                'terms.$.subject': doc.terms[0].subject,
+                                'terms.$.remainderBefore': doc.terms[0].remainderBefore,
+                                'terms.$.billing': doc.terms[0].billing,
+                                'terms.$.payment': doc.terms[0].payment,
+                                'terms.$.type': doc.terms[0].type,
+                                'terms.$.paidDate': doc.terms[0].paidDate,
+                                'terms.$.remainder': doc.terms[0].remainder,
+                                'terms.$.attendances': doc.terms[0].attendances,
+                                'terms.$.absences': doc.terms[0].absences,
+                            },
+                        },
                     },
                 });
             }
