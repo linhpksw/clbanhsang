@@ -441,6 +441,7 @@ export const updateRequest = async (req, res) => {
                         remainderBefore: remainderBefore,
                         billing: billing,
                         payment: payment,
+                        check: '',
                         type: type,
                         paidDate: paidDate,
                         remainder: remainder,
@@ -479,7 +480,7 @@ export const updateRequest = async (req, res) => {
                             studentId: studentId,
                             'terms.term': parseInt(term),
                         },
-                        update: { $set: { 'terms.$': doc.terms[0] } },
+                        update: { $set: { 'terms.$': doc.terms[0] }, $setOnInsert: { 'terms.$.check': '' } },
                     },
                 });
             }
@@ -544,7 +545,7 @@ export const invoiceRequest = async (req, res) => {
             );
 
             // If there is a difference in the 'payment' value between the current data and the incoming webhook
-            if (currentData && currentData.terms[0].payment !== payment) {
+            if (currentData && currentData.terms[0].check !== payment) {
                 const existClass = await MongoDB.findOneUser(
                     classInfoColl,
                     { classId: classId },
@@ -565,6 +566,19 @@ export const invoiceRequest = async (req, res) => {
 
                     await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
                 }
+
+                // Update the 'check' value in the database
+                await studentInfoColl.updateOne(
+                    {
+                        studentId: studentId,
+                        'terms.term': parseInt(term),
+                    },
+                    {
+                        $set: {
+                            'terms.$.check': payment,
+                        },
+                    }
+                );
             }
         }
 
