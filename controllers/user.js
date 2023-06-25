@@ -667,13 +667,14 @@ const createInvoice = (doc, className) => {
                                 key: 'Ngày nộp',
                             },
                             {
-                                value: Tools.formatCurrency(billing),
-                                key: 'Học phí',
-                            },
-                            {
                                 value: Tools.formatCurrency(remainderBefore),
                                 key: remainderBefore < 0 ? 'Nợ cũ' : 'Dư cũ',
                             },
+                            {
+                                value: Tools.formatCurrency(billing),
+                                key: 'Phải nộp',
+                            },
+
                             {
                                 value: Tools.formatCurrency(payment),
                                 key: 'Đã nộp',
