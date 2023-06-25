@@ -571,12 +571,14 @@ export const invoiceRequest = async (req, res) => {
                 await studentInfoColl.updateOne(
                     {
                         studentId: studentId,
-                        'terms.term': parseInt(term),
                     },
                     {
                         $set: {
-                            'terms.$.check': payment,
+                            'terms.$[term].check': payment,
                         },
+                    },
+                    {
+                        arrayFilters: [{ 'term.term': parseInt(term) }],
                     }
                 );
             }
