@@ -576,9 +576,9 @@ export const invoiceRequest = async (req, res) => {
 };
 
 const createInvoice = (doc, className) => {
-    const { studentId, studentName, term, remainderBefore, billing, payment, paidDate, remainder } = doc;
+    const { studentId, studentName, term, remainderBefore, billing, payment, paidDate } = doc;
 
-    const remainderValue = Tools.formatCurrency(remainder);
+    const remainderValue = Tools.formatCurrency(remainderBefore + billing - payment);
     let statusKey, statusValue;
     if (remainder === 0) {
         statusKey = 'Nộp đủ';
@@ -621,7 +621,7 @@ const createInvoice = (doc, className) => {
                                 key: 'Mã học sinh',
                             },
                             {
-                                value: `${className} - ${term}`,
+                                value: `${className} - D${term}`,
                                 key: 'Đợt',
                             },
                             {
