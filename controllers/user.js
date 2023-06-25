@@ -600,13 +600,13 @@ const createInvoice = (doc, className) => {
         statusValue = '';
         statusStyle = 'green';
     } else if (remainder < 0) {
-        statusKey = 'Nộp thiếu';
-        statusValue = remainderValue;
-        statusStyle = 'red';
-    } else {
         statusKey = 'Nộp dư';
         statusValue = remainderValue;
         statusStyle = 'yellow';
+    } else {
+        statusKey = 'Nộp thiếu';
+        statusValue = remainderValue;
+        statusStyle = 'red';
     }
 
     const invoice = {
