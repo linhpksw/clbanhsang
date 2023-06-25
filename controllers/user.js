@@ -441,7 +441,6 @@ export const updateRequest = async (req, res) => {
                         remainderBefore: remainderBefore,
                         billing: billing,
                         payment: payment,
-                        check: '',
                         type: type,
                         paidDate: paidDate,
                         remainder: remainder,
@@ -494,10 +493,12 @@ export const updateRequest = async (req, res) => {
 
                 // Neu chua co dot nao, tao du lieu hoc sinh tu dau
                 if (isExistTerm === null) {
+                    doc.terms[0].check = '';
                     bulkWriteStudentInfo.push({ insertOne: { document: doc } });
                 }
                 // Neu da co du lieu hoc sinh dot cu, day them du lieu dot moi vao
                 else {
+                    doc.terms[0].check = '';
                     bulkWriteStudentInfo.push({
                         updateOne: {
                             filter: { studentId: studentId },
