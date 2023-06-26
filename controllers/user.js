@@ -612,8 +612,22 @@ export const invoiceRequest = async (req, res) => {
 const createInvoice = (doc, className) => {
     const { studentId, studentName, term, remainderBefore, billing, payment, paidDate } = doc;
 
-    const remainder = payment - billing;
+    const billingValue = isNaN(billing) ? billing : Tools.formatCurrency(billing);
+
+    let remainder;
+    if (isNaN(payment)) {
+        if (billing === 'Đã nộp đủ') {
+            remainder = payment;
+        } else if (billing.contains('Thừa')) {
+            const billingNum = billing.replace(/\D/g, '');
+            remainder = remainderBefore + billingNum;
+        }
+    } else {
+        remainder = payment - billing;
+    }
+
     const remainderValue = Tools.formatCurrency(remainder);
+
     let statusKey, statusValue, statusStyle;
     if (remainder === 0) {
         statusKey = 'Nộp đủ';
@@ -623,7 +637,7 @@ const createInvoice = (doc, className) => {
         statusKey = 'Nộp thiếu';
         statusValue = remainderValue;
         statusStyle = 'red';
-    } else {
+    } else if (remainder > 0) {
         statusKey = 'Nộp dư';
         statusValue = remainderValue;
         statusStyle = 'yellow';
@@ -671,7 +685,7 @@ const createInvoice = (doc, className) => {
                                 key: remainderBefore < 0 ? 'Nợ cũ' : 'Dư cũ',
                             },
                             {
-                                value: Tools.formatCurrency(billing),
+                                value: billingValue,
                                 key: 'Phải nộp',
                             },
 
