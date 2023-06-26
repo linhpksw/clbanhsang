@@ -554,15 +554,17 @@ export const getZaloUsers = async (req, res) => {
 
         let zaloList = [];
 
-        result.forEach((v, i) => {
+        result.forEach((v) => {
             const { zaloUserId, displayName, userPhone, students } = v;
             students.forEach((e) => {
                 const { zaloStudentId, aliasName } = e;
                 const studentName = aliasName.slice(3);
 
-                zaloList.push([i * 1.0 + 1, zaloUserId, zaloStudentId, studentName, displayName, userPhone]);
+                zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, userPhone]);
             });
         });
+
+        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
 
         client.authorize((err) => {
             if (err) {
