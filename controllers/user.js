@@ -565,7 +565,7 @@ export const invoiceRequest = async (req, res) => {
             );
 
             // If there is a difference in the 'payment' value between the current data and the incoming webhook
-            if (currentData && currentData.terms[0].check !== payment) {
+            if (currentData && currentData.terms[0].check !== payment && payment > 0) {
                 const existClass = await MongoDB.findOneUser(
                     classInfoColl,
                     { classId: classId },
