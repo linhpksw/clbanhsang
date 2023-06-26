@@ -618,7 +618,7 @@ const createInvoice = (doc, className) => {
     if (isNaN(billing)) {
         if (billing === 'Đã nộp đủ') {
             remainder = payment;
-        } else if (billing.contains('Thừa')) {
+        } else if (billing.includes('Thừa')) {
             const billingNum = billing.replace(/\D/g, '');
             remainder = remainderBefore + billingNum;
         }
