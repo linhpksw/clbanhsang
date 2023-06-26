@@ -154,7 +154,7 @@ export const userRequest = async (req, res) => {
 
                         // Neu tu phia tro giang thi thay doi syntax
                         if (isManager) {
-                            zaloUserId = formatContent.slice(-19);
+                            zaloUserId = formatContent.slice(21);
                             formatContent = formatContent.slice(0, 21);
                         }
 
