@@ -619,14 +619,12 @@ const createInvoice = (doc, className) => {
         if (billing === 'Đã nộp đủ') {
             remainder = payment;
         } else if (billing.includes('Thừa')) {
-            const billingNum = billing.replace(/\D/g, '');
+            const billingNum = parseInt(billing.replace(/\D/g, ''));
             remainder = remainderBefore + billingNum;
         }
     } else {
         remainder = payment - billing;
     }
-
-    console.log(remainder);
 
     const remainderValue = Tools.formatCurrency(remainder);
 
