@@ -647,7 +647,21 @@ export const getStatistic = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
 
-        const { sourceId, sheetName, classList, role } = data;
+        const classList = [
+            '2006A0',
+            '2006A1',
+            '2007A0',
+            '2007A1',
+            '2008A0',
+            '2008A1',
+            '2009A0',
+            '2009A1',
+            '2009A2',
+            '2010A0',
+            '2010A1',
+        ];
+
+        const { sourceId, sheetName, role } = data;
 
         let finalData = [];
 
