@@ -512,7 +512,7 @@ export const getListUserFromClassId = async (req, res) => {
     }
 };
 
-export const getListUserFromAdmin = async (req, res) => {
+export const getZaloUsers = async (req, res) => {
     const data = req.body;
 
     try {
@@ -520,81 +520,56 @@ export const getListUserFromAdmin = async (req, res) => {
         const db = MongoDB.client.db('zalo_servers');
         const zaloColl = db.collection('zaloUsers');
 
-        const { sourceId, sheetName, classIds, status, role } = data;
+        const { sourceId, sheetName, classId, role } = data;
 
-        let classCheckList = [];
-        if (status === 'Đang học') {
-            classCheckList = [...classIds];
-        } else {
-            classIds.forEach((v) => classCheckList.push([`N${v[0]}`, v[1]]));
-        }
-
-        let zaloList = [];
-
-        for (let i = 0; i < classCheckList.length; i++) {
-            const [classId, className] = classCheckList[i];
-
-            const pipeline = [
-                { $match: { 'students.zaloClassId': classId } },
-                {
-                    $project: {
-                        _id: 0,
-                        zaloUserId: 1,
-                        displayName: 1,
-                        userPhone: 1,
-                        students: {
-                            $filter: {
-                                input: '$students',
-                                as: 'item',
-                                cond: {
-                                    $and: [
-                                        {
-                                            $eq: ['$$item.zaloClassId', classId],
-                                        },
-                                        { $eq: ['$$item.role', role] },
-                                    ],
-                                },
+        const pipeline = [
+            { $match: { 'students.zaloClassId': classId } },
+            {
+                $project: {
+                    _id: 0,
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $and: [
+                                    {
+                                        $eq: ['$$item.zaloClassId', classId],
+                                    },
+                                    { $eq: ['$$item.role', role] },
+                                ],
                             },
                         },
                     },
                 },
-            ];
+            },
+        ];
 
-            const aggCursor = zaloColl.aggregate(pipeline);
+        const aggCursor = zaloColl.aggregate(pipeline);
 
-            const result = await aggCursor.toArray();
+        const result = await aggCursor.toArray();
 
-            if (result.length === 0) continue; // Neu ma lop khong co tren CSDL
+        let zaloList = [];
 
-            result.forEach((v) => {
-                const { zaloUserId, displayName, userPhone, students } = v;
-                students.forEach((e) => {
-                    const { zaloStudentId, zaloClassId, aliasName, role } = e;
-                    const studentName = aliasName.slice(3);
+        result.forEach((v, i) => {
+            const { zaloUserId, displayName, userPhone, students } = v;
+            students.forEach((e) => {
+                const { zaloStudentId, aliasName } = e;
+                const studentName = aliasName.slice(3);
 
-                    // zaloList.push({
-                    //     zaloUserId: zaloUserId,
-                    //     displayName: displayName,
-                    //     role: role,
-                    //     studentId: zaloStudentId,
-                    //     studentName: studentName,
-                    //     classId: zaloClassId,
-                    //     className: className,
-                    // });
-
-                    zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
-                });
+                zaloList.push([i * 1.0 + 1, zaloUserId, zaloStudentId, studentName, displayName, userPhone]);
             });
-        }
-
-        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
+        });
 
         client.authorize((err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
+                setZaloUsers(client, sourceId, sheetName, zaloList);
             }
         });
 
@@ -604,6 +579,33 @@ export const getListUserFromAdmin = async (req, res) => {
     } finally {
     }
 };
+
+async function setZaloUsers(client, sourceId, sheetName, zaloList) {
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const requestClear = {
+        spreadsheetId: sourceId,
+        range: `${sheetName}!A8:F`,
+    };
+
+    const requestUpdate = {
+        spreadsheetId: sourceId,
+        range: `${sheetName}!A8:F${3 + zaloList.length}`,
+        valueInputOption: 'USER_ENTERED',
+        resource: {
+            majorDimension: 'ROWS',
+            values: zaloList,
+        },
+    };
+
+    try {
+        await sheets.spreadsheets.values.clear(requestClear);
+
+        await sheets.spreadsheets.values.update(requestUpdate);
+    } catch (err) {
+        console.error(err);
+    }
+}
 
 async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
     const sheets = google.sheets({ version: 'v4', auth: client });

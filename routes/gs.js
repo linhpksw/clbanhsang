@@ -1,8 +1,5 @@
 import express from 'express';
 import {
-    getListUserFromAdmin,
-    getNotRegisterFromAdmin,
-    getSeekInfoFromAdmin,
     getListUserFromClassId,
     getNotRegisterFromClassId,
     getNotPaymentUserFromClassId,
@@ -10,13 +7,12 @@ import {
     getIncludeUser,
     sendBulk,
     alarmStudentNotPayment2Parent,
+    getZaloUsers,
 } from '../controllers/gs.js';
 
 const router = express.Router();
-// Admin
-router.post('/getListUserFromAdmin', getListUserFromAdmin);
-router.post('/getNotRegisterFromAdmin', getNotRegisterFromAdmin);
-router.post('/getSeekInfoFromAdmin', getSeekInfoFromAdmin);
+// OA Managaer
+router.post('/getZaloUsers', getZaloUsers);
 
 // Assistants
 router.post('/getListUserFromClassId', getListUserFromClassId);
