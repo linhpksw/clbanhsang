@@ -581,11 +581,11 @@ export const getZaloUsers = async (req, res) => {
                         zaloStudentId,
                         studentName,
                     ]);
+                } else {
+                    zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, userPhone, 'Not found', '']);
                 }
             });
         });
-
-        console.log(studentRegisterId);
 
         const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(parseInt(v)));
 
@@ -600,7 +600,7 @@ export const getZaloUsers = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                setZaloUsers(client, sourceId, sheetName, zaloList);
+                write2Sheet(client, sourceId, sheetName, zaloList, 'A4:H');
             }
         });
 
@@ -611,17 +611,17 @@ export const getZaloUsers = async (req, res) => {
     }
 };
 
-async function setZaloUsers(client, sourceId, sheetName, zaloList) {
+async function write2Sheet(client, sourceId, sheetName, zaloList, range) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestClear = {
         spreadsheetId: sourceId,
-        range: `${sheetName}!A4:H`,
+        range: `${sheetName}!${range}`,
     };
 
     const requestUpdate = {
         spreadsheetId: sourceId,
-        range: `${sheetName}!A4:H${3 + zaloList.length}`,
+        range: `${sheetName}!${range}${3 + zaloList.length}`,
         valueInputOption: 'USER_ENTERED',
         resource: {
             majorDimension: 'ROWS',
@@ -637,6 +637,93 @@ async function setZaloUsers(client, sourceId, sheetName, zaloList) {
         console.error(err);
     }
 }
+
+export const getStatistic = async (req, res) => {
+    const data = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const zaloColl = db.collection('zaloUsers');
+        const classColl = db.collection('classUsers');
+
+        const { sourceId, sheetName, classList, role } = data;
+
+        let finalData = [];
+
+        for (let i = 0; i < classList.length; i++) {
+            let classId = classList[i];
+            const pipeline = [
+                { $match: { 'students.zaloClassId': classId } },
+                {
+                    $project: {
+                        _id: 0,
+                        zaloUserId: 1,
+                        displayName: 1,
+                        userPhone: 1,
+                        students: {
+                            $filter: {
+                                input: '$students',
+                                as: 'item',
+                                cond: {
+                                    $and: [
+                                        {
+                                            $eq: ['$$item.zaloClassId', classId],
+                                        },
+                                        { $eq: ['$$item.role', role] },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                },
+            ];
+
+            const aggCursor = zaloColl.aggregate(pipeline);
+
+            const result = await aggCursor.toArray();
+
+            let studentRegisterId = [];
+
+            result.forEach((v) => {
+                const { students } = v;
+                students.forEach((e) => {
+                    const { zaloStudentId } = e;
+                    studentRegisterId.push(zaloStudentId);
+                });
+            });
+
+            const cursor = classColl.find({ classId: classId }, { projection: { _id: 0 } });
+
+            const studentList = (await cursor.toArray()).reduce((acc, v) => {
+                acc[v.studentId] = v.fullName;
+                return acc;
+            }, {});
+
+            const studentNotRegisterId = Object.keys(studentList).filter(
+                (v) => !studentRegisterId.includes(parseInt(v))
+            );
+
+            finalData.push([classId, studentRegisterId.length, studentNotRegisterId.length]);
+        }
+
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                write2Sheet(client, sourceId, sheetName, zaloList, 'J4:K');
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+        // Make sure to disconnect from the MongoDB client
+        MongoDB.client.close();
+    }
+};
 
 async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
     const sheets = google.sheets({ version: 'v4', auth: client });

@@ -8,11 +8,13 @@ import {
     sendBulk,
     alarmStudentNotPayment2Parent,
     getZaloUsers,
+    getStatistic,
 } from '../controllers/gs.js';
 
 const router = express.Router();
 // OA Managaer
 router.post('/getZaloUsers', getZaloUsers);
+router.post('/getStatistic', getStatistic);
 
 // Assistants
 router.post('/getListUserFromClassId', getListUserFromClassId);
