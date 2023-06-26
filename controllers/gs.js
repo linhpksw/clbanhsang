@@ -712,7 +712,7 @@ export const getStatistic = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                write2Sheet(client, sourceId, sheetName, finalData, 'J4:K');
+                write2Sheet(client, sourceId, sheetName, finalData, 'J4:L');
             }
         });
 
