@@ -585,7 +585,9 @@ export const getZaloUsers = async (req, res) => {
             });
         });
 
-        const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(v));
+        console.log(studentRegisterId);
+
+        const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(parseInt(v)));
 
         studentNotRegisterId.forEach((v) => {
             zaloList.push(['', '', '', '', '', v, studentList[v]]);
