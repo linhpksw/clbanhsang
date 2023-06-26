@@ -1124,6 +1124,7 @@ async function isFollow(zaloUserId, zaloColl) {
 }
 
 async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloColl, content, messageId) {
+    // dktg 2009A0 0915806944 Trọng Linh
     if (content.length < 24) {
         const failContent = `❌ Đăng kí thất bại!\n\nCú pháp không đúng. Trợ giảng hãy nhập lại.`;
         sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
