@@ -620,7 +620,7 @@ const createInvoice = (doc, className) => {
             remainder = payment;
         } else if (billing.includes('Thừa')) {
             const billingNum = parseInt(billing.replace(/\D/g, ''));
-            remainder = remainderBefore + billingNum;
+            remainder = payment + billingNum;
         }
     } else {
         remainder = payment - billing;
