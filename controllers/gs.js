@@ -519,6 +519,7 @@ export const getZaloUsers = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const zaloColl = db.collection('zaloUsers');
+        const classColl = db.collection('classUsers');
 
         const { sourceId, sheetName, classId, role } = data;
 
@@ -554,14 +555,40 @@ export const getZaloUsers = async (req, res) => {
 
         let zaloList = [];
 
+        const cursor = classColl.find({ classId: classId }, { projection: { _id: 0 } });
+
+        const studentList = (await cursor.toArray()).reduce((acc, v) => {
+            acc[v.studentId] = v.fullName;
+            return acc;
+        }, {});
+
+        let studentRegisterId = [];
+
         result.forEach((v) => {
             const { zaloUserId, displayName, userPhone, students } = v;
             students.forEach((e) => {
                 const { zaloStudentId, aliasName } = e;
                 const studentName = aliasName.slice(3);
 
-                zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, userPhone]);
+                if (studentList[zaloStudentId]) {
+                    studentRegisterId.push(zaloStudentId);
+                    zaloList.push([
+                        zaloUserId,
+                        zaloStudentId,
+                        studentName,
+                        displayName,
+                        userPhone,
+                        zaloStudentId,
+                        studentName,
+                    ]);
+                }
             });
+        });
+
+        const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(v));
+
+        studentNotRegisterId.forEach((v) => {
+            zaloList.push(['', '', '', '', '', v, studentList[v]]);
         });
 
         zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
