@@ -614,12 +614,12 @@ async function setZaloUsers(client, sourceId, sheetName, zaloList) {
 
     const requestClear = {
         spreadsheetId: sourceId,
-        range: `${sheetName}!A4:F`,
+        range: `${sheetName}!A4:H`,
     };
 
     const requestUpdate = {
         spreadsheetId: sourceId,
-        range: `${sheetName}!A4:F${3 + zaloList.length}`,
+        range: `${sheetName}!A4:H${3 + zaloList.length}`,
         valueInputOption: 'USER_ENTERED',
         resource: {
             majorDimension: 'ROWS',
