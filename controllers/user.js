@@ -138,7 +138,6 @@ export const userRequest = async (req, res) => {
                     const isSyntax = formatContent.includes('#');
 
                     const isDKPH = formatContent.slice(0, 4) === 'dkph';
-                    const isDKHPH = formatContent.slice(0, 5) === 'dkhph';
                     const isDKHS = formatContent.slice(0, 4) === 'dkhs';
                     const isXPH = formatContent.slice(0, 3) === 'xph';
                     const isXHS = formatContent.slice(0, 3) === 'xhs';
@@ -147,6 +146,17 @@ export const userRequest = async (req, res) => {
                     if (isDKPH) {
                         // dang ki cho phu huynh OA
                         // syntax: dkhph 2009001 0915806944
+                        // dang ki ho cho phu huynh OA
+                        // syntax: dkph 2009001 0915806944 2203179121235804730
+
+                        // Check xem tin nhan den OA co tu phia Tro giang khong
+                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+
+                        // Neu tu phia tro giang thi thay doi syntax
+                        if (isManager) {
+                            zaloUserId = formatContent.slice(-19);
+                            formatContent = formatContent.slice(0, 21);
+                        }
 
                         Tools.signUp(
                             accessToken,
@@ -158,29 +168,6 @@ export const userRequest = async (req, res) => {
                             messageId,
                             'Phụ huynh'
                         );
-                    } else if (isDKHPH) {
-                        // dang ki ho cho phu huynh OA
-                        // syntax: dkph 2009001 0915806944 2203179121235804730
-
-                        // Check xem tin nhan den OA co tu phia Tro giang khong
-                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
-
-                        // Neu tu phia tro giang thi tiep tuc
-                        if (isManager) {
-                            zaloUserId = formatContent.slice(-19);
-                            formatContent = formatContent.slice(0, 21);
-
-                            Tools.signUp(
-                                accessToken,
-                                zaloUserId,
-                                zaloColl,
-                                classColl,
-                                classInfoColl,
-                                formatContent,
-                                messageId,
-                                'Phụ huynh'
-                            );
-                        }
                     } else if (isDKHS) {
                         Tools.signUp(
                             accessToken,
