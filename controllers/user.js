@@ -615,7 +615,7 @@ const createInvoice = (doc, className) => {
     const billingValue = isNaN(billing) ? billing : Tools.formatCurrency(billing);
 
     let remainder;
-    if (isNaN(payment)) {
+    if (isNaN(billing)) {
         if (billing === 'Đã nộp đủ') {
             remainder = payment;
         } else if (billing.contains('Thừa')) {
@@ -625,6 +625,8 @@ const createInvoice = (doc, className) => {
     } else {
         remainder = payment - billing;
     }
+
+    console.log(remainder);
 
     const remainderValue = Tools.formatCurrency(remainder);
 
