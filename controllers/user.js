@@ -129,7 +129,7 @@ export const userRequest = async (req, res) => {
                 const messageId = webhook.message.msg_id;
                 const content = webhook.message.text;
 
-                const formatContent = Tools.nomarlizeSyntax(content);
+                let formatContent = Tools.nomarlizeSyntax(content);
 
                 const isFollowOA = await Tools.isFollow(zaloUserId, zaloColl);
 
