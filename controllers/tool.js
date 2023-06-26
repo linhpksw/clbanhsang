@@ -125,17 +125,7 @@ async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
     return studentNotPayment;
 }
 
-async function alarmStudentNotPayment2Parent(
-    res,
-    accessToken,
-    // zaloUserId,
-    classId,
-    zaloColl,
-    studentInfoColl,
-    classInfoColl
-    // option,
-    // specificStudentLists
-) {
+async function alarmStudentNotPayment2Parent(accessToken, classId, zaloColl, studentInfoColl, classInfoColl) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },
@@ -174,27 +164,12 @@ async function alarmStudentNotPayment2Parent(
     const duePaymentTermOne = duePayment[4];
     const duePaymentOtherTerm = duePayment[2];
 
-    let listSendSuccess = [];
-    let listSendFail = [];
-
     for (let i = 0; i < studentNotPayment.length; i++) {
         const { studentId, studentName, terms } = studentNotPayment[i];
-
-        // if (option === 'excludeStudent') {
-        //     if (specificStudentLists.includes(`${studentId}`)) {
-        //         continue;
-        //     }
-        // } else if (option === 'onlyStudent') {
-        //     if (!specificStudentLists.includes(`${studentId}`)) {
-        //         continue;
-        //     }
-        // }
 
         const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId, 'Phụ huynh');
 
         if (parentIdArr.length === 0) {
-            listSendFail.push(`- PH ${i + 1} ${studentName} ${studentId}`);
-
             continue;
         }
 
@@ -245,101 +220,14 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${
 
             const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloParentId, attachMessage);
 
-            // if (jsonResponse.error === 0) {
-            //     listSendSuccess.push(
-            //         `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
-            //     );
-            // } else {
-            //     listSendFail.push(
-            //         `- PH ${i + 1}.${q + 1} ${studentName} ${studentId}`
-            //     );
-            // }
+            console.log(jsonResponse);
         }
     }
-
-    //     const sendingResult = `Kết quả gửi tin nhắn thông báo học phí lớp ${classId}:
-
-    // A, Số tin gửi thành công: ${listSendSuccess.length}
-    // ${listSendSuccess.join(`\n\n`)}
-
-    // B, Số tin gửi thất bại: ${listSendFail.length}
-    // ${listSendFail.join(`\n\n`)}`;
-
-    //     // Gui lai thong ke ket qua gui cho tro giang
-    //     await ZaloAPI.sendMessage(accessToken, zaloUserId, sendingResult);
 
     return;
 }
 
-async function sendStudentNotPayment(res, accessToken, zaloUserId, classId, studentInfoColl, classInfoColl) {
-    const { currentTerm } = await MongoDB.findOneUser(
-        classInfoColl,
-        { classId: classId },
-        { projection: { _id: 0, currentTerm: 1 } }
-    );
-
-    const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
-
-    // Neu tat ca hoc sinh da hoan thanh hoc phi
-    if (studentNotPayment.length === 0) {
-        // Thong bao lai cho tro giang
-        const notFoundStudentPaymentContent = `Lớp ${classId} đã hoàn thành học phí đợt ${currentTerm}. Chúc mừng trợ giảng ❤️`;
-
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, notFoundStudentPaymentContent);
-    }
-    // Neu co hoc sinh chua nop hoc thi gui danh sach chua nop hoc cho tro giang
-    else {
-        const writeStudentNotPayment = studentNotPayment.map((v, i) => {
-            const { studentId, studentName, terms } = v;
-            const { billing } = terms[0];
-
-            return `${i + 1}) ${studentName} ${studentId}: ${formatCurrency(billing)}`;
-        });
-
-        // Gui tin
-        const studentNotPaymentContent = `Danh sách chưa nộp học lớp ${classId} đợt ${currentTerm} là:\n\n${writeStudentNotPayment.join(
-            `\n\n`
-        )}`;
-
-        const attachMessage = {
-            text: studentNotPaymentContent,
-            attachment: {
-                type: 'template',
-                payload: {
-                    buttons: [
-                        {
-                            title: `Nhắc tất cả PH chưa nộp học`,
-                            payload: `#cnhph${classId}`,
-                            type: 'oa.query.show',
-                        },
-                        {
-                            title: `Nhắc tất cả PH trừ 1 số HS cụ thể`,
-                            payload: {
-                                content: `Để nhắc tất cả phụ huynh lớp ${classId} chưa nộp học phí nhưng trừ 1 số học sinh cụ thể thì trợ giảng gửi theo cú pháp sau:
-#cnhph${classId}-${classId.slice(0, 4)}001,${classId.slice(0, 4)}002`,
-                                phone_code: '0375830815',
-                            },
-                            type: 'oa.open.sms',
-                        },
-                        {
-                            title: `Nhắc cụ thể riêng 1 số HS`,
-                            payload: {
-                                content: `Để nhắc chỉ riêng một số phụ huynh thì trợ giảng gửi theo cú pháp sau:
-#cnhph${classId}+${classId.slice(0, 4)}001,${classId.slice(0, 4)}002`,
-                                phone_code: '0375830815',
-                            },
-                            type: 'oa.open.sms',
-                        },
-                    ],
-                },
-            },
-        };
-
-        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-    }
-}
-
-async function signUpRole(res, accessToken, zaloUserId) {
+async function signUpRole(accessToken, zaloUserId) {
     const attachMessage = {
         text: `Vui lòng chọn vai trò đăng kí:`,
         attachment: {
@@ -364,7 +252,7 @@ async function signUpRole(res, accessToken, zaloUserId) {
     await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 }
 
-async function signUpAlert(res, accessToken, zaloUserId, zaloColl) {
+async function signUpAlert(accessToken, zaloUserId, zaloColl) {
     // Check xem tai khoan da dang ki tren he thong chua
     const isRegister = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
 
@@ -402,11 +290,11 @@ Phụ huynh có muốn đăng kí thêm cho học sinh khác không?
     }
     // Neu chua thi hien thong bao chon vai tro dang ki
     else {
-        await signUpRole(res, accessToken, zaloUserId);
+        await signUpRole(accessToken, zaloUserId);
     }
 }
 
-async function signUp4Parent(res, accessToken, zaloUserId) {
+async function signUp4Parent(accessToken, zaloUserId) {
     const message = `👉 Để xác nhận đăng kí tài khoản trên Zalo này, phụ huynh hãy nhập theo đúng cú pháp sau:
 dkph IDHS SĐT PH(Đã đăng kí)
 ---------------------------------------------
@@ -421,7 +309,7 @@ dkph 2005xxx 0912345678
     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 }
 
-async function signUp4Student(res, accessToken, zaloUserId) {
+async function signUp4Student(accessToken, zaloUserId) {
     const message = `👉 Để xác nhận đăng kí tài khoản trên Zalo này, con hãy nhập theo đúng cú pháp sau:
 dkhs IDHS SĐT HS (Đã đăng kí)
 ---------------------------------------------
@@ -436,7 +324,7 @@ dkhs 2005xxx 0912345678
     await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
 }
 
-async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
+async function notifyRegister(accessToken, zaloUserId, zaloColl) {
     const { students } = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: zaloUserId },
@@ -470,8 +358,8 @@ async function notifyRegister(res, accessToken, zaloUserId, zaloColl) {
     }
 }
 
-async function sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl) {
-    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendClassInfo(accessToken, zaloUserId, classInfoColl, zaloColl) {
+    const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfoArr === undefined) return;
 
@@ -534,8 +422,8 @@ Học phí mỗi buổi: ${tuition}`;
     }
 }
 
-async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoColl) {
+    const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfo === undefined) return;
 
@@ -597,8 +485,8 @@ async function sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classIn
     }
 }
 
-async function sendAttendanceInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfo = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendAttendanceInfo(accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfo === undefined) return; // Fix sau
 
@@ -671,8 +559,8 @@ Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo
     }
 }
 
-async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl) {
-    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendSyntaxPayment(accessToken, zaloUserId, zaloColl, classInfoColl) {
+    const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfoArr === undefined) return;
 
@@ -693,8 +581,8 @@ async function sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classIn
     }
 }
 
-async function sendPaymentTypeInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendPaymentTypeInfo(accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfoArr === undefined) return;
 
@@ -772,8 +660,8 @@ function createQRCodePayment(amount, content) {
     return qrCodeUrl;
 }
 
-async function sendPaymentInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfoArr = await notifyRegister(res, accessToken, zaloUserId, zaloColl);
+async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
+    const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfoArr === undefined) return; // Fix sau
 
@@ -1043,7 +931,7 @@ async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwar
     }
 }
 
-async function sendResponse2Client(res, accessToken, zaloUserId, messageId, responseContent, action) {
+async function sendResponse2Client(accessToken, zaloUserId, messageId, responseContent, action) {
     ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, action);
 
     await ZaloAPI.sendMessage(accessToken, zaloUserId, responseContent);
@@ -1278,7 +1166,7 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
 
         const successContent = `✅ Đăng kí thành công cho trợ giảng ${taName} với mã lớp ${classId} và số điện thoại ${taPhone}.`;
 
-        await sendResponse2Client(res, accessToken, taZaloId, messageId, successContent, 'heart');
+        await sendResponse2Client(accessToken, taZaloId, messageId, successContent, 'heart');
 
         await ZaloAPI.removeFollowerFromTag(accessToken, taZaloId, 'Chưa đăng kí');
     } else {
@@ -1286,7 +1174,7 @@ async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloC
 
         const failContent = `❌ Đăng kí thất bại vì trợ giảng ${taName} đã liên kết với mã lớp ${classId}.`;
 
-        await sendResponse2Client(res, accessToken, taZaloId, messageId, failContent, 'sad');
+        await sendResponse2Client(accessToken, taZaloId, messageId, failContent, 'sad');
     }
 }
 
@@ -1727,7 +1615,6 @@ export {
     forwardImage2Assistant,
     sendImageBack2Parent,
     sendAssistantInfo,
-    sendStudentNotPayment,
     getStudyDate,
     alarmStudentNotPayment2Parent,
     listStudentNotPayment,

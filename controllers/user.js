@@ -7,7 +7,6 @@ export const userRequest = async (req, res) => {
 
     const eventName = webhook.event_name;
     const unixTimestamp = parseInt(webhook.timestamp);
-    const localeTimeStamp = Tools.formatDateTime(unixTimestamp);
 
     try {
         await MongoDB.client.connect();
@@ -246,19 +245,19 @@ export const userRequest = async (req, res) => {
 
                         switch (true) {
                             case isDKTK:
-                                await Tools.signUpAlert(res, accessToken, zaloUserId, zaloColl);
+                                await Tools.signUpAlert(accessToken, zaloUserId, zaloColl);
                                 break;
 
                             case isVTDK:
-                                await Tools.signUpRole(res, accessToken, zaloUserId);
+                                await Tools.signUpRole(accessToken, zaloUserId);
                                 break;
 
                             case isDKPH:
-                                await Tools.signUp4Parent(res, accessToken, zaloUserId);
+                                await Tools.signUp4Parent(accessToken, zaloUserId);
                                 break;
 
                             case isDKHS:
-                                await Tools.signUp4Student(res, accessToken, zaloUserId);
+                                await Tools.signUp4Student(accessToken, zaloUserId);
                                 break;
 
                             case isDC: {
@@ -286,13 +285,12 @@ export const userRequest = async (req, res) => {
                             }
 
                             case isLDH:
-                                await Tools.sendClassInfo(res, accessToken, zaloUserId, classInfoColl, zaloColl);
+                                await Tools.sendClassInfo(accessToken, zaloUserId, classInfoColl, zaloColl);
 
                                 break;
 
                             case isHPHT:
                                 await Tools.sendPaymentInfo(
-                                    res,
                                     accessToken,
                                     zaloUserId,
                                     zaloColl,
@@ -304,7 +302,6 @@ export const userRequest = async (req, res) => {
 
                             case isTTCK:
                                 await Tools.sendPaymentTypeInfo(
-                                    res,
                                     accessToken,
                                     zaloUserId,
                                     zaloColl,
@@ -315,13 +312,12 @@ export const userRequest = async (req, res) => {
                                 break;
 
                             case isCPCK:
-                                await Tools.sendSyntaxPayment(res, accessToken, zaloUserId, zaloColl, classInfoColl);
+                                await Tools.sendSyntaxPayment(accessToken, zaloUserId, zaloColl, classInfoColl);
 
                                 break;
 
                             case isDDHT:
                                 await Tools.sendAttendanceInfo(
-                                    res,
                                     accessToken,
                                     zaloUserId,
                                     zaloColl,
@@ -332,7 +328,7 @@ export const userRequest = async (req, res) => {
                                 break;
 
                             case isLHTG:
-                                await Tools.sendAssistantInfo(res, accessToken, zaloUserId, zaloColl, classInfoColl);
+                                await Tools.sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoColl);
                                 break;
                         }
                     }
