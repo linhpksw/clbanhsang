@@ -1,10 +1,10 @@
 import express from 'express';
-import { userRequest, tokenRequest, updateRequest, invoiceRequest } from '../controllers/user.js';
+import * as Users from '../controllers/user.js';
 
 const router = express.Router();
-router.post('/token', tokenRequest);
-router.post('/', userRequest);
-router.post('/gs', updateRequest);
-router.post('/invoice', invoiceRequest);
+router.post('/token', Users.tokenRequest);
+router.post('/', Users.userRequest);
+router.post('/gs', Users.updateRequest);
+router.post('/invoice', Users.invoiceRequest);
 
 export default router;

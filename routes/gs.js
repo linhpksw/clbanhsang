@@ -1,31 +1,21 @@
 import express from 'express';
-import {
-    getListUserFromClassId,
-    getNotRegisterFromClassId,
-    getNotPaymentUserFromClassId,
-    createMockMessageFromClassId,
-    getIncludeUser,
-    sendBulk,
-    alarmStudentNotPayment2Parent,
-    getZaloUsers,
-    getStatistic,
-} from '../controllers/gs.js';
+import * as Sheets from '../controllers/gs.js';
 
 const router = express.Router();
 // OA Managaer
-router.post('/getZaloUsers', getZaloUsers);
-router.post('/getStatistic', getStatistic);
+router.post('/getZaloUsers', Sheets.getZaloUsers);
+router.post('/getStatistic', Sheets.getStatistic);
 
 // Assistants
-router.post('/getListUserFromClassId', getListUserFromClassId);
-router.post('/getNotRegisterFromClassId', getNotRegisterFromClassId);
-router.post('/getNotPaymentUserFromClassId', getNotPaymentUserFromClassId);
-router.post('/createMockMessageFromClassId', createMockMessageFromClassId);
+router.post('/getListUserFromClassId', Sheets.getListUserFromClassId);
+router.post('/getNotRegisterFromClassId', Sheets.getNotRegisterFromClassId);
+router.post('/getNotPaymentUserFromClassId', Sheets.getNotPaymentUserFromClassId);
+router.post('/createMockMessageFromClassId', Sheets.createMockMessageFromClassId);
 
-router.post('/alarmStudentNotPayment2Parent', alarmStudentNotPayment2Parent);
+router.post('/alarmStudentNotPayment2Parent', Sheets.alarmStudentNotPayment2Parent);
 
 // Share
-router.post('/getIncludeUser', getIncludeUser);
-router.post('/sendBulk', sendBulk);
+router.post('/getIncludeUser', Sheets.getIncludeUser);
+router.post('/sendBulk', Sheets.sendBulk);
 
 export default router;

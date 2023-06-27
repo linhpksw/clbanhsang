@@ -6,8 +6,6 @@ router.post('/create', AppSheet.createStudentRequest);
 router.put('/update', AppSheet.updateStudentRequest);
 router.put('/delete', AppSheet.deleteStudentRequest);
 
-router.post('/cash', AppSheet.cashRequest);
-
 router.put('/updateClass', AppSheet.updateClassRequest);
 
 export default router;

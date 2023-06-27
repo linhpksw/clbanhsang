@@ -1,8 +1,6 @@
 import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
-import { google } from 'googleapis';
-import fetch from 'node-fetch';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
