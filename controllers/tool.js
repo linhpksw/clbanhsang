@@ -1495,26 +1495,6 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                         },
                                     }
                                 );
-
-                                // Cap nhat thong tin tren Zalo OA Chat
-                                let formatZaloStudentId = [];
-                                let formatAliasName = [];
-
-                                zaloStudentIdArr.length === 1
-                                    ? (formatZaloStudentId = zaloStudentIdArr[0])
-                                    : (formatZaloStudentId = zaloStudentIdArr.join(', '));
-
-                                aliasNameArr.length === 1
-                                    ? (formatAliasName = aliasNameArr[0])
-                                    : (formatAliasName = aliasNameArr.join(', '));
-
-                                ZaloAPI.updateFollowerInfo(
-                                    accessToken,
-                                    formatZaloStudentId,
-                                    zaloUserId,
-                                    registerPhone,
-                                    formatAliasName
-                                );
                             }
                         }
                         // Neu khong nam trong ds dang ki
