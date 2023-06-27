@@ -591,10 +591,12 @@ export const invoiceRequest = async (req, res) => {
                 const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
                 for (let i = 0; i < zaloUserIdArr.length; i++) {
+                    console.log(zaloUserIdArr[i]);
                     const { zaloUserId, role } = zaloUserIdArr[i];
                     // chi gui bien lai den phu huynh
                     if (role === 'Phụ huynh') {
-                        await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
+                        console.log('send invoice to ', zaloUserId);
+                        // await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
                     }
                 }
 
