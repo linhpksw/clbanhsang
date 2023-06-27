@@ -62,6 +62,10 @@ async function getProfile(accessToken, zaloUserId) {
 
     const jsonResponse = await response.json();
 
+    if (jsonResponse.error !== 0) {
+        return null;
+    }
+
     let { user_gender: userGender, display_name: displayName } = jsonResponse.data;
 
     userGender == 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
