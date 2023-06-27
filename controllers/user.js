@@ -24,7 +24,7 @@ export const userRequest = async (req, res) => {
             case 'user_click_chatnow':
                 zaloUserId = webhook.user_id;
 
-                if (await Tools.isFollow(zaloUserId, zaloColl)) {
+                if (await Tools.isFollow(zaloUserId, accessToken)) {
                     ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }
                 break;
@@ -97,7 +97,7 @@ export const userRequest = async (req, res) => {
                 const imageInfo = webhook.message;
 
                 // Check xem nguoi dung da follow OA chua
-                const isFollowImage = await Tools.isFollow(zaloUserId, zaloColl);
+                const isFollowImage = await Tools.isFollow(zaloUserId, accessToken);
 
                 // Neu da follow
                 if (isFollowImage) {
@@ -131,7 +131,7 @@ export const userRequest = async (req, res) => {
 
                 let formatContent = Tools.nomarlizeSyntax(content);
 
-                const isFollowOA = await Tools.isFollow(zaloUserId, zaloColl);
+                const isFollowOA = await Tools.isFollow(zaloUserId, accessToken);
 
                 if (isFollowOA) {
                     // Kiem tra cu phap co phai tra cuu khong

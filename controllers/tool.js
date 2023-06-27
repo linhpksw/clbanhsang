@@ -1109,7 +1109,7 @@ async function isManagerCheck(zaloUserId, classInfoColl) {
     return result === null ? false : true;
 }
 
-async function isFollow(zaloUserId, zaloColl) {
+async function isFollow(zaloUserId, accessToken) {
     const response = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
     const jsonResponse = await response.json();
