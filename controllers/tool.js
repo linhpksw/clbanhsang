@@ -1112,12 +1112,7 @@ async function isManagerCheck(zaloUserId, classInfoColl) {
 async function isFollow(zaloUserId, accessToken) {
     const response = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
-    const jsonResponse = await response.json();
-
-    if (jsonResponse) {
-        return false;
-    }
-    return true;
+    return response ? true : false;
 }
 
 async function signUp4Assistant(res, accessToken, taZaloId, classInfoColl, zaloColl, content, messageId) {
