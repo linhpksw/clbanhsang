@@ -592,9 +592,9 @@ export const invoiceRequest = async (req, res) => {
 
                 for (let i = 0; i < zaloUserIdArr.length; i++) {
                     console.log(zaloUserIdArr[i]);
-                    const { zaloUserId, role } = zaloUserIdArr[i];
+                    const { zaloUserId, students } = zaloUserIdArr[i];
                     // chi gui bien lai den phu huynh
-                    if (role === 'Phụ huynh') {
+                    if (students[0].role === 'Phụ huynh') {
                         console.log('send invoice to ', zaloUserId);
                         // await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
                     }
