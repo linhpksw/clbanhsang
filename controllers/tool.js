@@ -1371,6 +1371,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloRole);
                                     ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassIdArr.at(-1));
                                     ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
+                                    ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
 
                                     // cap nhat role cho PHHS trong Zalo Collection
                                     MongoDB.updateOneUser(
