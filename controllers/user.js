@@ -591,7 +591,7 @@ export const invoiceRequest = async (req, res) => {
                 const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
                 if (zaloUserIdArr.length === 0) {
-                    console.log('Zalo user not exist');
+                    console.log('Zalo user is not exist');
                     continue;
                 }
 
@@ -600,21 +600,21 @@ export const invoiceRequest = async (req, res) => {
 
                     // chi gui bien lai den phu huynh
                     if (students[0].role === 'Phụ huynh') {
-                        console.log('send invoice to', students[0].aliasName);
-                        // await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
+                        // console.log('send invoice to', students[0].aliasName);
+                        await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
 
                         //  Update the 'check' value in the database
-                        // await studentInfoColl.updateOne(
-                        //     {
-                        //         studentId: studentId,
-                        //         'terms.term': parseInt(term),
-                        //     },
-                        //     {
-                        //         $set: {
-                        //             'terms.$.check': payment,
-                        //         },
-                        //     }
-                        // );
+                        await studentInfoColl.updateOne(
+                            {
+                                studentId: studentId,
+                                'terms.term': parseInt(term),
+                            },
+                            {
+                                $set: {
+                                    'terms.$.check': payment,
+                                },
+                            }
+                        );
                     }
                 }
             }
