@@ -552,68 +552,68 @@ export const invoiceRequest = async (req, res) => {
     const webhook = req.body;
 
     try {
-        // await MongoDB.client.connect();
-        // const db = MongoDB.client.db('zalo_servers');
-        // const studentInfoColl = db.collection('studentInfo');
-        // const tokenColl = db.collection('tokens');
-        // const classInfoColl = db.collection('classInfo');
-        // const zaloColl = db.collection('zaloUsers');
-        // const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const studentInfoColl = db.collection('studentInfo');
+        const tokenColl = db.collection('tokens');
+        const classInfoColl = db.collection('classInfo');
+        const zaloColl = db.collection('zaloUsers');
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        // for (let i = 0; i < webhook.length; i++) {
-        //     const doc = webhook[i];
-        //     const { studentId, classId, term, payment } = doc;
+        for (let i = 0; i < webhook.length; i++) {
+            const doc = webhook[i];
+            const { studentId, classId, term, payment } = doc;
 
-        //     // Fetch current data for this student and term
-        //     const currentData = await studentInfoColl.findOne(
-        //         {
-        //             studentId: studentId,
-        //             'terms.term': parseInt(term),
-        //         },
-        //         { projection: { _id: 0, 'terms.$': 1 } }
-        //     );
+            // Fetch current data for this student and term
+            const currentData = await studentInfoColl.findOne(
+                {
+                    studentId: studentId,
+                    'terms.term': parseInt(term),
+                },
+                { projection: { _id: 0, 'terms.$': 1 } }
+            );
 
-        //     // If there is a difference in the 'payment' value between the current data and the incoming webhook
-        //     if (currentData && currentData.terms[0].check !== payment && payment > 0) {
-        //         const existClass = await MongoDB.findOneUser(
-        //             classInfoColl,
-        //             { classId: classId },
-        //             { projection: { _id: 0, className: 1 } }
-        //         );
+            // If there is a difference in the 'payment' value between the current data and the incoming webhook
+            if (currentData && currentData.terms[0].check !== payment && payment > 0) {
+                const existClass = await MongoDB.findOneUser(
+                    classInfoColl,
+                    { classId: classId },
+                    { projection: { _id: 0, className: 1 } }
+                );
 
-        //         if (existClass === null) {
-        //             console.log('Class not exist');
-        //             break;
-        //         }
+                if (existClass === null) {
+                    console.log('Class not exist');
+                    break;
+                }
 
-        //         const invoice = createInvoice(doc, existClass.className);
+                const invoice = createInvoice(doc, existClass.className);
 
-        //         const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+                const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
-        //         for (let i = 0; i < zaloUserIdArr.length; i++) {
-        //             console.log(zaloUserIdArr[i]);
-        //             const { zaloUserId, students } = zaloUserIdArr[i];
-        //             // chi gui bien lai den phu huynh
-        //             if (students[0].role === 'Phụ huynh') {
-        //                 console.log('send invoice to', zaloUserId);
-        //                 // await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
-        //             }
-        //         }
+                for (let i = 0; i < zaloUserIdArr.length; i++) {
+                    console.log(zaloUserIdArr[i]);
+                    const { zaloUserId, students } = zaloUserIdArr[i];
+                    // chi gui bien lai den phu huynh
+                    if (students[0].role === 'Phụ huynh') {
+                        console.log('send invoice to', students[0].aliasName);
+                        // await ZaloAPI.sendInvoice(accessToken, zaloUserId, invoice);
+                    }
+                }
 
-        //         // Update the 'check' value in the database
-        //         await studentInfoColl.updateOne(
-        //             {
-        //                 studentId: studentId,
-        //                 'terms.term': parseInt(term),
-        //             },
-        //             {
-        //                 $set: {
-        //                     'terms.$.check': payment,
-        //                 },
-        //             }
-        //         );
-        //     }
-        // }
+                // Update the 'check' value in the database
+                // await studentInfoColl.updateOne(
+                //     {
+                //         studentId: studentId,
+                //         'terms.term': parseInt(term),
+                //     },
+                //     {
+                //         $set: {
+                //             'terms.$.check': payment,
+                //         },
+                //     }
+                // );
+            }
+        }
 
         res.send('Done');
     } catch (err) {
