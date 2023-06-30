@@ -10,7 +10,6 @@ router.post('/getStatistic', Sheets.getStatistic);
 router.post('/getListUserFromClassId', Sheets.getListUserFromClassId);
 router.post('/getNotRegisterFromClassId', Sheets.getNotRegisterFromClassId);
 router.post('/getNotPaymentUserFromClassId', Sheets.getNotPaymentUserFromClassId);
-router.post('/createMockMessageFromClassId', Sheets.createMockMessageFromClassId);
 
 router.post('/alarmStudentNotPayment2Parent', Sheets.alarmStudentNotPayment2Parent);
 
