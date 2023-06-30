@@ -183,7 +183,7 @@ export const getOAUsers = async (req, res) => {
                 const { zaloStudentId, aliasName } = e;
                 const studentName = aliasName.slice(3);
 
-                zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, zaloStudentId, studentName]);
+                zaloList.push([zaloUserId, zaloStudentId, studentName, displayName]);
             });
         });
 
