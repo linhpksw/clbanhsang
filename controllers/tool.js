@@ -980,7 +980,7 @@ async function sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classIn
                 for (let j = 0; j < assistants.length; j++) {
                     const { taZaloId } = assistants[j];
 
-                    const unfollowContent = `${aliasName} (${zaloStudentId}) với tên Zalo ${displayName} đã hủy theo dõi OA.\n\nTrợ giảng hãy kiểm tra lý do tại sao!`;
+                    const unfollowContent = `${aliasName} (${zaloStudentId}) với tên Zalo ${displayName} đã hủy theo dõi OA.\n\nTrợ giảng hãy kiểm tra nguyên nhân.`;
 
                     await ZaloAPI.sendMessage(accessToken, taZaloId, unfollowContent);
                 }

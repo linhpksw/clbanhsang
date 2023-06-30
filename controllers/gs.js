@@ -16,7 +16,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
-export const createMockMessageFromClassId = async (req, res) => {
+export const sendDemo = async (req, res) => {
     const data = req.body;
 
     try {
@@ -31,19 +31,21 @@ export const createMockMessageFromClassId = async (req, res) => {
             { projection: { _id: 0, assistants: 1, className: 1 } }
         );
 
-        const { className, assistants } = result;
-        const { taName, taZaloId } = assistants[0];
+        if (result != null) {
+            const { assistants } = result;
+            const { taName, taZaloId } = assistants[0];
 
-        const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', role, 2000999, classId, className]];
+            const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', 2001999]];
 
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
+            client.authorize((err) => {
+                if (err) {
+                    console.error(err);
+                    return;
+                } else {
+                    write2Sheet(client, sourceId, sheetName, zaloList, 'A6:F', 5);
+                }
+            });
+        }
 
         res.send('Done!');
     } catch (err) {
@@ -600,7 +602,7 @@ export const getZaloUsers = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                write2Sheet(client, sourceId, sheetName, zaloList, 'A4:H');
+                write2Sheet(client, sourceId, sheetName, zaloList, 'A4:H', 3);
             }
         });
 
@@ -611,7 +613,7 @@ export const getZaloUsers = async (req, res) => {
     }
 };
 
-async function write2Sheet(client, sourceId, sheetName, zaloList, range) {
+async function write2Sheet(client, sourceId, sheetName, list, range, offset) {
     const sheets = google.sheets({ version: 'v4', auth: client });
 
     const requestClear = {
@@ -621,11 +623,11 @@ async function write2Sheet(client, sourceId, sheetName, zaloList, range) {
 
     const requestUpdate = {
         spreadsheetId: sourceId,
-        range: `${sheetName}!${range}${3 + zaloList.length}`,
+        range: `${sheetName}!${range}${offset + list.length}`,
         valueInputOption: 'USER_ENTERED',
         resource: {
             majorDimension: 'ROWS',
-            values: zaloList,
+            values: list,
         },
     };
 
@@ -726,7 +728,7 @@ export const getStatistic = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                write2Sheet(client, sourceId, sheetName, finalData, 'J4:L');
+                write2Sheet(client, sourceId, sheetName, finalData, 'J4:L', 3);
             }
         });
 
