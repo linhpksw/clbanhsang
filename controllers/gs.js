@@ -238,7 +238,12 @@ export const getNotPayUsers = async (req, res) => {
         const studentInfoColl = db.collection('studentInfo');
         const zaloColl = db.collection('zaloUsers');
 
-        const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, currentTerm: 1 } });
+        const result = await classInfoColl.findOne(
+            { classId: classId },
+            {
+                projection: { _id: 0, currentTerm: 1 },
+            }
+        );
 
         if (result === null) {
             console.log(`Class ${classId} not found!`);
@@ -284,6 +289,8 @@ export const getNotPayUsers = async (req, res) => {
         ];
 
         const notPayUsers = await studentInfoColl.aggregate(pipeline).toArray();
+
+        console.log(notPayUsers);
 
         // Loc danh sach nhung hoc sinh chua nop hoc phi ma da dki OA
         const notPayRegisterUsers = notPayUsers.filter(async (v) => {
