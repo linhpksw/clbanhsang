@@ -5,7 +5,7 @@ const router = express.Router();
 // OA Managaer
 router.post('/getZaloUsers', Sheets.getZaloUsers);
 router.post('/getStatistic', Sheets.getStatistic);
-router.post('/sendDemo', Sheets.sendMessageDemo);
+router.post('/sendMessageDemo', Sheets.sendMessageDemo);
 
 // Assistants
 router.post('/getListUserFromClassId', Sheets.getListUserFromClassId);
