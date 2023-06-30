@@ -65,7 +65,7 @@ export const userRequest = async (req, res) => {
 
             case 'unfollow':
                 zaloUserId = webhook.follower.id;
-                await sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classInfoColl);
+                await Tools.sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classInfoColl);
 
                 break;
 
