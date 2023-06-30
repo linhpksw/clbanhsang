@@ -294,20 +294,20 @@ export const getNotPayUsers = async (req, res) => {
 
         const notPayUsers = await studentInfoColl.aggregate(pipeline).toArray();
 
-        console.log(notPayUsers);
-
         // Loc danh sach nhung hoc sinh chua nop hoc phi ma da dki OA
-        const notPayRegisterUsers = notPayUsers.filter(async (v) => {
+        const notPayRegisterUsersPromises = notPayUsers.map(async (v) => {
             const { terms, studentId } = v;
 
-            if (terms.length === 0) return false;
+            if (terms.length === 0) return null;
 
             const isRegister = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
-            if (isRegister.length === 0) return false;
+            if (isRegister.length === 0) return null;
 
-            return true;
+            return v;
         });
+
+        const notPayRegisterUsers = (await Promise.all(notPayRegisterUsersPromises)).filter((user) => user !== null);
 
         const zaloList = notPayRegisterUsers.map((v, i) => {
             const { studentId, studentName, terms } = v;
