@@ -71,7 +71,9 @@ async function sendMessage(client, webhook) {
         const row = obj[i];
         const content = fillInTemplateFromObject(template, row);
 
-        await ZaloAPI.sendMessage(accessToken, taZaloId, content);
+        console.log(`Sending message to ${taZaloId} with content: ${content}`);
+
+        // await ZaloAPI.sendMessage(accessToken, taZaloId, content);
     }
 }
 
