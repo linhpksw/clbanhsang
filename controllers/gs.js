@@ -178,7 +178,7 @@ export const getOAUsers = async (req, res) => {
         let zaloList = [];
 
         result.forEach((v) => {
-            const { zaloUserId, displayName, userPhone, students } = v;
+            const { zaloUserId, displayName, students } = v;
             students.forEach((e) => {
                 const { zaloStudentId, aliasName } = e;
                 const studentName = aliasName.slice(3);
@@ -195,8 +195,8 @@ export const getOAUsers = async (req, res) => {
                 return;
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
-                const range = 'A4:E';
-                const offset = 3;
+                const range = 'A5:E';
+                const offset = 4;
 
                 const requestClear = {
                     spreadsheetId: sourceId,
