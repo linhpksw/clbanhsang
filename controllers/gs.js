@@ -20,12 +20,55 @@ export const sendMessageDemo = async (req, res) => {
     const webhook = req.body;
 
     try {
-        client.authorize((err) => {
+        client.authorize(async (err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
-                sendMessage(client, webhook);
+                await MongoDB.client.connect();
+                const db = MongoDB.client.db('zalo_servers');
+                const classInfoColl = db.collection('classInfo');
+                const tokenColl = db.collection('tokens');
+
+                const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+                const { sourceId, sheetName, classId, template, lastCol } = webhook;
+
+                const result = await classInfoColl.findOne(
+                    { classId: classId },
+                    { projection: { _id: 0, assistants: 1 } }
+                );
+
+                if (result === null) {
+                    console.log(`Class ${classId} not found!`);
+                    return;
+                }
+
+                const { assistants } = result;
+                const { taZaloId } = assistants[0];
+
+                const sheets = google.sheets({ version: 'v4', auth: client });
+
+                const requestData = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!R4C1:R5C${lastCol}`,
+                };
+
+                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+                const data = responseData.values;
+                const heads = data.shift();
+
+                const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
+
+                // Loops through all the rows of data
+                for (let i = 0; i < obj.length; i++) {
+                    const row = obj[i];
+                    const content = fillInTemplateFromObject(template, row);
+
+                    console.log(`Sending message to ${taZaloId} with content: ${content}`);
+
+                    // await ZaloAPI.sendMessage(accessToken, taZaloId, content);
+                }
             }
         });
 
@@ -48,7 +91,10 @@ async function sendMessage(client, webhook) {
 
     const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, assistants: 1 } });
 
-    if (result === null) return;
+    if (result === null) {
+        console.log(`Class ${classId} not found!`);
+        return;
+    }
 
     const { assistants } = result;
     const { taZaloId } = assistants[0];
