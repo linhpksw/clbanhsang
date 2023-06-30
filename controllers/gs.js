@@ -309,11 +309,9 @@ export const getNotPayUsers = async (req, res) => {
             return true;
         });
 
-        console.log(notPayRegisterUsers);
-
         const zaloList = notPayRegisterUsers.map((v, i) => {
             const { studentId, studentName, terms } = v;
-            console.log(terms);
+
             const { billing } = terms[0];
 
             const formatBilling = Tools.formatCurrency(billing);
