@@ -16,6 +16,126 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
+export const checkOARegister = async (req, res) => {
+    const data = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const zaloColl = db.collection('zaloUsers');
+        const classColl = db.collection('classUsers');
+
+        const { sourceId, sheetName, classId, role } = data;
+
+        const pipeline = [
+            { $match: { 'students.zaloClassId': classId } },
+            {
+                $project: {
+                    _id: 0,
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $and: [
+                                    {
+                                        $eq: ['$$item.zaloClassId', classId],
+                                    },
+                                    { $eq: ['$$item.role', role] },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+
+        const result = await aggCursor.toArray();
+
+        let zaloList = [];
+
+        const cursor = classColl.find({ classId: classId }, { projection: { _id: 0 } });
+
+        const studentList = (await cursor.toArray()).reduce((acc, v) => {
+            acc[v.studentId] = v.fullName;
+            return acc;
+        }, {});
+
+        let studentRegisterId = [];
+
+        result.forEach((v) => {
+            const { zaloUserId, displayName, userPhone, students } = v;
+            students.forEach((e) => {
+                const { zaloStudentId, aliasName } = e;
+                const studentName = aliasName.slice(3);
+
+                if (studentList[zaloStudentId]) {
+                    studentRegisterId.push(zaloStudentId);
+                    zaloList.push([
+                        zaloUserId,
+                        zaloStudentId,
+                        studentName,
+                        displayName,
+                        userPhone,
+                        zaloStudentId,
+                        studentName,
+                    ]);
+                } else {
+                    zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, userPhone, 'Not found', '']);
+                }
+            });
+        });
+
+        const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(parseInt(v)));
+
+        studentNotRegisterId.forEach((v) => {
+            zaloList.push(['', '', '', '', '', v, studentList[v]]);
+        });
+
+        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
+
+        client.authorize(async (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                const sheets = google.sheets({ version: 'v4', auth: client });
+                const range = 'A4:H';
+                const offset = 3;
+
+                const requestClear = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}`,
+                };
+
+                const requestUpdate = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}${offset + zaloList.length}`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        majorDimension: 'ROWS',
+                        values: zaloList,
+                    },
+                };
+
+                await sheets.spreadsheets.values.clear(requestClear);
+
+                await sheets.spreadsheets.values.update(requestUpdate);
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const sendMessageDemo = async (req, res) => {
     const webhook = req.body;
 
@@ -78,50 +198,6 @@ export const sendMessageDemo = async (req, res) => {
     } finally {
     }
 };
-
-async function sendMessage(client, webhook) {
-    await MongoDB.client.connect();
-    const db = MongoDB.client.db('zalo_servers');
-    const classInfoColl = db.collection('classInfo');
-    const tokenColl = db.collection('tokens');
-
-    const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
-
-    const { sourceId, sheetName, classId, template, lastCol } = webhook;
-
-    const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, assistants: 1 } });
-
-    if (result === null) {
-        console.log(`Class ${classId} not found!`);
-        return;
-    }
-
-    const { assistants } = result;
-    const { taZaloId } = assistants[0];
-
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    const requestData = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!R4C1:R5C${lastCol}`,
-    };
-
-    const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
-    const data = responseData.values;
-    const heads = data.shift();
-
-    const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
-
-    // Loops through all the rows of data
-    for (let i = 0; i < obj.length; i++) {
-        const row = obj[i];
-        const content = fillInTemplateFromObject(template, row);
-
-        console.log(`Sending message to ${taZaloId} with content: ${content}`);
-
-        // await ZaloAPI.sendMessage(accessToken, taZaloId, content);
-    }
-}
 
 export const sendBulk = async (req, res) => {
     const data = req.body;
@@ -582,132 +658,6 @@ export const getListUserFromClassId = async (req, res) => {
     } finally {
     }
 };
-
-export const getZaloUsers = async (req, res) => {
-    const data = req.body;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const zaloColl = db.collection('zaloUsers');
-        const classColl = db.collection('classUsers');
-
-        const { sourceId, sheetName, classId, role } = data;
-
-        const pipeline = [
-            { $match: { 'students.zaloClassId': classId } },
-            {
-                $project: {
-                    _id: 0,
-                    zaloUserId: 1,
-                    displayName: 1,
-                    userPhone: 1,
-                    students: {
-                        $filter: {
-                            input: '$students',
-                            as: 'item',
-                            cond: {
-                                $and: [
-                                    {
-                                        $eq: ['$$item.zaloClassId', classId],
-                                    },
-                                    { $eq: ['$$item.role', role] },
-                                ],
-                            },
-                        },
-                    },
-                },
-            },
-        ];
-
-        const aggCursor = zaloColl.aggregate(pipeline);
-
-        const result = await aggCursor.toArray();
-
-        let zaloList = [];
-
-        const cursor = classColl.find({ classId: classId }, { projection: { _id: 0 } });
-
-        const studentList = (await cursor.toArray()).reduce((acc, v) => {
-            acc[v.studentId] = v.fullName;
-            return acc;
-        }, {});
-
-        let studentRegisterId = [];
-
-        result.forEach((v) => {
-            const { zaloUserId, displayName, userPhone, students } = v;
-            students.forEach((e) => {
-                const { zaloStudentId, aliasName } = e;
-                const studentName = aliasName.slice(3);
-
-                if (studentList[zaloStudentId]) {
-                    studentRegisterId.push(zaloStudentId);
-                    zaloList.push([
-                        zaloUserId,
-                        zaloStudentId,
-                        studentName,
-                        displayName,
-                        userPhone,
-                        zaloStudentId,
-                        studentName,
-                    ]);
-                } else {
-                    zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, userPhone, 'Not found', '']);
-                }
-            });
-        });
-
-        const studentNotRegisterId = Object.keys(studentList).filter((v) => !studentRegisterId.includes(parseInt(v)));
-
-        studentNotRegisterId.forEach((v) => {
-            zaloList.push(['', '', '', '', '', v, studentList[v]]);
-        });
-
-        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
-
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                write2Sheet(client, sourceId, sheetName, zaloList, 'A4:H', 3);
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-async function write2Sheet(client, sourceId, sheetName, list, range, offset) {
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    const requestClear = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!${range}`,
-    };
-
-    const requestUpdate = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!${range}${offset + list.length}`,
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-            majorDimension: 'ROWS',
-            values: list,
-        },
-    };
-
-    try {
-        await sheets.spreadsheets.values.clear(requestClear);
-
-        await sheets.spreadsheets.values.update(requestUpdate);
-    } catch (err) {
-        console.error(err);
-    }
-}
 
 export const getStatistic = async (req, res) => {
     const data = req.body;
