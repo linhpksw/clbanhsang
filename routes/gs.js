@@ -7,11 +7,11 @@ router.post('/checkOARegister', Sheets.checkOARegister);
 router.post('/getOAUsers', Sheets.getOAUsers);
 router.post('/getStatistic', Sheets.getStatistic);
 router.post('/sendMessageDemo', Sheets.sendMessageDemo);
+router.post('/getNotPayUsers', Sheets.getNotPayUsers);
 
 // Assistants
 router.post('/getListUserFromClassId', Sheets.getListUserFromClassId);
 router.post('/getNotRegisterFromClassId', Sheets.getNotRegisterFromClassId);
-router.post('/getNotPaymentUserFromClassId', Sheets.getNotPaymentUserFromClassId);
 
 router.post('/alarmStudentNotPayment2Parent', Sheets.alarmStudentNotPayment2Parent);
 

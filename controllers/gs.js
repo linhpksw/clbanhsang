@@ -226,6 +226,141 @@ export const getOAUsers = async (req, res) => {
     }
 };
 
+export const getNotPayUsers = async (req, res) => {
+    const data = req.body;
+
+    const { sourceId, sheetName, classId } = data;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfo');
+        const zaloColl = db.collection('zaloUsers');
+
+        const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, currentTerm: 1 } });
+
+        if (result === null) {
+            console.log(`Class ${classId} not found!`);
+            return;
+        }
+
+        const { currentTerm } = result;
+
+        // Lay danh sach hoc sinh chua nop hoc phi dot x lop y
+        const pipeline = [
+            {
+                $match: {
+                    $and: [
+                        {
+                            classId: classId,
+                        },
+                        {
+                            'terms.term': parseInt(currentTerm),
+                        },
+                    ],
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    studentId: 1,
+                    studentName: 1,
+                    terms: {
+                        $filter: {
+                            input: '$terms',
+                            as: 'item',
+                            cond: {
+                                $and: [
+                                    { $eq: ['$$item.term', parseInt(currentTerm)] },
+                                    { $eq: ['$$item.payment', null] },
+                                    { $isNumber: '$$item.billing' },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const notPayUsers = await studentInfoColl.aggregate(pipeline).toArray();
+
+        // Loc danh sach nhung hoc sinh chua nop hoc phi ma da dki OA
+        const notPayRegisterUsers = notPayUsers.filter(async (v) => {
+            const { terms, studentId } = v;
+
+            if (terms.length === 0) return false;
+
+            const isRegister = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+
+            if (isRegister.length === 0) return false;
+
+            return true;
+        });
+
+        const zaloList = notPayRegisterUsers.map((v, i) => {
+            const { studentId, studentName, terms } = v;
+            const { billing } = terms[0];
+
+            const formatBilling = Tools.formatCurrency(billing);
+
+            return [i + 1, '', studentId, studentName, formatBilling];
+        });
+
+        // Tra ve sheet cho tro giang
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                client.authorize((err) => {
+                    if (err) {
+                        console.error(err);
+                        return;
+                    } else {
+                        client.authorize(async (err) => {
+                            if (err) {
+                                console.error(err);
+                                return;
+                            } else {
+                                const sheets = google.sheets({ version: 'v4', auth: client });
+                                const range = 'A5:E';
+                                const offset = 4;
+
+                                const requestClear = {
+                                    spreadsheetId: sourceId,
+                                    range: `${sheetName}!${range}`,
+                                };
+
+                                const requestUpdate = {
+                                    spreadsheetId: sourceId,
+                                    range: `${sheetName}!${range}${offset + zaloList.length}`,
+                                    valueInputOption: 'USER_ENTERED',
+                                    resource: {
+                                        majorDimension: 'ROWS',
+                                        values: zaloList,
+                                    },
+                                };
+
+                                await sheets.spreadsheets.values.clear(requestClear);
+
+                                await sheets.spreadsheets.values.update(requestUpdate);
+                            }
+                        });
+                    }
+                });
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+/************************************************************* */
+
 export const getStatistic = async (req, res) => {
     const data = req.body;
 
@@ -542,54 +677,6 @@ export const alarmStudentNotPayment2Parent = async (req, res) => {
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
         await Tools.alarmStudentNotPayment2Parent(accessToken, classId, zaloColl, studentInfoColl, classInfoColl);
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-export const getNotPaymentUserFromClassId = async (req, res) => {
-    const data = req.body;
-
-    const { sourceId, sheetName, classId } = data;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const classInfoColl = db.collection('classInfo');
-        const studentInfoColl = db.collection('studentInfo');
-
-        const { currentTerm } = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: classId },
-            { projection: { _id: 0, currentTerm: 1 } }
-        );
-
-        const studentNotPayment = await Tools.listStudentNotPayment(classId, currentTerm, studentInfoColl);
-
-        let zaloList = [];
-
-        studentNotPayment.forEach((v, i) => {
-            const { studentId, studentName, terms } = v;
-
-            const { billing } = terms[0];
-
-            const formatBilling = Tools.formatCurrency(billing);
-
-            zaloList.push([i + 1, '', '', studentName, formatBilling, studentId, '', '']);
-        });
-
-        // Tra ve sheet cho tro giang
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
-
         res.send('Done!');
     } catch (err) {
         console.error(err);

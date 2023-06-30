@@ -78,53 +78,6 @@ async function listStudentAttendance(studentId, currentTerm, studentInfoColl) {
     }
 }
 
-async function listStudentNotPayment(classId, currentTerm, studentInfoColl) {
-    // Lay danh sach hoc sinh chua nop hoc phi dot x lop y
-    const pipeline = [
-        {
-            $match: {
-                $and: [
-                    {
-                        classId: classId,
-                    },
-                    {
-                        'terms.term': parseInt(currentTerm),
-                    },
-                ],
-            },
-        },
-        {
-            $project: {
-                _id: 0,
-                studentId: 1,
-                studentName: 1,
-                terms: {
-                    $filter: {
-                        input: '$terms',
-                        as: 'item',
-                        cond: {
-                            $and: [
-                                { $eq: ['$$item.term', parseInt(currentTerm)] },
-                                { $eq: ['$$item.payment', null] },
-                                { $isNumber: '$$item.billing' },
-                            ],
-                        },
-                    },
-                },
-            },
-        },
-    ];
-
-    const aggCursorStudentNotPayment = studentInfoColl.aggregate(pipeline);
-
-    const resultStudentNotPayment = await aggCursorStudentNotPayment.toArray();
-
-    // Loc danh sach nhung hoc sinh chua nop hoc phi
-    const studentNotPayment = resultStudentNotPayment.filter((v) => v.terms.length === 1);
-
-    return studentNotPayment;
-}
-
 async function alarmStudentNotPayment2Parent(accessToken, classId, zaloColl, studentInfoColl, classInfoColl) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
@@ -1608,6 +1561,5 @@ export {
     sendAssistantInfo,
     getStudyDate,
     alarmStudentNotPayment2Parent,
-    listStudentNotPayment,
     findZaloUserIdFromStudentId,
 };
