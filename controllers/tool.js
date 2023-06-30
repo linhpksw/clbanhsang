@@ -953,6 +953,42 @@ async function getContentFromMsgId(accessToken, zaloUserId, messageId) {
     }
 }
 
+async function sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classInfoColl) {
+    const parentInfo = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
+
+    if (parentInfo != null) {
+        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa đăng kí');
+
+        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
+
+        MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'unfollow' } });
+
+        const { students, displayName } = parentInfo;
+
+        for (let i = 0; i < students.length; i++) {
+            const { zaloStudentId, zaloClassId, aliasName } = students[i];
+
+            const assistantInfo = await MongoDB.findOneUser(
+                classInfoColl,
+                { classId: zaloClassId },
+                { projection: { _id: 0, assistants: 1 } }
+            );
+
+            if (assistantInfo !== null) {
+                const { assistants } = assistantInfo;
+
+                for (let j = 0; j < assistants.length; j++) {
+                    const { taZaloId } = assistants[j];
+
+                    const unfollowContent = `${aliasName} (${zaloStudentId}) với tên Zalo ${displayName} đã hủy theo dõi OA.\n\nTrợ giảng hãy kiểm tra lý do tại sao!`;
+
+                    await ZaloAPI.sendMessage(accessToken, taZaloId, unfollowContent);
+                }
+            }
+        }
+    }
+}
+
 async function sendReactBack2Parent(accessToken, zaloUserId, messageId, reactIcon, zaloColl) {
     const content = await getContentFromMsgId(accessToken, zaloUserId, messageId);
 
@@ -1540,6 +1576,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 }
 
 export {
+    sendUnfollow2Assistant,
     nomarlizeSyntax,
     signUp,
     isFollow,
