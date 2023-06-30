@@ -16,36 +16,18 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
-export const sendDemo = async (req, res) => {
+export const sendMessageDemo = async (req, res) => {
     const data = req.body;
 
     try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const classInfoColl = db.collection('classInfo');
-
-        const { sourceId, sheetName, classId, role } = data;
-
-        const result = await classInfoColl.findOne(
-            { classId: classId },
-            { projection: { _id: 0, assistants: 1, className: 1 } }
-        );
-
-        if (result != null) {
-            const { assistants } = result;
-            const { taName, taZaloId } = assistants[0];
-
-            const zaloList = [[1, taZaloId, taName, 'Nguyễn Văn An', 2001999]];
-
-            client.authorize((err) => {
-                if (err) {
-                    console.error(err);
-                    return;
-                } else {
-                    write2Sheet(client, sourceId, sheetName, zaloList, 'A6:F', 5);
-                }
-            });
-        }
+        client.authorize((err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                sendMessage(client, data);
+            }
+        });
 
         res.send('Done!');
     } catch (err) {
@@ -53,6 +35,47 @@ export const sendDemo = async (req, res) => {
     } finally {
     }
 };
+
+async function sendMessage(client, data) {
+    await MongoDB.client.connect();
+    const db = MongoDB.client.db('zalo_servers');
+    const classInfoColl = db.collection('classInfo');
+    const tokenColl = db.collection('tokens');
+
+    const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+    const { sourceId, sheetName, classId, template, lastCol } = data;
+
+    const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, assistants: 1 } });
+
+    if (result === null) return;
+
+    const { assistants } = result;
+    const { taZaloId } = assistants[0];
+
+    const sheets = google.sheets({ version: 'v4', auth: client });
+
+    const requestData = {
+        spreadsheetId: sourceId,
+        range: `${sheetName}!R4C1:R5C${lastCol}`,
+    };
+
+    const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+    const data = responseData.values;
+    const heads = data.shift();
+
+    const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
+    // Creates an array to record sent zalo message
+    const out = [];
+
+    // Loops through all the rows of data
+    for (let i = 0; i < obj.length; i++) {
+        const row = obj[i];
+        const content = fillInTemplateFromObject(template, row);
+
+        await ZaloAPI.sendMessage(accessToken, taZaloId, content);
+    }
+}
 
 export const sendBulk = async (req, res) => {
     const data = req.body;
