@@ -257,11 +257,15 @@ export const getNotPayUsers = async (req, res) => {
             {
                 $match: {
                     $and: [
+                        { classId: classId },
                         {
-                            classId: classId,
-                        },
-                        {
-                            'terms.term': parseInt(currentTerm),
+                            terms: {
+                                $elemMatch: {
+                                    term: parseInt(currentTerm),
+                                    payment: null,
+                                    billing: { $type: 'number' },
+                                },
+                            },
                         },
                     ],
                 },
