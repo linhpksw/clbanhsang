@@ -17,7 +17,7 @@ const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 export const checkOARegister = async (req, res) => {
-    const data = req.body;
+    const webhook = req.body;
 
     try {
         await MongoDB.client.connect();
@@ -25,7 +25,7 @@ export const checkOARegister = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const classColl = db.collection('classUsers');
 
-        const { sourceId, sheetName, classId, role } = data;
+        const { sourceId, sheetName, classId, role } = webhook;
 
         const pipeline = [
             { $match: { 'students.zaloClassId': classId } },
@@ -106,6 +106,96 @@ export const checkOARegister = async (req, res) => {
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
                 const range = 'A4:H';
+                const offset = 3;
+
+                const requestClear = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}`,
+                };
+
+                const requestUpdate = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}${offset + zaloList.length}`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        majorDimension: 'ROWS',
+                        values: zaloList,
+                    },
+                };
+
+                await sheets.spreadsheets.values.clear(requestClear);
+
+                await sheets.spreadsheets.values.update(requestUpdate);
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+export const getOAUsers = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const zaloColl = db.collection('zaloUsers');
+        const { sourceId, sheetName, classId, role } = webhook;
+
+        const pipeline = [
+            { $match: { 'students.zaloClassId': classId } },
+            {
+                $project: {
+                    _id: 0,
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $and: [
+                                    {
+                                        $eq: ['$$item.zaloClassId', classId],
+                                    },
+                                    { $eq: ['$$item.role', role] },
+                                ],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+
+        const result = await aggCursor.toArray();
+
+        let zaloList = [];
+
+        result.forEach((v) => {
+            const { zaloUserId, displayName, userPhone, students } = v;
+            students.forEach((e) => {
+                const { zaloStudentId, aliasName } = e;
+                const studentName = aliasName.slice(3);
+
+                zaloList.push([zaloUserId, zaloStudentId, studentName, displayName, zaloStudentId, studentName]);
+            });
+        });
+
+        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
+
+        client.authorize(async (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                const sheets = google.sheets({ version: 'v4', auth: client });
+                const range = 'A4:E';
                 const offset = 3;
 
                 const requestClear = {

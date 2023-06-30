@@ -4,6 +4,7 @@ import * as Sheets from '../controllers/gs.js';
 const router = express.Router();
 // OA Managaer
 router.post('/checkOARegister', Sheets.checkOARegister);
+router.post('/getOAUsers', Sheets.getOAUsers);
 router.post('/getStatistic', Sheets.getStatistic);
 router.post('/sendMessageDemo', Sheets.sendMessageDemo);
 
