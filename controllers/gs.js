@@ -17,7 +17,7 @@ const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 export const sendMessageDemo = async (req, res) => {
-    const data = req.body;
+    const webhook = req.body;
 
     try {
         client.authorize((err) => {
@@ -25,7 +25,7 @@ export const sendMessageDemo = async (req, res) => {
                 console.error(err);
                 return;
             } else {
-                sendMessage(client, data);
+                sendMessage(client, webhook);
             }
         });
 
@@ -36,7 +36,7 @@ export const sendMessageDemo = async (req, res) => {
     }
 };
 
-async function sendMessage(client, data) {
+async function sendMessage(client, webhook) {
     await MongoDB.client.connect();
     const db = MongoDB.client.db('zalo_servers');
     const classInfoColl = db.collection('classInfo');
@@ -44,7 +44,7 @@ async function sendMessage(client, data) {
 
     const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-    const { sourceId, sheetName, classId, template, lastCol } = data;
+    const { sourceId, sheetName, classId, template, lastCol } = webhook;
 
     const result = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0, assistants: 1 } });
 
@@ -65,8 +65,6 @@ async function sendMessage(client, data) {
     const heads = data.shift();
 
     const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
-    // Creates an array to record sent zalo message
-    const out = [];
 
     // Loops through all the rows of data
     for (let i = 0; i < obj.length; i++) {
