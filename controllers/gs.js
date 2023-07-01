@@ -439,6 +439,8 @@ export const alarmNotPayUsers = async (req, res) => {
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
+                console.log(data);
+
                 for (let i = 0; i < data.length; i++) {
                     const zaloUserId = data[1];
                     const term = data[6];
