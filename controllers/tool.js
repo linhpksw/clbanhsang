@@ -843,6 +843,8 @@ async function findZaloUserIdFromStudentId(zaloColl, studentId) {
         {
             $project: {
                 zaloUserId: 1,
+                displayName: 1,
+                userPhone: 1,
                 _id: 0,
                 students: {
                     $filter: {
