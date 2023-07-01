@@ -348,8 +348,8 @@ export const getNotPayUsers = async (req, res) => {
                 remainderBefore === 0
                     ? '0 đ'
                     : remainderBefore > 0
-                    ? `thừa ${formatCurrency(remainderBefore)}`
-                    : `thiếu ${formatCurrency(remainderBefore)}`;
+                    ? `thừa ${Tools.formatCurrency(remainderBefore)}`
+                    : `thiếu ${Tools.formatCurrency(remainderBefore)}`;
 
             const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
 
