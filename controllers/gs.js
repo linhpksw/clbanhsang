@@ -439,12 +439,10 @@ export const alarmNotPayUsers = async (req, res) => {
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
-                console.log(data);
-
                 for (let i = 0; i < data.length; i++) {
-                    const zaloUserId = data[1];
-                    const term = data[6];
-                    const alarmContent = data[10];
+                    const zaloUserId = data[i][1];
+                    const term = data[i][6];
+                    const alarmContent = data[i][11];
 
                     const attachMessage = {
                         text: alarmContent,
@@ -473,8 +471,6 @@ export const alarmNotPayUsers = async (req, res) => {
                     };
 
                     // console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
-
-                    console.log(attachMessage);
 
                     const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
