@@ -472,9 +472,7 @@ export const alarmNotPayUsers = async (req, res) => {
 
                     // console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
 
-                    const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-
-                    console.log(jsonResponse);
+                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
                 }
             }
         });
