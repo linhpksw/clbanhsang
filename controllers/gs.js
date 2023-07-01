@@ -442,7 +442,7 @@ export const alarmNotPayUsers = async (req, res) => {
                 for (let i = 0; i < data.length; i++) {
                     const zaloUserId = data[i][1];
                     const term = data[i][6];
-                    const alarmContent = data[i][11];
+                    const alarmContent = data[i][10];
 
                     const attachMessage = {
                         text: alarmContent,
