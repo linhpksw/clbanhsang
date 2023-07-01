@@ -354,10 +354,10 @@ export const getNotPayUsers = async (req, res) => {
             const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
 
             const alarmContent = `Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
-            - Học phí từ đợt trước: ${remainderBeforeValue}
-            - Học phí phải nộp đợt ${term} này: ${billingValue}
+- Học phí từ đợt trước: ${remainderBeforeValue}
+- Học phí phải nộp đợt ${term} này: ${billingValue}
             
-            Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
+Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
 
             return [
                 i + 1,
@@ -420,9 +420,6 @@ export const alarmNotPayUsers = async (req, res) => {
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
-        const classInfoColl = db.collection('classInfo');
-        const studentInfoColl = db.collection('studentInfo');
-        const zaloColl = db.collection('zaloUsers');
         const tokenColl = db.collection('tokens');
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
@@ -436,17 +433,16 @@ export const alarmNotPayUsers = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R5C2:R${lastRow}C3`,
+                    range: `${sheetName}!R5C2:R${lastRow}C11`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
                 for (let i = 0; i < data.length; i++) {
-                    const [zaloUserId, studentId] = data[i];
-
-                    const { term, remainderBefore, billing } = terms[0];
-                    // TODO: them noi dung dong vao trong thong bao nhac hoc phi
+                    const zaloUserId = data[1];
+                    const term = data[6];
+                    const alarmContent = data[10];
 
                     const attachMessage = {
                         text: alarmContent,
@@ -474,20 +470,12 @@ export const alarmNotPayUsers = async (req, res) => {
                         },
                     };
 
-                    for (let q = 0; q < parentIdArr.length; q++) {
-                        const [zaloParentId, zaloClassId] = parentIdArr[q];
+                    console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
 
-                        const jsonResponse = await ZaloAPI.sendMessageWithButton(
-                            accessToken,
-                            zaloParentId,
-                            attachMessage
-                        );
+                    // const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
-                        console.log(jsonResponse);
-                    }
+                    // console.log(jsonResponse);
                 }
-
-                console.log(data);
             }
         });
 
@@ -676,9 +664,9 @@ export const sendMessageDemo = async (req, res) => {
                     const row = obj[i];
                     const content = fillInTemplateFromObject(template, row);
 
-                    console.log(`Sending message to ${taZaloId} with content: ${content}`);
+                    // console.log(`Sending message to ${taZaloId} with content: ${content}`);
 
-                    // await ZaloAPI.sendMessage(accessToken, taZaloId, content);
+                    await ZaloAPI.sendMessage(accessToken, taZaloId, content);
                 }
             }
         });
