@@ -433,7 +433,7 @@ export const alarmNotPayUsers = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R5C2:R${lastRow}C11`,
+                    range: `${sheetName}!R4C2:R${lastRow}C11`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
