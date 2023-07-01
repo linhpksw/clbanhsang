@@ -300,9 +300,12 @@ export const getNotPayUsers = async (req, res) => {
 
             if (terms.length === 0) return null;
 
-            const isRegister = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+            const parentZaloList = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
-            if (isRegister.length === 0) return null;
+            if (parentZaloList.length === 0) return null;
+
+            v.zaloUserId = parentZaloList[0].zaloUserId;
+            v.displayName = parentZaloList[0].displayName;
 
             return v;
         });
@@ -310,13 +313,13 @@ export const getNotPayUsers = async (req, res) => {
         const notPayRegisterUsers = (await Promise.all(notPayRegisterUsersPromises)).filter((user) => user !== null);
 
         const zaloList = notPayRegisterUsers.map((v, i) => {
-            const { studentId, studentName, terms } = v;
+            const { studentId, studentName, terms, zaloUserId, displayName } = v;
 
             const { billing } = terms[0];
 
             const formatBilling = Tools.formatCurrency(billing);
 
-            return [i + 1, '', studentId, studentName, formatBilling];
+            return [i + 1, zaloUserId, studentId, studentName, displayName, formatBilling];
         });
 
         // Tra ve sheet cho tro giang
@@ -336,7 +339,7 @@ export const getNotPayUsers = async (req, res) => {
                                 return;
                             } else {
                                 const sheets = google.sheets({ version: 'v4', auth: client });
-                                const range = 'A5:E';
+                                const range = 'A5:F';
                                 const offset = 4;
 
                                 const requestClear = {
@@ -371,7 +374,29 @@ export const getNotPayUsers = async (req, res) => {
     }
 };
 
-/************************************************************* */
+export const alarmNotPayUsers = async (req, res) => {
+    const webhook = req.body;
+
+    const { sourceId, sheetName, classId } = webhook;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classInfoColl = db.collection('classInfo');
+        const studentInfoColl = db.collection('studentInfo');
+        const zaloColl = db.collection('zaloUsers');
+        const tokenColl = db.collection('tokens');
+
+        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+        await Tools.alarmNotPayUsers(accessToken, classId, zaloColl, studentInfoColl, classInfoColl);
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
 
 export const getStatistic = async (req, res) => {
     const data = req.body;
@@ -565,6 +590,8 @@ export const sendMessageDemo = async (req, res) => {
     }
 };
 
+/************************************************************* */
+
 export const sendBulk = async (req, res) => {
     const data = req.body;
 
@@ -654,310 +681,6 @@ export const getIncludeUser = async (req, res) => {
                 }
             }
         }
-
-        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
-
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-export const alarmStudentNotPayment2Parent = async (req, res) => {
-    const data = req.body;
-
-    const { sourceId, sheetName, classId } = data;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const classInfoColl = db.collection('classInfo');
-        const studentInfoColl = db.collection('studentInfo');
-        const zaloColl = db.collection('zaloUsers');
-        const tokenColl = db.collection('tokens');
-
-        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
-
-        await Tools.alarmStudentNotPayment2Parent(accessToken, classId, zaloColl, studentInfoColl, classInfoColl);
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-export const getNotRegisterFromAdmin = async (req, res) => {
-    const data = req.body;
-
-    await MongoDB.client.connect();
-    const db = MongoDB.client.db('zalo_servers');
-    const zaloColl = db.collection('zaloUsers');
-    const classColl = db.collection('classUsers');
-
-    const { sourceId, sheetName, classIds, status, role } = data;
-
-    let classCheckList = [];
-    if (status === 'Đang học') {
-        classCheckList = [...classIds];
-    } else {
-        classIds.forEach((v) => classCheckList.push([`N${v[0]}`, v[1]]));
-    }
-
-    let zaloList = [];
-
-    for (let i = 0; i < classCheckList.length; i++) {
-        const [classId, className] = classCheckList[i];
-
-        const cursorRegister = zaloColl.find(
-            { 'students.zaloClassId': classId, 'students.role': role },
-            {
-                projection: {
-                    _id: 0,
-                    students: 1,
-                    displayName: 1,
-                    userPhone: 1,
-                },
-            }
-        );
-
-        let registers = [];
-
-        const resultRegister = await cursorRegister.toArray();
-
-        // Lay danh sach hoc sinh dang hoc tai lop
-        const cursorStudents = classColl.find(
-            { classId: classId },
-            { projection: { _id: 0, studentId: 1, fullName: 1 } }
-        );
-
-        let studentLists = [];
-
-        await cursorStudents.forEach((v) => {
-            const { studentId, fullName } = v;
-
-            studentLists.push([studentId, fullName]);
-        });
-
-        // Lay danh sach hoc sinh da co phu huynh dang ki lop xx (Dang hoc)
-        resultRegister.forEach((v) => {
-            const { displayName, userPhone, students } = v;
-
-            students.forEach((e) => {
-                const { zaloStudentId, zaloClassId, aliasName } = e;
-
-                if (zaloClassId === classId) {
-                    registers.push(zaloStudentId);
-                }
-            });
-        });
-
-        // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
-
-        notRegisters.forEach((v) => {
-            const [studentId, fullName] = v;
-
-            zaloList.push(['', '', fullName, role, studentId, '', '']);
-        });
-    }
-
-    zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
-
-    // Tra ve sheet cho Admin
-    client.authorize((err) => {
-        if (err) {
-            console.error(err);
-            return;
-        } else {
-            getUserBulk(client, sourceId, sheetName, zaloList);
-        }
-    });
-
-    res.send('Done!');
-};
-
-export const getNotRegisterFromClassId = async (req, res) => {
-    const data = req.body;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const zaloColl = db.collection('zaloUsers');
-        const classColl = db.collection('classUsers');
-
-        const { sourceId, sheetName, classId, role } = data;
-
-        const cursorRegister = zaloColl.find(
-            { 'students.zaloClassId': classId, 'students.role': role },
-            {
-                projection: {
-                    _id: 0,
-                    students: 1,
-                    displayName: 1,
-                    userPhone: 1,
-                },
-            }
-        );
-
-        let registers = [];
-
-        const resultRegister = await cursorRegister.toArray();
-
-        // Lay danh sach hoc sinh dang hoc tai lop
-        const cursorStudents = classColl.find(
-            { classId: classId },
-            { projection: { _id: 0, studentId: 1, fullName: 1 } }
-        );
-
-        let studentLists = [];
-
-        await cursorStudents.forEach((v) => {
-            const { studentId, fullName } = v;
-
-            studentLists.push([studentId, fullName]);
-        });
-
-        // Lay danh sach hoc sinh da co phu huynh dang ki lop xx (Dang hoc)
-        resultRegister.forEach((v) => {
-            const { displayName, userPhone, students } = v;
-
-            students.forEach((e) => {
-                const { zaloStudentId, zaloClassId, aliasName } = e;
-
-                if (zaloClassId === classId) {
-                    registers.push(zaloStudentId);
-                }
-            });
-        });
-
-        // Loc ra danh sach hoc sinh chua co phu huynh dang ki
-        const notRegisters = studentLists.filter((v) => !registers.includes(v[0]));
-
-        let zaloList = [];
-
-        notRegisters.forEach((v, i) => {
-            const [studentId, fullName] = v;
-
-            zaloList.push([i + 1, '', '', fullName, role, studentId, '', '']);
-        });
-
-        // Tra ve sheet cho tro giang
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-export const getSeekInfoFromAdmin = async (req, res) => {
-    const data = req.body;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const zaloColl = db.collection('zaloUsers');
-
-        const { sourceId, sheetName } = data;
-
-        let zaloList = [];
-
-        const result = zaloColl.find({ userPhone: null }, { projection: { _id: 0, zaloUserId: 1, displayName: 1 } });
-
-        const seekInfoList = await result.toArray();
-
-        seekInfoList.forEach((v, i) => {
-            const { zaloUserId, displayName } = v;
-
-            zaloList.push([i + 1, zaloUserId, displayName]);
-        });
-
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-export const getListUserFromClassId = async (req, res) => {
-    const data = req.body;
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const zaloColl = db.collection('zaloUsers');
-        const classInfoColl = db.collection('classInfo');
-
-        const { sourceId, sheetName, classId, role } = data;
-
-        const { className } = await classInfoColl.findOne(
-            { classId: classId },
-            { projection: { _id: 0, className: 1 } }
-        );
-
-        let zaloList = [];
-
-        const pipeline = [
-            { $match: { 'students.zaloClassId': classId } },
-            {
-                $project: {
-                    _id: 0,
-                    zaloUserId: 1,
-                    displayName: 1,
-                    userPhone: 1,
-                    students: {
-                        $filter: {
-                            input: '$students',
-                            as: 'item',
-                            cond: {
-                                $and: [{ $eq: ['$$item.zaloClassId', classId] }, { $eq: ['$$item.role', role] }],
-                            },
-                        },
-                    },
-                },
-            },
-        ];
-
-        const aggCursor = zaloColl.aggregate(pipeline);
-
-        const result = await aggCursor.toArray();
-
-        result.forEach((v) => {
-            const { zaloUserId, displayName, userPhone, students } = v;
-            students.forEach((e) => {
-                const { zaloStudentId, zaloClassId, aliasName, role } = e;
-                const studentName = aliasName.slice(3);
-
-                zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
-            });
-        });
 
         zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
 

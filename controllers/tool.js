@@ -78,14 +78,14 @@ async function listStudentAttendance(studentId, currentTerm, studentInfoColl) {
     }
 }
 
-async function alarmStudentNotPayment2Parent(accessToken, classId, zaloColl, studentInfoColl, classInfoColl) {
+async function alarmNotPayUsers(accessToken, classId, zaloColl, studentInfoColl, classInfoColl) {
     const { currentTerm } = await MongoDB.findOneUser(
         classInfoColl,
         { classId: classId },
         { projection: { _id: 0, currentTerm: 1 } }
     );
 
-    const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
+    // const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
 
     const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
         classInfoColl,
@@ -1560,6 +1560,6 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
-    alarmStudentNotPayment2Parent,
+    alarmNotPayUsers,
     findZaloUserIdFromStudentId,
 };
