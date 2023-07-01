@@ -217,6 +217,8 @@ async function sendMessage(accessToken, zaloUserId, message) {
     const jsonResponse = await response.json();
 
     console.log(jsonResponse);
+
+    return jsonResponse;
 }
 
 async function sendInvoice(accessToken, zaloUserId, invoice) {
