@@ -241,7 +241,7 @@ export const getNotPayUsers = async (req, res) => {
         const result = await classInfoColl.findOne(
             { classId: classId },
             {
-                projection: { _id: 0, currentTerm: 1 },
+                projection: { _id: 0, currentTerm: 1, className: 1, startTerm: 1, endTerm: 1, subjects: 1 },
             }
         );
 
