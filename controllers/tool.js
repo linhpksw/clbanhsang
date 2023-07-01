@@ -1460,6 +1460,5 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
-    alarmNotPayUsers,
     findZaloUserIdFromStudentId,
 };
