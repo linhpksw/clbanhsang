@@ -250,6 +250,31 @@ export const getNotPayUsers = async (req, res) => {
             return;
         }
 
+        const { className, startTerm, endTerm, subjects } = result;
+
+        const createStartTerm = Tools.createDate(startTerm);
+        const createEndTerm = Tools.createDate(endTerm);
+
+        const weekday1 = subjects[0].day;
+        const absent1 = subjects[0].absent;
+        const weekday2 = subjects[1].day;
+        const absent2 = subjects[1].absent;
+
+        const absent1List = absent1 === null ? [] : absent1;
+        const absent2List = absent2 === null ? [] : absent2;
+
+        const duePayment = Tools.getStudyDate(
+            createStartTerm,
+            createEndTerm,
+            weekday1,
+            weekday2,
+            ...absent1List,
+            ...absent2List
+        );
+
+        const duePaymentTermOne = duePayment[4];
+        const duePaymentOtherTerm = duePayment[2];
+
         const { currentTerm } = result;
 
         // Lay danh sach hoc sinh chua nop hoc phi dot x lop y
@@ -315,23 +340,48 @@ export const getNotPayUsers = async (req, res) => {
         const zaloList = notPayRegisterUsers.map((v, i) => {
             const { studentId, studentName, terms, zaloUserId, displayName } = v;
 
-            const { billing } = terms[0];
+            const { term, remainderBefore, billing } = terms[0];
 
-            const formatBilling = Tools.formatCurrency(billing);
+            const billingValue = Tools.formatCurrency(billing);
+            const remainderBeforeValue =
+                remainderBefore === 0
+                    ? '0 đ'
+                    : remainderBefore > 0
+                    ? `thừa ${formatCurrency(remainderBefore)}`
+                    : `thiếu ${formatCurrency(remainderBefore)}`;
 
-            return [i + 1, zaloUserId, studentId, studentName, displayName, formatBilling];
+            const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
+
+            const alarmContent = `Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
+            - Học phí từ đợt trước: ${remainderBefore}
+            - Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
+            
+            Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
+
+            return [
+                i + 1,
+                zaloUserId,
+                studentId,
+                studentName,
+                displayName,
+                className,
+                term,
+                remainderBeforeValue,
+                billingValue,
+                duePaymentValue,
+                alarmContent,
+            ];
         });
 
         // Tra ve sheet cho tro giang
-
         client.authorize(async (err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
-                const range = 'A5:F';
-                const offset = 4;
+                const range = 'A4:K';
+                const offset = 3;
 
                 const requestClear = {
                     spreadsheetId: sourceId,
@@ -376,59 +426,65 @@ export const alarmNotPayUsers = async (req, res) => {
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        const result = await classInfoColl.findOne(
-            { classId: classId },
-            {
-                projection: { _id: 0, currentTerm: 1, className: 1, startTerm: 1, endTerm: 1, subjects: 1 },
-            }
-        );
-
-        if (result === null) {
-            console.log(`Class ${classId} not found!`);
-            return;
-        }
-
-        const { className, startTerm, endTerm, subjects } = result;
-
-        const createStartTerm = Tools.createDate(startTerm);
-        const createEndTerm = Tools.createDate(endTerm);
-
-        const weekday1 = subjects[0].day;
-        const absent1 = subjects[0].absent;
-        const weekday2 = subjects[1].day;
-        const absent2 = subjects[1].absent;
-
-        const absent1List = absent1 === null ? [] : absent1;
-        const absent2List = absent2 === null ? [] : absent2;
-
-        const duePayment = Tools.getStudyDate(
-            createStartTerm,
-            createEndTerm,
-            weekday1,
-            weekday2,
-            ...absent1List,
-            ...absent2List
-        );
-
-        const duePaymentTermOne = duePayment[4];
-        const duePaymentOtherTerm = duePayment[2];
-
         client.authorize(async (err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
-                const range = 'A5:F';
-                const offset = 4;
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R5C2:R${lastRow}C2`,
+                    range: `${sheetName}!R5C2:R${lastRow}C3`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
+
+                for (let i = 0; i < data.length; i++) {
+                    const [zaloUserId, studentId] = data[i];
+
+                    const { term, remainderBefore, billing } = terms[0];
+                    // TODO: them noi dung dong vao trong thong bao nhac hoc phi
+
+                    const attachMessage = {
+                        text: alarmContent,
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                buttons: [
+                                    {
+                                        title: `Thông tin chuyển khoản`,
+                                        payload: `#ttck`,
+                                        type: 'oa.query.show',
+                                    },
+                                    {
+                                        title: `Cú pháp chuyển khoản`,
+                                        payload: `#cpck`,
+                                        type: 'oa.query.show',
+                                    },
+                                    {
+                                        title: `Chi tiết học phí đợt ${term}`,
+                                        payload: `#hpht`,
+                                        type: 'oa.query.show',
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    for (let q = 0; q < parentIdArr.length; q++) {
+                        const [zaloParentId, zaloClassId] = parentIdArr[q];
+
+                        const jsonResponse = await ZaloAPI.sendMessageWithButton(
+                            accessToken,
+                            zaloParentId,
+                            attachMessage
+                        );
+
+                        console.log(jsonResponse);
+                    }
+                }
 
                 console.log(data);
             }
