@@ -323,47 +323,34 @@ export const getNotPayUsers = async (req, res) => {
         });
 
         // Tra ve sheet cho tro giang
-        client.authorize((err) => {
+
+        client.authorize(async (err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
-                client.authorize((err) => {
-                    if (err) {
-                        console.error(err);
-                        return;
-                    } else {
-                        client.authorize(async (err) => {
-                            if (err) {
-                                console.error(err);
-                                return;
-                            } else {
-                                const sheets = google.sheets({ version: 'v4', auth: client });
-                                const range = 'A5:F';
-                                const offset = 4;
+                const sheets = google.sheets({ version: 'v4', auth: client });
+                const range = 'A5:F';
+                const offset = 4;
 
-                                const requestClear = {
-                                    spreadsheetId: sourceId,
-                                    range: `${sheetName}!${range}`,
-                                };
+                const requestClear = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}`,
+                };
 
-                                const requestUpdate = {
-                                    spreadsheetId: sourceId,
-                                    range: `${sheetName}!${range}${offset + zaloList.length}`,
-                                    valueInputOption: 'USER_ENTERED',
-                                    resource: {
-                                        majorDimension: 'ROWS',
-                                        values: zaloList,
-                                    },
-                                };
+                const requestUpdate = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!${range}${offset + zaloList.length}`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        majorDimension: 'ROWS',
+                        values: zaloList,
+                    },
+                };
 
-                                await sheets.spreadsheets.values.clear(requestClear);
+                await sheets.spreadsheets.values.clear(requestClear);
 
-                                await sheets.spreadsheets.values.update(requestUpdate);
-                            }
-                        });
-                    }
-                });
+                await sheets.spreadsheets.values.update(requestUpdate);
             }
         });
 
@@ -377,7 +364,7 @@ export const getNotPayUsers = async (req, res) => {
 export const alarmNotPayUsers = async (req, res) => {
     const webhook = req.body;
 
-    const { sourceId, sheetName, classId } = webhook;
+    const { sourceId, sheetName, classId, lastRow } = webhook;
 
     try {
         await MongoDB.client.connect();
@@ -389,7 +376,63 @@ export const alarmNotPayUsers = async (req, res) => {
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        await Tools.alarmNotPayUsers(accessToken, classId, zaloColl, studentInfoColl, classInfoColl);
+        const result = await classInfoColl.findOne(
+            { classId: classId },
+            {
+                projection: { _id: 0, currentTerm: 1, className: 1, startTerm: 1, endTerm: 1, subjects: 1 },
+            }
+        );
+
+        if (result === null) {
+            console.log(`Class ${classId} not found!`);
+            return;
+        }
+
+        const { className, startTerm, endTerm, subjects } = result;
+
+        const createStartTerm = Tools.createDate(startTerm);
+        const createEndTerm = Tools.createDate(endTerm);
+
+        const weekday1 = subjects[0].day;
+        const absent1 = subjects[0].absent;
+        const weekday2 = subjects[1].day;
+        const absent2 = subjects[1].absent;
+
+        const absent1List = absent1 === null ? [] : absent1;
+        const absent2List = absent2 === null ? [] : absent2;
+
+        const duePayment = Tools.getStudyDate(
+            createStartTerm,
+            createEndTerm,
+            weekday1,
+            weekday2,
+            ...absent1List,
+            ...absent2List
+        );
+
+        const duePaymentTermOne = duePayment[4];
+        const duePaymentOtherTerm = duePayment[2];
+
+        client.authorize(async (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                const sheets = google.sheets({ version: 'v4', auth: client });
+                const range = 'A5:F';
+                const offset = 4;
+
+                const requestData = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!R5C2:R${lastRow}C2`,
+                };
+
+                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+                const data = responseData.values;
+
+                console.log(data);
+            }
+        });
 
         res.send('Done!');
     } catch (err) {

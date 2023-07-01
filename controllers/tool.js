@@ -78,108 +78,6 @@ async function listStudentAttendance(studentId, currentTerm, studentInfoColl) {
     }
 }
 
-async function alarmNotPayUsers(accessToken, classId, zaloColl, studentInfoColl, classInfoColl) {
-    const { currentTerm } = await MongoDB.findOneUser(
-        classInfoColl,
-        { classId: classId },
-        { projection: { _id: 0, currentTerm: 1 } }
-    );
-
-    // const studentNotPayment = await listStudentNotPayment(classId, currentTerm, studentInfoColl);
-
-    const { className, startTerm, endTerm, subjects } = await MongoDB.findOneUser(
-        classInfoColl,
-        { classId: classId },
-        {
-            projection: {
-                _id: 0,
-                className: 1,
-                startTerm: 1,
-                endTerm: 1,
-                subjects: 1,
-            },
-        }
-    );
-
-    const createStartTerm = createDate(startTerm);
-    const createEndTerm = createDate(endTerm);
-
-    const weekday1 = subjects[0].day;
-    const absent1 = subjects[0].absent;
-    const weekday2 = subjects[1].day;
-    const absent2 = subjects[1].absent;
-
-    const absent1List = absent1 === null ? [] : absent1;
-    const absent2List = absent2 === null ? [] : absent2;
-
-    const duePayment = getStudyDate(createStartTerm, createEndTerm, weekday1, weekday2, ...absent1List, ...absent2List);
-
-    const duePaymentTermOne = duePayment[4];
-    const duePaymentOtherTerm = duePayment[2];
-
-    for (let i = 0; i < studentNotPayment.length; i++) {
-        const { studentId, studentName, terms } = studentNotPayment[i];
-
-        const parentIdArr = await findZaloIdFromStudentId(zaloColl, studentId, 'Phụ huynh');
-
-        if (parentIdArr.length === 0) {
-            continue;
-        }
-
-        const { term, remainderBefore, billing } = terms[0];
-        // TODO: them noi dung dong vao trong thong bao nhac hoc phi
-        const alarmContent = `Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của em ${studentName} ${studentId} lớp ${className} như sau:
-- Học phí từ đợt trước: ${
-            remainderBefore === 0
-                ? '0 đ'
-                : remainderBefore > 0
-                ? `thừa ${formatCurrency(remainderBefore)}`
-                : `thiếu ${formatCurrency(remainderBefore)}`
-        }
-- Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
-
-Phụ huynh cần hoàn thành học phí trước hạn ngày ${
-            term === 1 ? duePaymentTermOne : duePaymentOtherTerm
-        } cho lớp toán. Trân trọng!`;
-
-        const attachMessage = {
-            text: alarmContent,
-            attachment: {
-                type: 'template',
-                payload: {
-                    buttons: [
-                        {
-                            title: `Thông tin chuyển khoản`,
-                            payload: `#ttck`,
-                            type: 'oa.query.show',
-                        },
-                        {
-                            title: `Cú pháp chuyển khoản`,
-                            payload: `#cpck`,
-                            type: 'oa.query.show',
-                        },
-                        {
-                            title: `Chi tiết học phí đợt ${term}`,
-                            payload: `#hpht`,
-                            type: 'oa.query.show',
-                        },
-                    ],
-                },
-            },
-        };
-
-        for (let q = 0; q < parentIdArr.length; q++) {
-            const [zaloParentId, zaloClassId] = parentIdArr[q];
-
-            const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloParentId, attachMessage);
-
-            console.log(jsonResponse);
-        }
-    }
-
-    return;
-}
-
 async function signUpRole(accessToken, zaloUserId) {
     const attachMessage = {
         text: `Vui lòng chọn vai trò đăng kí:`,
@@ -1562,6 +1460,5 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
-    alarmNotPayUsers,
     findZaloUserIdFromStudentId,
 };
