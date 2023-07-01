@@ -415,7 +415,7 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue
 export const alarmNotPayUsers = async (req, res) => {
     const webhook = req.body;
 
-    const { sourceId, sheetName, classId, lastRow } = webhook;
+    const { sourceId, sheetName, lastRow } = webhook;
 
     try {
         await MongoDB.client.connect();
@@ -470,11 +470,11 @@ export const alarmNotPayUsers = async (req, res) => {
                         },
                     };
 
-                    console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
+                    // console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
 
-                    // const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                    const jsonResponse = await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
 
-                    // console.log(jsonResponse);
+                    console.log(jsonResponse);
                 }
             }
         });
