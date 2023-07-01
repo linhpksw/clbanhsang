@@ -678,18 +678,63 @@ export const sendMessageDemo = async (req, res) => {
 
 /************************************************************* */
 
-export const sendBulk = async (req, res) => {
+export const sendMessage2Parent = async (req, res) => {
     const data = req.body;
 
-    const { sourceId, sheetName, lastCol, lastRow, template } = data;
+    const { sourceId, sheetName, lastRow, lastCol, template } = data;
 
     try {
-        client.authorize((err) => {
+        client.authorize(async (err) => {
             if (err) {
                 console.error(err);
                 return;
             } else {
-                sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template);
+                const sheets = google.sheets({ version: 'v4', auth: client });
+
+                const requestData = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!R4C1:R${lastRow}C${lastCol}`,
+                };
+
+                await MongoDB.client.connect();
+                const db = MongoDB.client.db('zalo_servers');
+                const tokenColl = db.collection('tokens');
+                const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
+
+                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+                const data = responseData.values;
+                const heads = data.shift();
+
+                const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
+
+                // Creates an array to record sent zalo message
+                const out = [];
+
+                // Loops through all the rows of data
+                for (let i = 0; i < obj.length; i++) {
+                    const row = obj[i];
+                    const zaloUserId = row['{ZID}'];
+
+                    const content = fillInTemplateFromObject(template, row);
+
+                    const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+
+                    result.error === 0 ? out.push([result.message]) : out.push([result.message]);
+                }
+
+                const requestUpdate = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!F5:I${5 + out.length - 1}`,
+                    valueInputOption: 'USER_ENTERED',
+                    resource: {
+                        majorDimension: 'ROWS',
+                        values: out,
+                    },
+                };
+
+                const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
+
+                console.log(responseUpdate);
             }
         });
 
@@ -699,174 +744,6 @@ export const sendBulk = async (req, res) => {
     } finally {
     }
 };
-
-export const getIncludeUser = async (req, res) => {
-    const data = req.body;
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const zaloColl = db.collection('zaloUsers');
-        const classInfoColl = db.collection('classInfo');
-
-        const { sourceId, sheetName, studentIds, role } = data;
-
-        let zaloList = [];
-
-        for (let i = 0; i < studentIds.length; i++) {
-            const studentId = studentIds[i];
-
-            const pipeline = [
-                { $match: { 'students.zaloStudentId': parseInt(studentId) } },
-                {
-                    $project: {
-                        _id: 0,
-                        zaloUserId: 1,
-                        displayName: 1,
-                        userPhone: 1,
-                        students: {
-                            $filter: {
-                                input: '$students',
-                                as: 'item',
-                                cond: {
-                                    $and: [
-                                        {
-                                            $eq: ['$$item.zaloStudentId', parseInt(studentId)],
-                                        },
-                                        { $eq: ['$$item.role', role] },
-                                    ],
-                                },
-                            },
-                        },
-                    },
-                },
-            ];
-
-            const aggCursor = zaloColl.aggregate(pipeline);
-
-            const result = await aggCursor.toArray();
-
-            if (result.length === 0) continue; // Neu hoc sinh khong co tren CSDL
-
-            for (let i = 0; i < result.length; i++) {
-                const { zaloUserId, displayName, userPhone, students } = result[i];
-
-                for (let v = 0; v < students.length; v++) {
-                    const { zaloStudentId, zaloClassId, aliasName, role } = students[v];
-                    const studentName = aliasName.slice(3);
-
-                    const resutlClassId = await MongoDB.findOneUser(
-                        classInfoColl,
-                        { classId: zaloClassId },
-                        { projection: { _id: 0, className: 1 } }
-                    );
-
-                    if (resutlClassId === null) continue;
-                    const { className } = resutlClassId;
-
-                    zaloList.push([zaloUserId, displayName, studentName, role, zaloStudentId, zaloClassId, className]);
-                }
-            }
-        }
-
-        zaloList.forEach((v, i) => v.splice(0, 0, i + 1));
-
-        client.authorize((err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                getUserBulk(client, sourceId, sheetName, zaloList);
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
-async function sendMessageBulk(client, sourceId, sheetName, lastCol, lastRow, template) {
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    const requestData = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!R7C1:R${lastRow}C${lastCol}`,
-    };
-
-    try {
-        await MongoDB.client.connect();
-        const db = MongoDB.client.db('zalo_servers');
-        const tokenColl = db.collection('tokens');
-
-        const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
-
-        const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
-        const data = responseData.values;
-        const heads = data.shift();
-
-        const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
-        // Creates an array to record sent zalo message
-        const out = [];
-
-        // Loops through all the rows of data
-        for (let i = 0; i < obj.length; i++) {
-            const row = obj[i];
-            const zaloUserId = row['{ZID}'];
-
-            const content = fillInTemplateFromObject(template, row);
-
-            const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
-
-            result.error === 0 ? out.push([result.message]) : out.push([result.message]);
-        }
-
-        const requestUpdate = {
-            spreadsheetId: sourceId,
-            range: `${sheetName}!I8:I${8 + out.length - 1}`,
-            valueInputOption: 'USER_ENTERED',
-            resource: {
-                majorDimension: 'ROWS',
-                values: out,
-            },
-        };
-
-        const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
-
-        console.log(responseUpdate);
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-async function getUserBulk(client, sourceId, sheetName, zaloList) {
-    const sheets = google.sheets({ version: 'v4', auth: client });
-
-    const totalList = zaloList.length;
-
-    const requestClear = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!A8:Z`,
-    };
-
-    const requestUpdate = {
-        spreadsheetId: sourceId,
-        range: `${sheetName}!A8:H${8 + totalList - 1}`,
-        valueInputOption: 'USER_ENTERED',
-        resource: {
-            majorDimension: 'ROWS',
-            values: zaloList,
-        },
-    };
-
-    try {
-        await sheets.spreadsheets.values.clear(requestClear);
-
-        await sheets.spreadsheets.values.update(requestUpdate);
-    } catch (err) {
-        console.error(err);
-    }
-}
 
 // Fill template string with data object
 function fillInTemplateFromObject(template, data) {
