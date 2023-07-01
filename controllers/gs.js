@@ -343,6 +343,7 @@ export const getNotPayUsers = async (req, res) => {
             const { term, remainderBefore, billing } = terms[0];
 
             const billingValue = Tools.formatCurrency(billing);
+
             const remainderBeforeValue =
                 remainderBefore === 0
                     ? '0 đ'
@@ -352,9 +353,9 @@ export const getNotPayUsers = async (req, res) => {
 
             const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
 
-            const alarmContent = `Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
-            - Học phí từ đợt trước: ${remainderBefore}
-            - Học phí phải nộp đợt ${term} này: ${formatCurrency(billing)}
+            const alarmContent = `Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
+            - Học phí từ đợt trước: ${remainderBeforeValue}
+            - Học phí phải nộp đợt ${term} này: ${billingValue}
             
             Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
 
