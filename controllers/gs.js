@@ -653,6 +653,7 @@ export const sendMessage = async (req, res) => {
 
                 const sendResult = [];
 
+                let taId;
                 if (sendTo === 'assistant') {
                     const result = await classInfoColl.findOne(
                         { classId: classId },
@@ -666,13 +667,14 @@ export const sendMessage = async (req, res) => {
 
                     const { assistants } = result;
                     const { taZaloId } = assistants[0];
+                    taId = taZaloId;
                     rowsToSend = [obj[0]];
                 }
 
                 for (let i = 0; i < rowsToSend.length; i++) {
                     const row = rowsToSend[i];
 
-                    const zaloUserId = sendTo === 'assistant' ? taZaloId : row['{ZID}'];
+                    const zaloUserId = sendTo === 'assistant' ? taId : row['{ZID}'];
 
                     const messageHeader = fillInTemplateFromObject(header, row);
                     const messageContent = fillInTemplateFromObject(content, row);
