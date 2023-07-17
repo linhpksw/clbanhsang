@@ -507,7 +507,7 @@ function createQRCodePayment(amount, content) {
     const ACCOUNT_NAME = encodeURIComponent('Dang Thi Huong');
     const CONTENT = encodeURIComponent(content);
 
-    const qrCodeUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-${TEMPLATE}.jpg?amount=${amount}&addInfo=${CONTENT}&accountName=${ACCOUNT_NAME}`;
+    const qrCodeUrl = `https://img.vietqr.io/image/${BANK_ID}-${ACCOUNT_NO}-${TEMPLATE}.png?amount=${amount}&addInfo=${CONTENT}&accountName=${ACCOUNT_NAME}`;
     return qrCodeUrl;
 }
 

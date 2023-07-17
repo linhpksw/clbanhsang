@@ -353,12 +353,6 @@ export const getNotPayUsers = async (req, res) => {
 
             const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
 
-            //             const alarmContent = `Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
-            // - Học phí từ đợt trước: ${remainderBeforeValue}
-            // - Học phí phải nộp đợt ${term} này: ${billingValue}
-
-            // Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
-
             return [
                 i + 1,
                 zaloUserId,
@@ -414,7 +408,7 @@ export const getNotPayUsers = async (req, res) => {
 export const alarmNotPayUsers = async (req, res) => {
     const webhook = req.body;
 
-    const { sourceId, sheetName, lastRow } = webhook;
+    const { sourceId, sheetName, lastRow, type } = webhook;
 
     try {
         await MongoDB.client.connect();
@@ -432,37 +426,99 @@ export const alarmNotPayUsers = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R4C1:R${lastRow}C11`,
+                    range: `${sheetName}!R4C1:R${lastRow}C10`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
+                const templateType = type === 'Truyền thông' ? 'promotion' : 'transaction_education';
+
+                const apiUrl =
+                    type === 'Truyền thông'
+                        ? 'https://openapi.zalo.me/v3.0/oa/message/promotion'
+                        : 'https://openapi.zalo.me/v3.0/oa/message/transaction';
+
+                const imageId = await ZaloAPI.uploadImage(accessToken, './img/payment.jpg');
+                const iconPaymentInfo = await ZaloAPI.uploadImage(accessToken, './img/billing.png');
+                const iconPaymentSyntax = await ZaloAPI.uploadImage(accessToken, './img/syntax.png');
+                const iconPaymentDetail = await ZaloAPI.uploadImage(accessToken, './img/detail.png');
+
+                const sendResult = [];
+
                 for (let i = 0; i < data.length; i++) {
-                    const zaloUserId = data[i][1];
-                    const term = data[i][6];
-                    const alarmContent = data[i][10];
+                    const [
+                        ,
+                        zaloUserId,
+                        studentId,
+                        studentName,
+                        displayName,
+                        className,
+                        term,
+                        remainderBeforeValue,
+                        billingValue,
+                        duePaymentValue,
+                    ] = data[i];
 
                     const attachMessage = {
                         text: alarmContent,
                         attachment: {
                             type: 'template',
                             payload: {
+                                template_type: templateType,
+                                language: 'VI',
+                                elements: [
+                                    {
+                                        attachment_id: imageId,
+                                        type: 'banner',
+                                    },
+                                    {
+                                        type: 'header',
+                                        align: 'center',
+                                        content: `Thông báo thanh toán học phí đợt ${term}`,
+                                    },
+                                    {
+                                        type: 'text',
+                                        align: 'left',
+                                        content: `Chào phụ huynh ${displayName}<br>Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:`,
+                                    },
+                                    {
+                                        type: 'table',
+                                        content: [
+                                            {
+                                                key: 'Học phí từ đợt trước',
+                                                value: remainderBeforeValue,
+                                            },
+                                            {
+                                                key: `Số tiền phải nộp đợt ${term}`,
+                                                value: billingValue,
+                                            },
+                                        ],
+                                    },
+                                    {
+                                        type: 'text',
+                                        align: 'center',
+                                        content: `Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`,
+                                    },
+                                ],
                                 buttons: [
                                     {
                                         title: `Thông tin chuyển khoản`,
                                         payload: `#ttck`,
                                         type: 'oa.query.show',
+                                        image_icon: iconPaymentInfo,
                                     },
                                     {
                                         title: `Cú pháp chuyển khoản`,
                                         payload: `#cpck`,
                                         type: 'oa.query.show',
+                                        image_icon: iconPaymentSyntax,
                                     },
                                     {
-                                        title: `Chi tiết học phí đợt ${term}`,
+                                        title: `Chi tiết học phí`,
                                         payload: `#hpht`,
                                         type: 'oa.query.show',
+                                        image_icon: iconPaymentDetail,
                                     },
                                 ],
                             },
@@ -471,7 +527,23 @@ export const alarmNotPayUsers = async (req, res) => {
 
                     // console.log(`Sending message to ${zaloUserId} with content: ${alarmContent}`);
 
-                    await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+                    const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
+
+                    result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
+
+                    const requestUpdate = {
+                        spreadsheetId: sourceId,
+                        range: `${sheetName}!K8:K${3 + sendResult.length}`,
+                        valueInputOption: 'USER_ENTERED',
+                        resource: {
+                            majorDimension: 'ROWS',
+                            values: sendResult,
+                        },
+                    };
+
+                    const responseUpdate = (await sheets.spreadsheets.values.update(requestUpdate)).data;
+
+                    console.log(responseUpdate);
                 }
             }
         });
