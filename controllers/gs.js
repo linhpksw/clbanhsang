@@ -692,6 +692,8 @@ export const sendMessage = async (req, res) => {
                             ? 'https://openapi.zalo.me/v3.0/oa/message/promotion'
                             : 'https://openapi.zalo.me/v3.0/oa/message/transaction';
 
+                    const imageId = await ZaloAPI.uploadImage(accessToken, './img/noti.jpg');
+
                     const attachMessage = {
                         attachment: {
                             type: 'template',
@@ -700,7 +702,7 @@ export const sendMessage = async (req, res) => {
                                 language: 'VI',
                                 elements: [
                                     {
-                                        attachment_id: 'URL image',
+                                        attachment_id: imageId,
                                         type: 'banner',
                                     },
                                     {

@@ -220,6 +220,32 @@ async function sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl) {
     return jsonResponse;
 }
 
+async function uploadImage(accessToken, imagePath) {
+    const fs = require('fs');
+    const axios = require('axios');
+    const FormData = require('form-data');
+
+    let formData = new FormData();
+    formData.append('file', fs.createReadStream(imagePath));
+
+    try {
+        const response = await axios.post('https://openapi.zalo.me/v2.0/oa/upload/image', formData, {
+            headers: {
+                ...formData.getHeaders(),
+                access_token: accessToken,
+            },
+        });
+
+        if (response.data.error === 0) {
+            return response.data.data.attachment_id;
+        } else {
+            throw new Error(`Image upload failed: ${response.data.message}`);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,
@@ -366,4 +392,5 @@ export {
     sendImageByUrl,
     sendInvoice,
     sendPlusMessage,
+    uploadImage,
 };
