@@ -671,6 +671,8 @@ export const sendMessage = async (req, res) => {
                     rowsToSend = [obj[0]];
                 }
 
+                const imageId = await ZaloAPI.uploadImage(accessToken, './img/noti.jpg');
+
                 for (let i = 0; i < rowsToSend.length; i++) {
                     const row = rowsToSend[i];
 
@@ -691,8 +693,6 @@ export const sendMessage = async (req, res) => {
                         type === 'Truyền thông'
                             ? 'https://openapi.zalo.me/v3.0/oa/message/promotion'
                             : 'https://openapi.zalo.me/v3.0/oa/message/transaction';
-
-                    const imageId = await ZaloAPI.uploadImage(accessToken, './img/noti.jpg');
 
                     const attachMessage = {
                         attachment: {

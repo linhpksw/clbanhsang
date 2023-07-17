@@ -1,4 +1,7 @@
 import fetch from 'node-fetch';
+import fs from 'fs';
+import axios from 'axios';
+import FormData from 'form-data';
 
 async function getFollowers(accessToken) {
     let totalFollowers = [];
@@ -221,10 +224,6 @@ async function sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl) {
 }
 
 async function uploadImage(accessToken, imagePath) {
-    const fs = require('fs');
-    const axios = require('axios');
-    const FormData = require('form-data');
-
     let formData = new FormData();
     formData.append('file', fs.createReadStream(imagePath));
 
