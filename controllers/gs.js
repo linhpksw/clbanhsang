@@ -353,11 +353,11 @@ export const getNotPayUsers = async (req, res) => {
 
             const duePaymentValue = term === 1 ? duePaymentTermOne : duePaymentOtherTerm;
 
-            const alarmContent = `Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
-- Học phí từ đợt trước: ${remainderBeforeValue}
-- Học phí phải nộp đợt ${term} này: ${billingValue}
-            
-Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
+            //             const alarmContent = `Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:
+            // - Học phí từ đợt trước: ${remainderBeforeValue}
+            // - Học phí phải nộp đợt ${term} này: ${billingValue}
+
+            // Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue} cho lớp toán. Trân trọng!`;
 
             return [
                 i + 1,
@@ -370,7 +370,6 @@ Phụ huynh cần hoàn thành học phí trước hạn ngày ${duePaymentValue
                 remainderBeforeValue,
                 billingValue,
                 duePaymentValue,
-                alarmContent,
             ];
         });
 

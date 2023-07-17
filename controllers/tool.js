@@ -694,7 +694,7 @@ function formatDateTime(dateStr) {
 }
 
 function formatCurrency(money) {
-    return `${Math.abs(money).toLocaleString('vi-VN')}đ`;
+    return `${Math.abs(money).toLocaleString('vi-VN')} đ`;
 }
 
 function nomarlizeSyntax(str) {
