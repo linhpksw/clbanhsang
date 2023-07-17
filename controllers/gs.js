@@ -640,6 +640,7 @@ export const sendMessage = async (req, res) => {
                 await MongoDB.client.connect();
                 const db = MongoDB.client.db('zalo_servers');
                 const tokenColl = db.collection('tokens');
+                const classInfoColl = db.collection('classInfo');
                 const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
