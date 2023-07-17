@@ -533,7 +533,7 @@ export const alarmNotPayUsers = async (req, res) => {
 
                     const requestUpdate = {
                         spreadsheetId: sourceId,
-                        range: `${sheetName}!K8:K${3 + sendResult.length}`,
+                        range: `${sheetName}!K4:K${3 + sendResult.length}`,
                         valueInputOption: 'USER_ENTERED',
                         resource: {
                             majorDimension: 'ROWS',
