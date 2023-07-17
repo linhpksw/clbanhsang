@@ -461,7 +461,6 @@ export const alarmNotPayUsers = async (req, res) => {
                     ] = data[i];
 
                     const attachMessage = {
-                        text: alarmContent,
                         attachment: {
                             type: 'template',
                             payload: {
