@@ -10,8 +10,7 @@ router.post('/getOAUsers', Sheets.getOAUsers);
 router.post('/getNotPayUsers', Sheets.getNotPayUsers);
 router.post('/alarmNotPayUsers', Sheets.alarmNotPayUsers);
 
-router.post('/sendMessageDemo', Sheets.sendMessageDemo);
-router.post('/sendMessage2Parent', Sheets.sendMessage2Parent);
+router.post('/sendMessage', Sheets.sendMessage);
 
 router.post('/getStatistic', Sheets.getStatistic);
 

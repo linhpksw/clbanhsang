@@ -195,6 +195,31 @@ async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
     console.log(jsonResponse);
 }
 
+async function sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const content = {
+        recipient: {
+            user_id: zaloUserId,
+        },
+        message: attachMessage,
+    };
+
+    const response = await fetch(apiUrl, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(content),
+    });
+
+    const jsonResponse = await response.json();
+    console.log(jsonResponse);
+
+    return jsonResponse;
+}
+
 async function sendMessage(accessToken, zaloUserId, message) {
     const headers = {
         access_token: accessToken,
@@ -340,4 +365,5 @@ export {
     sendMessageWithButton,
     sendImageByUrl,
     sendInvoice,
+    sendPlusMessage,
 };

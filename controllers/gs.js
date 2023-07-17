@@ -143,7 +143,7 @@ export const getOAUsers = async (req, res) => {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
         const zaloColl = db.collection('zaloUsers');
-        const { sourceId, sheetName, classId, role } = webhook;
+        const { sourceId, sheetName, classId } = webhook;
 
         const pipeline = [
             { $match: { 'students.zaloClassId': classId } },
@@ -162,7 +162,7 @@ export const getOAUsers = async (req, res) => {
                                     {
                                         $eq: ['$$item.zaloClassId', classId],
                                     },
-                                    { $eq: ['$$item.role', role] },
+                                    { $eq: ['$$item.role', 'Phụ huynh'] },
                                 ],
                             },
                         },
@@ -196,7 +196,7 @@ export const getOAUsers = async (req, res) => {
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
                 const range = 'A5:E';
-                const offset = 4;
+                const offset = 7;
 
                 const requestClear = {
                     spreadsheetId: sourceId,
@@ -613,75 +613,16 @@ export const getStatistic = async (req, res) => {
     }
 };
 
-export const sendMessageDemo = async (req, res) => {
-    const webhook = req.body;
-
-    try {
-        client.authorize(async (err) => {
-            if (err) {
-                console.error(err);
-                return;
-            } else {
-                await MongoDB.client.connect();
-                const db = MongoDB.client.db('zalo_servers');
-                const classInfoColl = db.collection('classInfo');
-                const tokenColl = db.collection('tokens');
-
-                const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
-
-                const { sourceId, sheetName, classId, template, lastCol } = webhook;
-
-                const result = await classInfoColl.findOne(
-                    { classId: classId },
-                    { projection: { _id: 0, assistants: 1 } }
-                );
-
-                if (result === null) {
-                    console.log(`Class ${classId} not found!`);
-                    return;
-                }
-
-                const { assistants } = result;
-                const { taZaloId } = assistants[0];
-
-                const sheets = google.sheets({ version: 'v4', auth: client });
-
-                const requestData = {
-                    spreadsheetId: sourceId,
-                    range: `${sheetName}!R4C1:R5C${lastCol}`,
-                };
-
-                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
-                const data = responseData.values;
-                const heads = data.shift();
-
-                const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
-
-                // Loops through all the rows of data
-                for (let i = 0; i < obj.length; i++) {
-                    const row = obj[i];
-                    const content = fillInTemplateFromObject(template, row);
-
-                    // console.log(`Sending message to ${taZaloId} with content: ${content}`);
-
-                    await ZaloAPI.sendMessage(accessToken, taZaloId, content);
-                }
-            }
-        });
-
-        res.send('Done!');
-    } catch (err) {
-        console.error(err);
-    } finally {
-    }
-};
-
 /************************************************************* */
 
-export const sendMessage2Parent = async (req, res) => {
+const constructTable = (table) => {
+    return table.filter(([key, value]) => key && value);
+};
+
+export const sendMessage = async (req, res) => {
     const data = req.body;
 
-    const { sourceId, sheetName, lastRow, lastCol, template } = data;
+    const { sourceId, sheetName, sendTo, lastRow, lastCol, type, classId, header, content, ending, table } = data;
 
     try {
         client.authorize(async (err) => {
@@ -693,7 +634,7 @@ export const sendMessage2Parent = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R4C1:R${lastRow}C${lastCol}`,
+                    range: `${sheetName}!R7C1:R${lastRow}C${lastCol}`,
                 };
 
                 await MongoDB.client.connect();
@@ -707,28 +648,94 @@ export const sendMessage2Parent = async (req, res) => {
 
                 const obj = data.map((r) => heads.reduce((o, k, i) => ((o[k] = r[i] || ''), o), {}));
 
-                // Creates an array to record sent zalo message
-                const out = [];
+                let rowsToSend = obj;
 
-                // Loops through all the rows of data
-                for (let i = 0; i < obj.length; i++) {
-                    const row = obj[i];
-                    const zaloUserId = row['{ZID}'];
+                const sendResult = [];
 
-                    const content = fillInTemplateFromObject(template, row);
+                if (sendTo === 'assistant') {
+                    const result = await classInfoColl.findOne(
+                        { classId: classId },
+                        { projection: { _id: 0, assistants: 1 } }
+                    );
 
-                    const result = await ZaloAPI.sendMessage(accessToken, zaloUserId, content);
+                    if (result === null) {
+                        console.log(`Class ${classId} not found!`);
+                        return;
+                    }
 
-                    result.error === 0 ? out.push([result.message]) : out.push([result.message]);
+                    const { assistants } = result;
+                    const { taZaloId } = assistants[0];
+                    rowsToSend = [obj[0]];
+                }
+
+                for (let i = 0; i < rowsToSend.length; i++) {
+                    const row = rowsToSend[i];
+
+                    const zaloUserId = sendTo === 'assistant' ? taZaloId : row['{ZID}'];
+
+                    const messageHeader = fillInTemplateFromObject(header, row);
+                    const messageContent = fillInTemplateFromObject(content, row);
+                    const messageEnding = fillInTemplateFromObject(ending, row);
+                    const messageTable = constructTable(
+                        table.map(([key, value]) => [
+                            fillInTemplateFromObject(key, row),
+                            fillInTemplateFromObject(value, row),
+                        ])
+                    );
+
+                    const templateType = type === 'Truyền thông' ? 'promotion' : 'transaction_education';
+                    const apiUrl =
+                        type === 'Truyền thông'
+                            ? 'https://openapi.zalo.me/v3.0/oa/message/promotion'
+                            : 'https://openapi.zalo.me/v3.0/oa/message/transaction';
+
+                    const attachMessage = {
+                        attachment: {
+                            type: 'template',
+                            payload: {
+                                template_type: templateType,
+                                language: 'VI',
+                                elements: [
+                                    {
+                                        attachment_id: 'URL image',
+                                        type: 'banner',
+                                    },
+                                    {
+                                        type: 'header',
+                                        align: 'center',
+                                        content: messageHeader,
+                                    },
+                                    {
+                                        type: 'text',
+                                        align: 'left',
+                                        content: messageContent,
+                                    },
+                                    {
+                                        type: 'table',
+                                        content: messageTable.map(([key, value]) => ({ key, value })),
+                                    },
+                                    {
+                                        type: 'text',
+                                        align: 'center',
+                                        content: messageEnding,
+                                    },
+                                ],
+                            },
+                        },
+                    };
+
+                    const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
+
+                    result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
                 }
 
                 const requestUpdate = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!F5:I${5 + out.length - 1}`,
+                    range: `${sheetName}!F5:F${8 + sendResult.length - 1}`,
                     valueInputOption: 'USER_ENTERED',
                     resource: {
                         majorDimension: 'ROWS',
-                        values: out,
+                        values: sendResult,
                     },
                 };
 
