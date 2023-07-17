@@ -474,16 +474,24 @@ export const alarmNotPayUsers = async (req, res) => {
                                     {
                                         type: 'header',
                                         align: 'center',
-                                        content: `Thông báo thanh toán học phí đợt ${term}`,
+                                        content: `Thông báo nộp học phí đợt ${term}`,
                                     },
                                     {
                                         type: 'text',
                                         align: 'left',
-                                        content: `Chào phụ huynh ${displayName}<br>Câu lạc bộ Toán Ánh Sáng thông báo học phí đợt ${term} của con ${studentName} ${studentId} lớp ${className} như sau:`,
+                                        content: `Chào phụ huynh ${displayName}<br><br>,Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của con như sau:`,
                                     },
                                     {
                                         type: 'table',
                                         content: [
+                                            {
+                                                key: 'Mã học sinh',
+                                                value: `${studentName} ${studentId}`,
+                                            },
+                                            {
+                                                key: 'Lớp học',
+                                                value: `${className}`,
+                                            },
                                             {
                                                 key: 'Học phí từ đợt trước',
                                                 value: remainderBeforeValue,
