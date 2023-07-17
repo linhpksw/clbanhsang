@@ -555,6 +555,8 @@ export const invoiceRequest = async (req, res) => {
         const zaloColl = db.collection('zaloUsers');
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
+        const imageId = await ZaloAPI.uploadImage(accessToken, './img/invoice.jpg');
+
         for (let i = 0; i < webhook.length; i++) {
             const doc = webhook[i];
             const { studentId, classId, term, payment } = doc;
@@ -581,7 +583,7 @@ export const invoiceRequest = async (req, res) => {
                     break;
                 }
 
-                const invoice = createInvoice(doc, existClass.className);
+                const invoice = createInvoice(doc, existClass.className, imageId);
 
                 const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
 
@@ -622,7 +624,7 @@ export const invoiceRequest = async (req, res) => {
     }
 };
 
-const createInvoice = (doc, className) => {
+const createInvoice = (doc, className, imageId) => {
     const { studentId, studentName, term, remainderBefore, billing, payment, paidDate } = doc;
 
     const billingValue = isNaN(billing) ? billing : Tools.formatCurrency(billing);
@@ -664,8 +666,7 @@ const createInvoice = (doc, className) => {
                 language: 'VI',
                 elements: [
                     {
-                        image_url:
-                            'https://img.freepik.com/free-vector/happy-students-learning-math-college-school-isolated-flat-illustration_74855-10799.jpg?w=900&t=st=1687578435~exp=1687579035~hmac=c2bab6af873f00a495540dde952a0e7dd9331bbf4c6a6db67b5150eb86c5e81f',
+                        image_url: imageId,
                         type: 'banner',
                     },
                     {
@@ -717,7 +718,7 @@ const createInvoice = (doc, className) => {
                         type: 'text',
                         align: 'center',
                         content:
-                            'Cảm ơn quý phụ huynh đã luôn tin tưởng và lựa chọn trung tâm toán Câu lạc bộ Ánh Sáng!',
+                            'Cảm ơn quý phụ huynh đã luôn tin tưởng và lựa chọn Trung tâm Toán Câu lạc bộ Ánh Sáng!',
                     },
                 ],
                 buttons: [],

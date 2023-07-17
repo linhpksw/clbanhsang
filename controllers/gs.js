@@ -479,14 +479,14 @@ export const alarmNotPayUsers = async (req, res) => {
                                     {
                                         type: 'text',
                                         align: 'left',
-                                        content: `Chào phụ huynh ${displayName}<br><br>,Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của con như sau:`,
+                                        content: `Chào phụ huynh ${displayName},<br><br>Câu lạc bộ Toán Ánh Sáng xin thông báo học phí đợt ${term} của con ${studentName} như sau:`,
                                     },
                                     {
                                         type: 'table',
                                         content: [
                                             {
                                                 key: 'Mã học sinh',
-                                                value: `${studentName} ${studentId}`,
+                                                value: `${studentId}`,
                                             },
                                             {
                                                 key: 'Lớp học',
