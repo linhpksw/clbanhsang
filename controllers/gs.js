@@ -724,9 +724,11 @@ export const sendMessage = async (req, res) => {
                         },
                     };
 
-                    const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
+                    console.log(`Sending message to ${zaloUserId} with content: ${messageContent}`);
 
-                    result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
+                    // const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
+
+                    // result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
                 }
 
                 const requestUpdate = {
