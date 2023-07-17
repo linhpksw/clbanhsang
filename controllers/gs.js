@@ -195,7 +195,7 @@ export const getOAUsers = async (req, res) => {
                 return;
             } else {
                 const sheets = google.sheets({ version: 'v4', auth: client });
-                const range = 'A5:E';
+                const range = 'A8:F';
                 const offset = 7;
 
                 const requestClear = {
