@@ -727,16 +727,16 @@ export const sendMessage = async (req, res) => {
                         },
                     };
 
-                    console.log(`Sending message to ${zaloUserId} with content: ${messageContent}`);
+                    // console.log(`Sending message to ${zaloUserId} with content: ${messageContent}`);
 
-                    // const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
+                    const result = await ZaloAPI.sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl);
 
-                    // result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
+                    result.error === 0 ? sendResult.push([result.message]) : sendResult.push([result.message]);
                 }
 
                 const requestUpdate = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!F5:F${8 + sendResult.length - 1}`,
+                    range: `${sheetName}!F8:F${8 + sendResult.length - 1}`,
                     valueInputOption: 'USER_ENTERED',
                     resource: {
                         majorDimension: 'ROWS',
