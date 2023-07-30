@@ -342,7 +342,9 @@ export const updateClassRequest = async (req, res) => {
             subjects: newSubjects,
         };
 
-        await MongoDB.updateOneUser(classInfoColl, { classId: classId }, { $set: newDoc });
+        // await MongoDB.updateOneUser(classInfoColl, { classId: classId }, { $set: newDoc });
+
+        await classInfoColl.updateOne({ classId: classId }, { $set: newDoc }, { upsert: true });
 
         res.send('Success');
     } catch (err) {
