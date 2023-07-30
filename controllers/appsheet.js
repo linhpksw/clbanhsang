@@ -156,7 +156,9 @@ export const updateStudentRequest = async (req, res) => {
             secondParentPhone: secondParentPhone,
         };
 
-        await MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
+        // await MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
+
+        await classColl.updateOne({ studentId: parseInt(studentId) }, { $set: updateDoc }, { upsert: true });
 
         res.send('Success');
     } catch (err) {
