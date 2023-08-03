@@ -216,37 +216,41 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 async function sendClassInfo(accessToken, zaloUserId, classInfoColl, zaloColl) {
     const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfoArr === undefined) return;
+    if (zaloStudentInfoArr === undefined) {
+        const goodByeMessage =
+            'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
 
-    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
-        const [zaloStudentId, zaloClassId, alisaName, role] = zaloStudentInfoArr[i];
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+    } else {
+        for (let i = 0; i < zaloStudentInfoArr.length; i++) {
+            const [zaloStudentId, zaloClassId, alisaName, role] = zaloStudentInfoArr[i];
 
-        const classInfo = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: zaloClassId },
-            { projection: { _id: 0 } }
-        );
+            const classInfo = await MongoDB.findOneUser(
+                classInfoColl,
+                { classId: zaloClassId },
+                { projection: { _id: 0 } }
+            );
 
-        const { className, room, currentTerm, totalDate, tuition, startTerm, endTerm, assistants, subjects } =
-            classInfo;
+            const { className, room, currentTerm, totalDate, tuition, startTerm, endTerm, assistants, subjects } =
+                classInfo;
 
-        const assistantInfo = assistants
-            .map((v) => {
-                const { taName, taPhone, taZaloId } = v;
+            const assistantInfo = assistants
+                .map((v) => {
+                    const { taName, taPhone, taZaloId } = v;
 
-                return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
-            })
-            .join(`\n`);
+                    return `Trợ giảng: ${taName}\nĐiện thoại: ${taPhone}`;
+                })
+                .join(`\n`);
 
-        const subjectInfo = subjects
-            .map((v, i) => {
-                const { name, teacher, day, start, end, absent } = v;
+            const subjectInfo = subjects
+                .map((v, i) => {
+                    const { name, teacher, day, start, end, absent } = v;
 
-                return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
-            })
-            .join(`\n`);
+                    return `${i + 1}) ${name}: ${teacher}\n- ${day}: ${start}-${end}`;
+                })
+                .join(`\n`);
 
-        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi thông tin lớp ${className} như sau:
+            const message = `Câu lạc bộ Toán Ánh Sáng xin gửi thông tin lớp ${className} như sau:
 ------------------------------   
 Phòng học: ${room}
 ------------------------------
@@ -262,7 +266,8 @@ Kết thúc đợt: ${endTerm === null ? '' : endTerm}
 ------------------------------
 Học phí mỗi buổi: ${tuition}`;
 
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+        }
     }
 }
 
