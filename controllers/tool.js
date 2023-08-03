@@ -201,11 +201,15 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 
         await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
     } else {
-        const studentZaloInfoArr = students.map((v) => {
-            return [v.zaloStudentId, v.zaloClassId, v.role, v.aliasName];
+        let studentArr = [];
+
+        students.forEach((v) => {
+            if (!v.zaloStudentId.includes('N')) {
+                studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
+            }
         });
 
-        return studentZaloInfoArr;
+        return studentArr;
     }
 }
 
@@ -223,19 +227,8 @@ async function sendClassInfo(accessToken, zaloUserId, classInfoColl, zaloColl) {
             { projection: { _id: 0 } }
         );
 
-        const {
-            className,
-            room,
-            description,
-            status,
-            currentTerm,
-            totalDate,
-            tuition,
-            startTerm,
-            endTerm,
-            assistants,
-            subjects,
-        } = classInfo;
+        const { className, room, currentTerm, totalDate, tuition, startTerm, endTerm, assistants, subjects } =
+            classInfo;
 
         const assistantInfo = assistants
             .map((v) => {
