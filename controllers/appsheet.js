@@ -283,7 +283,6 @@ export const updateClassRequest = async (req, res) => {
             classId,
             className,
             room,
-            description,
             status,
             currentTerm,
             totalDate,
@@ -294,8 +293,6 @@ export const updateClassRequest = async (req, res) => {
             absentSubject2,
             subjects,
         } = webhook;
-
-        const totalSubject = subjects.split(' ,'); // loi format tu appsheet
 
         const shortNameSubject2Full = {
             HH: 'Hình học',
@@ -312,7 +309,7 @@ export const updateClassRequest = async (req, res) => {
             [subjectAbsentDay2]: absentDates2 === '' ? null : absentDates2.split(', '),
         };
 
-        const newSubjects = totalSubject.map((subject) => {
+        const newSubjects = subjects.map((subject) => {
             const [subjectName, subjectTeacher, subjectDay, subjectStart, subjectEnd] = subject.split('-');
 
             const subjectAbsent = absentDay[subjectDay];
@@ -332,7 +329,6 @@ export const updateClassRequest = async (req, res) => {
         const newDoc = {
             className: className,
             room: parseInt(room),
-            description: description,
             status: status,
             currentTerm: term,
             totalDate: parseInt(totalDate),
