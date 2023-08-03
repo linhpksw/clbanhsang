@@ -274,62 +274,67 @@ Học phí mỗi buổi: ${tuition}`;
 async function sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoColl) {
     const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo === undefined) return;
+    if (zaloStudentInfo.length === 0) {
+        const goodByeMessage =
+            'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+    } else {
+        for (let i = 0; i < zaloStudentInfo.length; i++) {
+            const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
-        const studentName = aliasName.slice(3);
+            const studentName = aliasName.slice(3);
 
-        const { currentTerm, className, assistants } = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: classId },
-            {
-                projection: {
-                    _id: 0,
-                    currentTerm: 1,
-                    className: 1,
-                    assistants: 1,
-                },
-            }
-        );
-
-        if (assistants.length === 0) {
-            const failContent = `Hiện tại chưa có thông tin trợ giảng của con ${studentName} ${studentId} ở lớp ${className} ạ.`;
-
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-        } else {
-            const { taName, taPhone } = assistants[0];
-
-            const successContent = `Lớp toán xin gửi đến ${role.toLowerCase()} ${studentName} ở lớp ${className} số điện thoại chị trợ giảng ${taName} là ${taPhone}.\n\nLớp toán có chức năng tự động chuyển tiếp tin nhắn đến từng trợ giảng quản lí lớp nên tin nhắn sẽ luôn được trả lời trong thời gian sớm nhất. ${role} chỉ nên liên hệ trợ giảng trong trường hợp muốn gọi trực tiếp ạ!`;
-
-            const attachMessage = {
-                text: successContent,
-                attachment: {
-                    type: 'template',
-                    payload: {
-                        buttons: [
-                            {
-                                title: `Nhắn tin đến trợ giảng ${taName}`,
-                                type: 'oa.open.sms',
-                                payload: {
-                                    content: `Chào ${taName}, tôi là ${role.toLowerCase()} ${studentName} ở lớp ${className}`,
-                                    phone_code: taPhone,
-                                },
-                            },
-                            {
-                                title: `Gọi điện đến trợ giảng ${taName}`,
-                                type: 'oa.open.phone',
-                                payload: {
-                                    phone_code: taPhone,
-                                },
-                            },
-                        ],
+            const { currentTerm, className, assistants } = await MongoDB.findOneUser(
+                classInfoColl,
+                { classId: classId },
+                {
+                    projection: {
+                        _id: 0,
+                        currentTerm: 1,
+                        className: 1,
+                        assistants: 1,
                     },
-                },
-            };
+                }
+            );
 
-            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+            if (assistants.length === 0) {
+                const failContent = `Hiện tại chưa có thông tin trợ giảng của con ${studentName} ${studentId} ở lớp ${className} ạ.`;
+
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+            } else {
+                const { taName, taPhone } = assistants[0];
+
+                const successContent = `Lớp toán xin gửi đến ${role.toLowerCase()} ${studentName} ở lớp ${className} số điện thoại chị trợ giảng ${taName} là ${taPhone}.\n\nLớp toán có chức năng tự động chuyển tiếp tin nhắn đến từng trợ giảng quản lí lớp nên tin nhắn sẽ luôn được trả lời trong thời gian sớm nhất. ${role} chỉ nên liên hệ trợ giảng trong trường hợp muốn gọi trực tiếp ạ!`;
+
+                const attachMessage = {
+                    text: successContent,
+                    attachment: {
+                        type: 'template',
+                        payload: {
+                            buttons: [
+                                {
+                                    title: `Nhắn tin đến trợ giảng ${taName}`,
+                                    type: 'oa.open.sms',
+                                    payload: {
+                                        content: `Chào ${taName}, tôi là ${role.toLowerCase()} ${studentName} ở lớp ${className}`,
+                                        phone_code: taPhone,
+                                    },
+                                },
+                                {
+                                    title: `Gọi điện đến trợ giảng ${taName}`,
+                                    type: 'oa.open.phone',
+                                    payload: {
+                                        phone_code: taPhone,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                };
+
+                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+            }
         }
     }
 }
@@ -337,66 +342,70 @@ async function sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoCol
 async function sendAttendanceInfo(accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
     const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo === undefined) return; // Fix sau
+    if (zaloStudentInfo.length === 0) {
+        const goodByeMessage =
+            'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
 
-    for (let i = 0; i < zaloStudentInfo.length; i++) {
-        const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+    } else {
+        for (let i = 0; i < zaloStudentInfo.length; i++) {
+            const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
-        const studentName = aliasName.slice(3);
+            const studentName = aliasName.slice(3);
 
-        const { currentTerm, className } = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: classId },
-            { projection: { _id: 0, currentTerm: 1, className: 1 } }
-        );
+            const { currentTerm, className } = await MongoDB.findOneUser(
+                classInfoColl,
+                { classId: classId },
+                { projection: { _id: 0, currentTerm: 1, className: 1 } }
+            );
 
-        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
+            const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
 
-        if (studentTermInfo === null) {
-            const failContent = `Dữ liệu điểm danh đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+            if (studentTermInfo === null) {
+                const failContent = `Dữ liệu điểm danh đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            continue;
-        }
+                continue;
+            }
 
-        const { terms } = studentTermInfo[0];
+            const { terms } = studentTermInfo[0];
 
-        const {
-            term, // dot hien tai
-            start, // bat dau dot
-            end, // ket thuc dot
-            total, // so buoi trong dot
-            study, // so buoi hoc
-            absent, // so buoi nghi
-            subject, // mon hoc
-            remainderBefore, // du dot truoc
-            billing, // phai nop
-            payment, // da nop
-            type, // hinh thuc nop
-            paidDate, // ngay nop
-            remainder, // con thua
-            attendances,
-            absences,
-        } = terms[0];
+            const {
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = terms[0];
 
-        const attendanceInfo = attendances.map((v) => {
-            const { no, newDate, teacher } = v;
+            const attendanceInfo = attendances.map((v) => {
+                const { no, newDate, teacher } = v;
 
-            const beautifyDate = formatDate(newDate);
+                const beautifyDate = formatDate(newDate);
 
-            return `- ${no}: ${teacher} - ${beautifyDate}`;
-        });
+                return `- ${no}: ${teacher} - ${beautifyDate}`;
+            });
 
-        const absenceInfo = absences.map((v) => {
-            const { no, newDate, teacher } = v;
+            const absenceInfo = absences.map((v) => {
+                const { no, newDate, teacher } = v;
 
-            const beautifyDate = formatDate(newDate);
+                const beautifyDate = formatDate(newDate);
 
-            return `- ${no}: ${teacher} - ${beautifyDate}`;
-        });
+                return `- ${no}: ${teacher} - ${beautifyDate}`;
+            });
 
-        const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} kết quả chuyên cần đợt ${term} như sau:
+            const message = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} kết quả chuyên cần đợt ${term} như sau:
 ------------------------
 Tổng số buổi đợt ${term}: ${total} buổi
 ------------------------
@@ -404,7 +413,8 @@ Số buổi đã học: ${study} buổi${attendanceInfo.length ? `\n${attendance
 ------------------------
 Số buổi đã nghỉ: ${absent} buổi${absenceInfo.length ? `\n${absenceInfo.join(`\n`)}` : ''}`;
 
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+        }
     }
 }
 
@@ -510,55 +520,120 @@ function createQRCodePayment(amount, content) {
 }
 
 async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl, studentInfoColl) {
-    const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
+    const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfoArr === undefined) return; // Fix sau
+    if (zaloStudentInfo.length === 0) {
+        const goodByeMessage =
+            'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
 
-    for (let i = 0; i < zaloStudentInfoArr.length; i++) {
-        const [studentId, classId, role, aliasName] = zaloStudentInfoArr[i];
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+    } else {
+        for (let i = 0; i < zaloStudentInfo.length; i++) {
+            const [studentId, classId, role, aliasName] = zaloStudentInfo[i];
 
-        const studentName = aliasName.slice(3);
+            const studentName = aliasName.slice(3);
 
-        const { currentTerm, className } = await MongoDB.findOneUser(
-            classInfoColl,
-            { classId: classId },
-            { projection: { _id: 0, currentTerm: 1, className: 1 } }
-        );
+            const { currentTerm, className } = await MongoDB.findOneUser(
+                classInfoColl,
+                { classId: classId },
+                { projection: { _id: 0, currentTerm: 1, className: 1 } }
+            );
 
-        const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
+            const studentTermInfo = await listStudentAttendance(studentId, currentTerm, studentInfoColl);
 
-        if (studentTermInfo === null) {
-            const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+            if (studentTermInfo === null) {
+                const failContent = `Dữ liệu học phí đợt ${currentTerm} của học sinh ${studentName} ${studentId} lớp ${className} chưa có trên cơ sở dữ liệu. ${role} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-            continue;
-        }
+                continue;
+            }
 
-        const { terms } = studentTermInfo[0];
+            const { terms } = studentTermInfo[0];
 
-        const {
-            term, // dot hien tai
-            start, // bat dau dot
-            end, // ket thuc dot
-            total, // so buoi trong dot
-            study, // so buoi hoc
-            absent, // so buoi nghi
-            subject, // mon hoc
-            remainderBefore, // du dot truoc
-            billing, // phai nop
-            payment, // da nop
-            type, // hinh thuc nop
-            paidDate, // ngay nop
-            remainder, // con thua
-            attendances,
-            absences,
-        } = terms[0];
+            const {
+                term, // dot hien tai
+                start, // bat dau dot
+                end, // ket thuc dot
+                total, // so buoi trong dot
+                study, // so buoi hoc
+                absent, // so buoi nghi
+                subject, // mon hoc
+                remainderBefore, // du dot truoc
+                billing, // phai nop
+                payment, // da nop
+                type, // hinh thuc nop
+                paidDate, // ngay nop
+                remainder, // con thua
+                attendances,
+                absences,
+            } = terms[0];
 
-        // Truong hop phu huynh chua dong hoac dong thieu thi hien thong tin chuyen khoan
-        if (payment !== null || payment < billing || billing.includes('Thừa') || billing.includes('Đã nộp đủ')) {
-            const attachMessage = {
-                text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
+            // Truong hop phu huynh chua dong hoac dong thieu thi hien thong tin chuyen khoan
+            if (payment !== null || payment < billing || billing.includes('Thừa') || billing.includes('Đã nộp đủ')) {
+                const attachMessage = {
+                    text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
+------------------------
+Học phí phải nộp: ${formatCurrency(billing)}
+Tình trạng: ${
+                        payment !== null
+                            ? payment === billing
+                                ? 'Đóng đủ ✅'
+                                : payment > billing
+                                ? `thừa ${formatCurrency(payment - billing)} 🔔`
+                                : `thiếu ${formatCurrency(billing - payment)} ❌`
+                            : 'Chưa đóng ❌'
+                    }${
+                        remainderBefore === 0
+                            ? ''
+                            : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
+                                  remainderBefore
+                              )}`
+                    }              
+------------------------
+Bắt đầu đợt: ${formatDate(start)}
+Kết thúc đợt: ${formatDate(end)}
+------------------------
+Buổi học: ${subject}
+Tổng số buổi trong đợt: ${total} buổi
+Số buổi đã học: ${study} buổi
+Số buổi vắng mặt: ${absent} buổi${
+                        payment === null
+                            ? ''
+                            : `\n------------------------
+Học phí đã nộp: ${formatCurrency(payment)}
+Hình thức nộp: ${type}
+Ngày nộp: ${paidDate}
+${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
+                    }
+------------------------
+Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`,
+
+                    attachment: {
+                        type: 'template',
+                        payload: {
+                            buttons: [
+                                {
+                                    title: 'Thông tin chuyển khoản',
+                                    payload: '#ttck',
+                                    type: 'oa.query.show',
+                                },
+                                {
+                                    title: 'Cú pháp chuyển khoản',
+                                    payload: '#cpck',
+                                    type: 'oa.query.show',
+                                },
+                            ],
+                        },
+                    },
+                };
+
+                await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+            }
+
+            // Neu dong du thi khong can
+            else {
+                const doneContent = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
 ------------------------
 Học phí phải nộp: ${formatCurrency(billing)}
 Tình trạng: ${
@@ -593,70 +668,10 @@ Ngày nộp: ${paidDate}
 ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
                 }
 ------------------------
-Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`,
-
-                attachment: {
-                    type: 'template',
-                    payload: {
-                        buttons: [
-                            {
-                                title: 'Thông tin chuyển khoản',
-                                payload: '#ttck',
-                                type: 'oa.query.show',
-                            },
-                            {
-                                title: 'Cú pháp chuyển khoản',
-                                payload: '#cpck',
-                                type: 'oa.query.show',
-                            },
-                        ],
-                    },
-                },
-            };
-
-            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
-        }
-
-        // Neu dong du thi khong can
-        else {
-            const doneContent = `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
-------------------------
-Học phí phải nộp: ${formatCurrency(billing)}
-Tình trạng: ${
-                payment !== null
-                    ? payment === billing
-                        ? 'Đóng đủ ✅'
-                        : payment > billing
-                        ? `thừa ${formatCurrency(payment - billing)} 🔔`
-                        : `thiếu ${formatCurrency(billing - payment)} ❌`
-                    : 'Chưa đóng ❌'
-            }${
-                remainderBefore === 0
-                    ? ''
-                    : `\nHọc phí từ đợt trước: ${remainderBefore > 0 ? 'thừa' : 'thiếu'} ${formatCurrency(
-                          remainderBefore
-                      )}`
-            }              
-------------------------
-Bắt đầu đợt: ${formatDate(start)}
-Kết thúc đợt: ${formatDate(end)}
-------------------------
-Buổi học: ${subject}
-Tổng số buổi trong đợt: ${total} buổi
-Số buổi đã học: ${study} buổi
-Số buổi vắng mặt: ${absent} buổi${
-                payment === null
-                    ? ''
-                    : `\n------------------------
-Học phí đã nộp: ${formatCurrency(payment)}
-Hình thức nộp: ${type}
-Ngày nộp: ${paidDate}
-${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
-            }
-------------------------
 Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`;
 
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, doneContent);
+            }
         }
     }
 }
