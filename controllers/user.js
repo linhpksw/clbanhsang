@@ -149,20 +149,31 @@ export const userRequest = async (req, res) => {
 
                         // Neu tu phia tro giang thi thay doi syntax
                         if (isManager) {
-                            zaloUserId = formatContent.slice(21);
-                            formatContent = formatContent.slice(0, 21);
-                        }
+                            const extractZaloUserId = formatContent.slice(21);
+                            const extractFormatContent = formatContent.slice(0, 21);
 
-                        Tools.signUp(
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classColl,
-                            classInfoColl,
-                            formatContent,
-                            messageId,
-                            'Phụ huynh'
-                        );
+                            Tools.signUp(
+                                accessToken,
+                                extractZaloUserId,
+                                zaloColl,
+                                classColl,
+                                classInfoColl,
+                                extractFormatContent,
+                                messageId,
+                                'Phụ huynh'
+                            );
+                        } else {
+                            Tools.signUp(
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classColl,
+                                classInfoColl,
+                                formatContent,
+                                messageId,
+                                'Phụ huynh'
+                            );
+                        }
                     } else if (isDKHS) {
                         Tools.signUp(
                             accessToken,
