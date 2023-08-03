@@ -216,7 +216,7 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 async function sendClassInfo(accessToken, zaloUserId, classInfoColl, zaloColl) {
     const zaloStudentInfoArr = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfoArr === undefined) {
+    if (zaloStudentInfoArr.length === 0) {
         const goodByeMessage =
             'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
 
