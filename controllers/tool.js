@@ -204,7 +204,7 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
         let studentArr = [];
 
         students.forEach((v) => {
-            if (!v.zaloStudentId.includes('N')) {
+            if (!v.zaloClassId.includes('N')) {
                 studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
             }
         });
