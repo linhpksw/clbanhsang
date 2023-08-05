@@ -146,16 +146,13 @@ export const userRequest = async (req, res) => {
 
                         // Check xem tin nhan den OA co tu phia Tro giang khong
                         const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
-                        console.log(isManager);
 
                         // Neu tu phia tro giang thi thay doi syntax
                         if (isManager) {
                             const extractZaloUserId = formatContent.slice(21);
                             const extractFormatContent = formatContent.slice(0, 21);
-                            console.log(extractZaloUserId);
-                            console.log(extractFormatContent);
 
-                            Tools.signUp(
+                            const isSuccess = await Tools.signUp(
                                 accessToken,
                                 extractZaloUserId,
                                 zaloColl,
@@ -165,6 +162,24 @@ export const userRequest = async (req, res) => {
                                 messageId,
                                 'Phụ huynh'
                             );
+
+                            if (isSuccess) {
+                                ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
+
+                                ZaloAPI.sendMessage(
+                                    accessToken,
+                                    zaloUserId,
+                                    `Đăng kí thành công cho phụ huynh ${extractZaloUserId}`
+                                );
+                            } else {
+                                ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
+
+                                ZaloAPI.sendMessage(
+                                    accessToken,
+                                    zaloUserId,
+                                    `Đăng kí thất bại cho phụ huynh ${extractZaloUserId}`
+                                );
+                            }
                         } else {
                             Tools.signUp(
                                 accessToken,

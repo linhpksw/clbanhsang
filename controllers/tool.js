@@ -1398,6 +1398,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                         },
                                     }
                                 );
+
+                                return true;
                             }
                         }
                         // Neu khong nam trong ds dang ki
@@ -1439,6 +1441,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
     }
+
+    return false;
 }
 
 export {
