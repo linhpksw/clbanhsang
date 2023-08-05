@@ -146,11 +146,14 @@ export const userRequest = async (req, res) => {
 
                         // Check xem tin nhan den OA co tu phia Tro giang khong
                         const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+                        console.log(isManager);
 
                         // Neu tu phia tro giang thi thay doi syntax
                         if (isManager) {
                             const extractZaloUserId = formatContent.slice(21);
                             const extractFormatContent = formatContent.slice(0, 21);
+                            console.log(extractZaloUserId);
+                            console.log(extractFormatContent);
 
                             Tools.signUp(
                                 accessToken,
