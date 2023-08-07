@@ -1129,6 +1129,24 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
         const registerPhone = formatContent.slice(-10);
 
+        const isExistInZaloColl = await MongoDB.findOneUser(
+            zaloColl,
+            { zaloUserId: `${zaloUserId}` },
+            { projection: { _id: 0 } }
+        );
+
+        // Neu phu huynh chua co du lieu trong Zalo Coll
+        // Neu nguoi dung quan tam lan dau
+        if (isExistInZaloColl === null) {
+            const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+
+            await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+
+            await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+
+            await MongoDB.insertOneUser(zaloColl, profileDoc);
+        }
+
         // Tim sdt trong thong tin Zalo PHHS
         const zaloInfo = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
 
