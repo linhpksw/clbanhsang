@@ -199,7 +199,7 @@ export const syncStudentList = async (req, res) => {
                     }
 
                     const doc = {
-                        studentId: sId,
+                        studentId: parseInt(sId),
                         classId: formatCId,
                         enrollDate: eDate,
                         status: status,
