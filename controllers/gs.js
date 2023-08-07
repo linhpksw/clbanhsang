@@ -149,6 +149,8 @@ export const syncStudentList = async (req, res) => {
 
         const { sourceId, sheetName, lastRow } = webhook;
 
+        console.log('Syncing student list...');
+
         client.authorize(async (err) => {
             if (err) {
                 console.error(err);
