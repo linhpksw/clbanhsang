@@ -158,7 +158,7 @@ export const syncStudentList = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R2C1:R${lastRow}C14`,
+                    range: `${sheetName}!R2C1:R${lastRow}C22`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
@@ -190,8 +190,6 @@ export const syncStudentList = async (req, res) => {
                         subject,
                     ] = v;
 
-                    console.log(school);
-
                     const formatCId = cId.includes('#') ? 'N' + cId.slice(1) : cId;
 
                     const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
@@ -218,11 +216,9 @@ export const syncStudentList = async (req, res) => {
                         secondParentPhone: sParentPhone,
                     };
 
-                    console.log(doc);
+                    const result = await classColl.insertOne(doc);
 
-                    // const result = await classColl.insertOne(doc);
-
-                    // console.log(`One document was inserted with the id ${result.insertedId}`);
+                    console.log(`One document was inserted with the id ${result.insertedId}`);
                 });
             }
         });
