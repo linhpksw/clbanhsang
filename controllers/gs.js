@@ -190,9 +190,9 @@ export const syncStudentList = async (req, res) => {
                         subject,
                     ] = v;
 
-                    const isActiveClass = cId.includes('#');
+                    const isNotActiveClass = cId.includes('#');
 
-                    if (!isActiveClass) {
+                    if (isNotActiveClass) {
                         return;
                     }
 
@@ -201,6 +201,9 @@ export const syncStudentList = async (req, res) => {
                     if (isExist == null) {
                         return;
                     }
+
+                    console.log('Ten hs: ', `${fName} ${lName}`);
+                    console.log('Id hs: ', sId);
 
                     const doc = {
                         studentId: sId,
