@@ -152,7 +152,7 @@ export const userRequest = async (req, res) => {
                             const extractZaloUserId = formatContent.slice(21);
                             const extractFormatContent = formatContent.slice(0, 21);
 
-                            const isSuccess = await Tools.signUp(
+                            const response = await Tools.signUp(
                                 accessToken,
                                 extractZaloUserId,
                                 zaloColl,
@@ -163,23 +163,7 @@ export const userRequest = async (req, res) => {
                                 'Phụ huynh'
                             );
 
-                            if (isSuccess) {
-                                ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
-
-                                ZaloAPI.sendMessage(
-                                    accessToken,
-                                    zaloUserId,
-                                    `Đăng kí thành công cho phụ huynh ${extractZaloUserId}`
-                                );
-                            } else {
-                                ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
-
-                                ZaloAPI.sendMessage(
-                                    accessToken,
-                                    zaloUserId,
-                                    `Đăng kí thất bại cho phụ huynh ${extractZaloUserId}`
-                                );
-                            }
+                            ZaloAPI.sendMessage(accessToken, zaloUserId, response);
                         } else {
                             Tools.signUp(
                                 accessToken,

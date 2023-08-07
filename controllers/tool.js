@@ -1180,6 +1180,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                         await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'like');
 
                         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                        return failContent;
                     }
 
                     // Neu sdt chua duoc lien ket voi hoc sinh nay
@@ -1288,6 +1290,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                 await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
 
                                 await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                                return failContent;
                             }
                         }
 
@@ -1298,6 +1302,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                             await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
 
                             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                            return failContent;
                         }
                     }
                 }
@@ -1385,7 +1391,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                     }
                                 );
 
-                                return true;
+                                return successContent;
                             }
                         }
                         // Neu khong nam trong ds dang ki
@@ -1395,6 +1401,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                             await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
 
                             await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                            return failContent;
                         }
                     }
 
@@ -1405,6 +1413,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                         await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
 
                         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                        return failContent;
                     }
                 }
             }
@@ -1415,6 +1425,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                 await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'like');
 
                 await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                return failContent;
             }
         }
     }
@@ -1426,9 +1438,9 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
         await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-    }
 
-    return false;
+        return failContent;
+    }
 }
 
 export {
