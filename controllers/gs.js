@@ -194,31 +194,29 @@ export const syncStudentList = async (req, res) => {
 
                     const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
 
-                    if (isExist != null) {
-                        return;
+                    if (isExist == null) {
+                        const doc = {
+                            studentId: parseInt(sId),
+                            classId: formatCId,
+                            enrollDate: eDate,
+                            status: status,
+                            birthYear: bYear,
+                            fullName: `${fName} ${lName}`,
+                            subject: subject,
+                            leaveDate: lDate === '' ? null : lDate,
+                            studentPhone: sPhone === '' ? null : sPhone,
+                            school: school === '' ? null : school,
+                            studentEmail: sEmail === '' ? null : sEmail,
+                            firstParentName: fParentName === '' ? null : fParentName,
+                            firstParentPhone: fParentPhone === '' ? null : fParentPhone,
+                            secondParentName: sParentName === '' ? null : sParentName,
+                            secondParentPhone: sParentPhone === '' ? null : sParentPhone,
+                        };
+
+                        const result = await classColl.insertOne(doc);
+
+                        console.log(`One document was inserted with the id ${result.insertedId}`);
                     }
-
-                    const doc = {
-                        studentId: parseInt(sId),
-                        classId: formatCId,
-                        enrollDate: eDate,
-                        status: status,
-                        birthYear: bYear,
-                        fullName: `${fName} ${lName}`,
-                        subject: subject,
-                        leaveDate: lDate === '' ? null : lDate,
-                        studentPhone: sPhone === '' ? null : sPhone,
-                        school: school === '' ? null : school,
-                        studentEmail: sEmail === '' ? null : sEmail,
-                        firstParentName: fParentName === '' ? null : fParentName,
-                        firstParentPhone: fParentPhone === '' ? null : fParentPhone,
-                        secondParentName: sParentName === '' ? null : sParentName,
-                        secondParentPhone: sParentPhone === '' ? null : sParentPhone,
-                    };
-
-                    const result = await classColl.insertOne(doc);
-
-                    console.log(`One document was inserted with the id ${result.insertedId}`);
                 });
             }
         });
