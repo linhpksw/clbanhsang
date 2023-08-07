@@ -190,7 +190,9 @@ export const syncStudentList = async (req, res) => {
                         subject,
                     ] = v;
 
-                    const formatCId = cId.includes('#') ? cId.slice(1) : cId;
+                    console.log(school);
+
+                    const formatCId = cId.includes('#') ? 'N' + cId.slice(1) : cId;
 
                     const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
 
@@ -216,9 +218,11 @@ export const syncStudentList = async (req, res) => {
                         secondParentPhone: sParentPhone,
                     };
 
-                    const result = await classColl.insertOne(doc);
+                    console.log(doc);
 
-                    console.log(`One document was inserted with the id ${result.insertedId}`);
+                    // const result = await classColl.insertOne(doc);
+
+                    // console.log(`One document was inserted with the id ${result.insertedId}`);
                 });
             }
         });
