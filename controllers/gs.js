@@ -149,11 +149,6 @@ export const syncStudentList = async (req, res) => {
 
         const { sourceId, sheetName, lastRow } = webhook;
 
-        console.log('Syncing student list...');
-        console.log('Source id: ', sourceId);
-        console.log('Sheet name: ', sheetName);
-        console.log('Last row: ', lastRow);
-
         client.authorize(async (err) => {
             if (err) {
                 console.error(err);
@@ -195,22 +190,9 @@ export const syncStudentList = async (req, res) => {
                         subject,
                     ] = v;
 
-                    const isNotActiveClass = cId.includes('#');
-
-                    console.log('Class id: ', cId);
-                    console.log('Is not active class: ', isNotActiveClass);
-
-                    if (isNotActiveClass) {
-                        return;
-                    }
-
-                    console.log('running...');
-                    console.log('Ten hs: ', `${fName} ${lName}`);
-                    console.log('Id hs: ', sId);
+                    const formatCId = cId.includes('#') ? cId.slice(1) : cId;
 
                     const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
-
-                    console.log('Is exist: ', isExist);
 
                     if (isExist != null) {
                         return;
@@ -218,7 +200,7 @@ export const syncStudentList = async (req, res) => {
 
                     const doc = {
                         studentId: sId,
-                        classId: cId,
+                        classId: formatCId,
                         enrollDate: eDate,
                         status: status,
                         birthYear: bYear,
