@@ -107,27 +107,64 @@ export const updateStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const result = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+        const pipeline = [
+            {
+                $match: {
+                    'students.zaloStudentId': parseInt(studentId),
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+        const result = await aggCursor.toArray();
 
         // Doi tag hoc sinh tu Nghi hoc >>> Dang hoc tren Zalo OA Chat (Truong hop them lai HS)
-        // Dung vong lap de thay doi het tag  lien ket voi studentId
+        // Dung vong lap de thay doi het tag lien ket voi studentId
         if (result.length !== 0) {
-            for (let i = 0; i < result.length; i++) {
-                const { zaloUserId, students } = result[i];
-                // Khong can vong lap students vi query ra dung hoc sinh roi
-                const { zaloClassId } = students[0];
+            const { zaloUserId, students } = result[0];
+            // Khong can vong lap students vi query ra dung hoc sinh roi
+            const { zaloClassId } = students[0];
 
-                if (zaloClassId.includes('N')) {
-                    await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloClassId);
-                    await ZaloAPI.tagFollower(accessToken, zaloUserId, zaloClassId.slice(-6));
+            if (zaloClassId.includes('N')) {
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloClassId);
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
 
-                    // set trang thai di hoc lai trong Zalo Coll
-                    await MongoDB.updateOneUser(
-                        zaloColl,
-                        { zaloUserId: zaloUserId, 'students.zaloStudentId': parseInt(studentId) },
-                        { $set: { 'students.$.zaloClassId': `${zaloClassId.slice(-6)}` } }
-                    );
-                }
+                // set trang thai di hoc lai trong Zalo Coll
+                await MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: zaloUserId, 'students.zaloStudentId': parseInt(studentId) },
+                    { $set: { 'students.$.zaloClassId': classId } }
+                );
+            }
+
+            // truong hop chuyen sang ID lop khac cung khoi
+            else {
+                await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, zaloClassId);
+                await ZaloAPI.tagFollower(accessToken, zaloUserId, classId);
+
+                // set ma lop hoc moi trong Zalo Coll
+                await MongoDB.updateOneUser(
+                    zaloColl,
+                    { zaloUserId: zaloUserId, 'students.zaloStudentId': parseInt(studentId) },
+                    { $set: { 'students.$.zaloClassId': classId } }
+                );
             }
         }
 
@@ -155,8 +192,6 @@ export const updateStudentRequest = async (req, res) => {
             secondParentName: secondParentName,
             secondParentPhone: secondParentPhone,
         };
-
-        // await MongoDB.updateOneUser(classColl, { studentId: parseInt(studentId) }, { $set: updateDoc });
 
         await classColl.updateOne({ studentId: parseInt(studentId) }, { $set: updateDoc }, { upsert: true });
 
@@ -207,7 +242,33 @@ export const deleteStudentRequest = async (req, res) => {
 
         const fullName = `${firstName} ${lastName}`;
 
-        const result = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+        const pipeline = [
+            {
+                $match: {
+                    'students.zaloStudentId': parseInt(studentId),
+                },
+            },
+            {
+                $project: {
+                    zaloUserId: 1,
+                    displayName: 1,
+                    userPhone: 1,
+                    _id: 0,
+                    students: {
+                        $filter: {
+                            input: '$students',
+                            as: 'item',
+                            cond: {
+                                $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                            },
+                        },
+                    },
+                },
+            },
+        ];
+
+        const aggCursor = zaloColl.aggregate(pipeline);
+        const result = await aggCursor.toArray();
 
         // Doi tag hoc sinh tu Dang hoc >>> Nghi hoc tren Zalo OA Chat
         // Dung vong lap de thay doi het tag lien ket voi studentId

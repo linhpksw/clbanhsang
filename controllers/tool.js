@@ -744,38 +744,6 @@ async function findZaloIdFromStudentId(zaloColl, zaloStudentId, role) {
     return zaloIdArr;
 }
 
-async function findZaloUserIdFromStudentId(zaloColl, studentId) {
-    const pipeline = [
-        {
-            $match: {
-                'students.zaloStudentId': parseInt(studentId),
-            },
-        },
-        {
-            $project: {
-                zaloUserId: 1,
-                displayName: 1,
-                userPhone: 1,
-                _id: 0,
-                students: {
-                    $filter: {
-                        input: '$students',
-                        as: 'item',
-                        cond: {
-                            $eq: ['$$item.zaloStudentId', parseInt(studentId)],
-                        },
-                    },
-                },
-            },
-        },
-    ];
-
-    const aggCursor = zaloColl.aggregate(pipeline);
-    const result = await aggCursor.toArray();
-
-    return result;
-}
-
 async function sendMessage2Assistant(accessToken, classInfoColl, classId, forwardContent) {
     const result = await MongoDB.findOneUser(
         classInfoColl,
@@ -1477,5 +1445,4 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
-    findZaloUserIdFromStudentId,
 };
