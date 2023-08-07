@@ -206,14 +206,14 @@ export const syncStudentList = async (req, res) => {
                         birthYear: bYear,
                         fullName: `${fName} ${lName}`,
                         subject: subject,
-                        leaveDate: lDate,
-                        studentPhone: sPhone,
-                        school: school,
-                        studentEmail: sEmail,
-                        firstParentName: fParentName,
-                        firstParentPhone: fParentPhone,
-                        secondParentName: sParentName,
-                        secondParentPhone: sParentPhone,
+                        leaveDate: lDate === '' ? null : lDate,
+                        studentPhone: sPhone === '' ? null : sPhone,
+                        school: school === '' ? null : school,
+                        studentEmail: sEmail === '' ? null : sEmail,
+                        firstParentName: fParentName === '' ? null : fParentName,
+                        firstParentPhone: fParentPhone === '' ? null : fParentPhone,
+                        secondParentName: sParentName === '' ? null : sParentName,
+                        secondParentPhone: sParentPhone === '' ? null : sParentPhone,
                     };
 
                     const result = await classColl.insertOne(doc);
