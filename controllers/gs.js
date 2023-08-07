@@ -66,6 +66,8 @@ export const checkOARegister = async (req, res) => {
             return acc;
         }, {});
 
+        console.log(studentList);
+
         let studentRegisterId = [];
 
         result.forEach((v) => {
@@ -73,6 +75,7 @@ export const checkOARegister = async (req, res) => {
             students.forEach((e) => {
                 const { zaloStudentId, aliasName } = e;
                 const studentName = aliasName.slice(3);
+                console.log(zaloStudentId);
 
                 if (studentList[zaloStudentId]) {
                     studentRegisterId.push(zaloStudentId);
