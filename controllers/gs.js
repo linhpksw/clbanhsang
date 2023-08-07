@@ -212,7 +212,7 @@ export const syncStudentList = async (req, res) => {
 
                     console.log('Is exist: ', isExist);
 
-                    if (isExist == null) {
+                    if (isExist != null) {
                         return;
                     }
 
