@@ -164,7 +164,7 @@ export const syncStudentList = async (req, res) => {
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
-                for (let v of data) {
+                data.forEach(async (v) => {
                     const [
                         sId,
                         cId,
@@ -192,7 +192,7 @@ export const syncStudentList = async (req, res) => {
 
                     const formatCId = cId.includes('#') ? 'N' + cId.slice(1) : cId;
 
-                    const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
+                    const isExist = await classColl.findOne({ studentId: parseInt(sId) }, { projection: { _id: 0 } });
 
                     if (isExist == null) {
                         const doc = {
@@ -217,7 +217,7 @@ export const syncStudentList = async (req, res) => {
 
                         console.log(`One document was inserted with the id ${result.insertedId}`);
                     }
-                }
+                });
             }
         });
 
