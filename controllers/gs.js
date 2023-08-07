@@ -205,6 +205,8 @@ export const syncStudentList = async (req, res) => {
                     }
 
                     console.log('running...');
+                    console.log('Ten hs: ', `${fName} ${lName}`);
+                    console.log('Id hs: ', sId);
 
                     const isExist = await classColl.findOne({ studentId: sId }, { projection: { _id: 0 } });
 
@@ -213,9 +215,6 @@ export const syncStudentList = async (req, res) => {
                     if (isExist == null) {
                         return;
                     }
-
-                    console.log('Ten hs: ', `${fName} ${lName}`);
-                    console.log('Id hs: ', sId);
 
                     const doc = {
                         studentId: sId,
