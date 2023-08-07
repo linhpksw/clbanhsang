@@ -164,7 +164,7 @@ export const syncStudentList = async (req, res) => {
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
-                data.forEach(async (v) => {
+                for (let v of data) {
                     const [
                         sId,
                         cId,
@@ -217,7 +217,7 @@ export const syncStudentList = async (req, res) => {
 
                         console.log(`One document was inserted with the id ${result.insertedId}`);
                     }
-                });
+                }
             }
         });
 
