@@ -176,15 +176,23 @@ dkhs 2005xxx 0912345678
 }
 
 async function notifyRegister(accessToken, zaloUserId, zaloColl) {
-    const isExist = await MongoDB.findOneUser(
-        zaloColl,
-        { zaloUserId: zaloUserId },
-        { projection: { _id: 0, students: 1 } }
-    );
+    const isExist = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
+
+    if (isExist === null) {
+        const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+
+        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+
+        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+
+        await MongoDB.insertOneUser(zaloColl, profileDoc);
+    }
 
     let studentArr = [];
 
-    if (isExist === null) {
+    const { userPhone, students } = isExist;
+
+    if (userPhone === null) {
         const attachMessage = {
             text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
             attachment: {
@@ -205,8 +213,6 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 
         return studentArr;
     } else {
-        const { students } = isExist;
-
         students.forEach((v) => {
             if (!v.zaloClassId.includes('N')) {
                 studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
