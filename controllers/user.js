@@ -596,7 +596,34 @@ export const invoiceRequest = async (req, res) => {
 
                 const invoice = createInvoice(doc, existClass.className, imageId);
 
-                const zaloUserIdArr = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+                const pipeline = [
+                    {
+                        $match: {
+                            'students.zaloStudentId': parseInt(studentId),
+                        },
+                    },
+                    {
+                        $project: {
+                            zaloUserId: 1,
+                            displayName: 1,
+                            userPhone: 1,
+                            _id: 0,
+                            students: {
+                                $filter: {
+                                    input: '$students',
+                                    as: 'item',
+                                    cond: {
+                                        $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ];
+
+                const aggCursor = zaloColl.aggregate(pipeline);
+
+                const zaloUserIdArr = await aggCursor.toArray();
 
                 if (zaloUserIdArr.length === 0) {
                     console.log('Zalo user is not exist');

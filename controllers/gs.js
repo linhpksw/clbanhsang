@@ -414,7 +414,34 @@ export const getNotPayUsers = async (req, res) => {
 
             if (terms.length === 0) return null;
 
-            const parentZaloList = await Tools.findZaloUserIdFromStudentId(zaloColl, studentId);
+            const pipeline = [
+                {
+                    $match: {
+                        'students.zaloStudentId': parseInt(studentId),
+                    },
+                },
+                {
+                    $project: {
+                        zaloUserId: 1,
+                        displayName: 1,
+                        userPhone: 1,
+                        _id: 0,
+                        students: {
+                            $filter: {
+                                input: '$students',
+                                as: 'item',
+                                cond: {
+                                    $eq: ['$$item.zaloStudentId', parseInt(studentId)],
+                                },
+                            },
+                        },
+                    },
+                },
+            ];
+
+            const aggCursor = zaloColl.aggregate(pipeline);
+
+            const parentZaloList = await aggCursor.toArray();
 
             if (parentZaloList.length === 0) return null;
 
