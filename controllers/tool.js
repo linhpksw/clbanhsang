@@ -580,15 +580,11 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         } = terms[0];
 
         const formatBilling =
-            billing === null
-                ? 'chưa có'
-                : billing.toString().includes('Thừa') || billing.toString().includes('Đã')
-                ? billing
-                : formatCurrency(billing);
+            billing === null ? 'chưa có' : typeof billing === 'string' ? billing : formatCurrency(billing);
 
         let formatStatus;
 
-        if (billing.includes('Đã')) {
+        if (typeof billing === 'string' && billing.includes('Đã')) {
             formatStatus = 'Đóng đủ ✅';
         } else {
             if (payment !== null) {
@@ -599,7 +595,7 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
                 } else {
                     formatStatus = 'Đóng đủ ✅';
                 }
-            } else if (payment === null && billing.includes('Thừa')) {
+            } else if (payment === null && typeof billing === 'string' && billing.includes('Thừa')) {
                 formatStatus = billing.toLowerCase() + ' 🔔';
             } else {
                 formatStatus = 'Chưa đóng ❌';
@@ -609,7 +605,10 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         const formatRemainder =
             remainder >= 0 ? `thừa ${formatCurrency(remainder)}` : `thiếu ${formatCurrency(remainder)}`;
 
-        const isPaid = payment !== null && !billing.includes('Đã') && billing.includes('Thừa');
+        const isPaid = payment !== null;
+
+        const isPaidWithScholarship =
+            payment === null && typeof billing === 'string' && (billing.includes('Đã') || billing.includes('Thừa'));
 
         const formatPaid = isPaid
             ? `\n------------------------------------------
@@ -619,9 +618,10 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
             : '';
 
-        const formatAttach = isPaid
-            ? ''
-            : `attachment: {
+        const formatAttach =
+            isPaid || isPaidWithScholarship
+                ? ''
+                : `attachment: {
             type: 'template',
             payload: {
                 buttons: [
@@ -660,9 +660,11 @@ ${formatAttach}
 `,
         };
 
-        isPaid
-            ? await ZaloAPI.sendMessage(accessToken, zaloUserId, attachMessage)
-            : await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+        if (isPaid || isPaidWithScholarship) {
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, attachMessage);
+        } else {
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+        }
     }
 }
 
