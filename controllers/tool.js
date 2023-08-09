@@ -618,24 +618,6 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         ${remainder >= 0 ? `Học phí thừa đợt ${term}: ` : `Học phí thiếu ${term}: `}${formatCurrency(remainder)}`
             : '';
 
-        const formatAttach = `attachment: {
-            type: 'template',
-            payload: {
-                buttons: [
-                    {
-                        title: 'Thông tin chuyển khoản',
-                        payload: '#ttck',
-                        type: 'oa.query.show',
-                    },
-                    {
-                        title: 'Cú pháp chuyển khoản',
-                        payload: '#cpck',
-                        type: 'oa.query.show',
-                    },
-                ],
-            },
-        },`;
-
         const attachMessageWithButton = {
             text: `Câu lạc bộ Toán Ánh Sáng xin gửi đến ${role.toLowerCase()} ${studentName} ${studentId} lớp ${className} tình trạng học phí đợt ${term} như sau:
 ------------------------------------------
@@ -688,7 +670,6 @@ Số buổi vắng mặt: ${absent} buổi
 ${formatPaid}
 ------------------------
 Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.
-${formatAttach}
 `;
         if (isPaid || isPaidWithScholarship) {
             await ZaloAPI.sendMessage(accessToken, zaloUserId, simpleMessage);
