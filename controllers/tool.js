@@ -603,7 +603,7 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         }
 
         const formatRemainder =
-            remainder >= 0 ? `thừa ${formatCurrency(remainder)}` : `thiếu ${formatCurrency(remainderBefore)}`;
+            remainder >= 0 ? `thừa ${formatCurrency(remainderBefore)}` : `thiếu ${formatCurrency(remainderBefore)}`;
 
         const isPaid = payment !== null;
 
