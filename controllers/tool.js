@@ -579,8 +579,7 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
             absences,
         } = terms[0];
 
-        const formatBilling =
-            billing === null ? 'chưa có' : typeof billing === 'string' ? billing : formatCurrency(billing);
+        const formatBilling = billing === null ? 'chưa có' : typeof billing === 'string' ? '' : formatCurrency(billing);
 
         let formatStatus;
 
