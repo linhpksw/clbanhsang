@@ -603,7 +603,7 @@ async function sendPaymentInfo(accessToken, zaloUserId, zaloColl, classInfoColl,
         }
 
         const formatRemainder =
-            remainder >= 0 ? `thừa ${formatCurrency(remainder)}` : `thiếu ${formatCurrency(remainder)}`;
+            remainder >= 0 ? `thừa ${formatCurrency(remainder)}` : `thiếu ${formatCurrency(remainderBefore)}`;
 
         const isPaid = payment !== null;
 
@@ -667,8 +667,7 @@ Tổng số buổi trong đợt: ${total} buổi
 Số buổi đã học: ${study} buổi
 Số buổi vắng mặt: ${absent} buổi${formatPaid}
 ------------------------------------------
-Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.
-`;
+Chú ý: số buổi đã học, vắng mặt và học phí còn thừa sẽ tự động được cập nhật sau mỗi buổi học.`;
         if (isPaid || isPaidWithScholarship) {
             await ZaloAPI.sendMessage(accessToken, zaloUserId, simpleMessage);
         } else {
