@@ -1247,6 +1247,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                 },
                             }
                         );
+
+                        return successContent;
                     }
 
                     // Neu ma lop chua ton tai
@@ -1403,6 +1405,8 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                                     },
                                 }
                             );
+
+                            return successContent;
                         }
 
                         // Neu ma lop chua ton tai
