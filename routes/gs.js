@@ -17,4 +17,7 @@ router.post('/getStatistic', Sheets.getStatistic);
 // Database
 router.post('/syncStudentList', Sheets.syncStudentList);
 
+// Score Database
+router.post('/syncScoreList', Sheets.syncScoreList);
+
 export default router;

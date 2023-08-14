@@ -516,8 +516,7 @@ export const updateRequest = async (req, res) => {
             })
         );
 
-        const result = await studentInfoColl.bulkWrite(bulkWriteOperations);
-        console.log(result);
+        await studentInfoColl.bulkWrite(bulkWriteOperations);
 
         res.send('Done');
     } catch (err) {

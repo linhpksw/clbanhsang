@@ -136,6 +136,81 @@ export const checkOARegister = async (req, res) => {
     }
 };
 
+export const syncScoreList = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const scoreColl = db.collection('scoreInfo');
+
+        const { sourceId, sheetName, lastRow } = webhook;
+
+        client.authorize(async (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                const sheets = google.sheets({ version: 'v4', auth: client });
+
+                const requestData = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!R2C3:R${lastRow}C13`,
+                };
+
+                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+                const data = responseData.values;
+
+                data.forEach(async (v) => {
+                    const [
+                        delay,
+                        studentId,
+                        classId,
+                        className,
+                        studentName,
+                        correct,
+                        total,
+                        subjectDate,
+                        subject,
+                        status,
+                        subjectName,
+                    ] = v;
+
+                    const isExist = await scoreColl.findOne(
+                        { studentId: parseInt(studentId) },
+                        { projection: { _id: 0 } }
+                    );
+
+                    if (isExist == null) {
+                        const doc = {
+                            delay: delay === '' ? null : delay,
+                            studentId: parseInt(studentId),
+                            classId: classId,
+                            className: className,
+                            studentName: studentName,
+                            correct: parseInt(correct) === '' ? null : parseInt(correct),
+                            total: parseInt(total) === '' ? null : parseInt(total),
+                            subjectDate: subjectDate,
+                            subject: subject,
+                            status: status,
+                            subjectName: subjectName,
+                        };
+
+                        const result = await classColl.insertOne(doc);
+
+                        console.log(`One score document was inserted with the id ${result.insertedId}`);
+                    }
+                });
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const syncStudentList = async (req, res) => {
     const webhook = req.body;
 
