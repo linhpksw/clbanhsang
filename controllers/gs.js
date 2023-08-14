@@ -178,8 +178,18 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
+                    const currentDate = new Date(deadline);
+                    currentDate.setUTCHours(0, 0, 0, 0);
+
+                    const endDate = new Date(currentDate);
+                    endDate.setUTCHours(23, 59, 59, 999);
+
                     const isExist = await scoreColl.findOne(
-                        { studentId: parseInt(studentId) },
+                        {
+                            studentId: parseInt(studentId),
+                            deadline: { $gte: currentDate, $lte: endDate },
+                            subjectName: subjectName,
+                        },
                         { projection: { _id: 0 } }
                     );
 
