@@ -404,7 +404,6 @@ export const updateRequest = async (req, res) => {
 
         const updateStudentDocs = webhook.map((v) => {
             const {
-                index, // vi tri hoc sinh
                 studentId,
                 classId,
                 studentName,
@@ -447,7 +446,6 @@ export const updateRequest = async (req, res) => {
                 studentName: studentName,
                 terms: [
                     {
-                        index: index,
                         term: parseInt(term),
                         start: Tools.createDate(start),
                         end: Tools.createDate(end),
@@ -470,82 +468,56 @@ export const updateRequest = async (req, res) => {
             return updateDoc;
         });
 
-        const { classId, term } = webhook[0];
+        const bulkWriteOperations = await Promise.all(
+            updateStudentDocs.map(async (doc) => {
+                const { studentId, terms } = doc;
 
-        // tim kiem tat ca du lieu lop x dot y
-        const cursor = studentInfoColl.find(
-            { classId: classId, 'terms.term': parseInt(term) },
-            { projection: { _id: 0, studentId: 1 } }
-        );
+                const existingStudent = await studentInfoColl.findOne({ studentId: studentId });
 
-        const studentTermData = (await cursor.toArray()).map((v) => {
-            return v.studentId;
-        });
-
-        let bulkWriteStudentInfo = [];
-
-        for (let i = 0; i < updateStudentDocs.length; i++) {
-            const doc = updateStudentDocs[i];
-            const { studentId } = doc;
-
-            // Neu da ton tai hoc sinh voi dot tuong ung thi update
-            if (studentTermData.includes(studentId)) {
-                bulkWriteStudentInfo.push({
-                    updateOne: {
-                        filter: {
-                            studentId: studentId,
-                            'terms.term': parseInt(term),
-                        },
-                        update: {
-                            $set: {
-                                'terms.$.index': doc.terms[0].index,
-                                'terms.$.term': doc.terms[0].term,
-                                'terms.$.start': doc.terms[0].start,
-                                'terms.$.end': doc.terms[0].end,
-                                'terms.$.total': doc.terms[0].total,
-                                'terms.$.study': doc.terms[0].study,
-                                'terms.$.absent': doc.terms[0].absent,
-                                'terms.$.subject': doc.terms[0].subject,
-                                'terms.$.remainderBefore': doc.terms[0].remainderBefore,
-                                'terms.$.billing': doc.terms[0].billing,
-                                'terms.$.payment': doc.terms[0].payment,
-                                'terms.$.type': doc.terms[0].type,
-                                'terms.$.paidDate': doc.terms[0].paidDate,
-                                'terms.$.remainder': doc.terms[0].remainder,
-                                'terms.$.attendances': doc.terms[0].attendances,
-                                'terms.$.absences': doc.terms[0].absences,
-                            },
-                        },
-                    },
-                });
-            }
-            // Neu chua thi kiem tra hoc sinh da co dot nao chua
-            else {
-                const isExistTerm = await MongoDB.findOneUser(
-                    studentInfoColl,
-                    { studentId: studentId },
-                    { _id: 0, terms: 1 }
-                );
-
-                // Neu chua co dot nao, tao du lieu hoc sinh tu dau
-                if (isExistTerm === null) {
+                if (!existingStudent) {
+                    // Case 1: Student does not exist, so insert the student along with the term details
                     doc.terms[0].check = '';
                     bulkWriteStudentInfo.push({ insertOne: { document: doc } });
-                }
-                // Neu da co du lieu hoc sinh dot cu, day them du lieu dot moi vao
-                else {
+                } else if (existingStudent && !existingStudent.terms.some((t) => t.term === terms[0].term)) {
+                    // Case 2: Student exists but term does not, so push the new term
                     doc.terms[0].check = '';
                     bulkWriteStudentInfo.push({
                         updateOne: {
                             filter: { studentId: studentId },
-                            update: { $push: { terms: doc.terms[0] } },
+                            update: { $push: { terms: terms[0] } },
+                        },
+                    });
+                } else {
+                    // Case 3: Both student and term exist, so update the term details
+                    bulkWriteStudentInfo.push({
+                        updateOne: {
+                            filter: { studentId: studentId, 'terms.term': terms[0].term },
+                            update: {
+                                $set: {
+                                    'terms.$.start': terms[0].start,
+                                    'terms.$.end': terms[0].end,
+                                    'terms.$.total': terms[0].total,
+                                    'terms.$.study': terms[0].study,
+                                    'terms.$.absent': terms[0].absent,
+                                    'terms.$.subject': terms[0].subject,
+                                    'terms.$.remainderBefore': terms[0].remainderBefore,
+                                    'terms.$.billing': terms[0].billing,
+                                    'terms.$.payment': terms[0].payment,
+                                    'terms.$.type': terms[0].type,
+                                    'terms.$.paidDate': terms[0].paidDate,
+                                    'terms.$.remainder': terms[0].remainder,
+                                    'terms.$.attendances': terms[0].attendances,
+                                    'terms.$.absences': terms[0].absences,
+                                },
+                            },
                         },
                     });
                 }
-            }
-        }
+            })
+        );
 
-        await studentInfoColl.bulkWrite(bulkWriteStudentInfo);
+        const result = await studentInfoColl.bulkWrite(bulkWriteOperations);
+        console.log(result);
 
         res.send('Done');
     } catch (err) {
