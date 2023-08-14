@@ -477,19 +477,19 @@ export const updateRequest = async (req, res) => {
                 if (!existingStudent) {
                     // Case 1: Student does not exist, so insert the student along with the term details
                     doc.terms[0].check = '';
-                    bulkWriteStudentInfo.push({ insertOne: { document: doc } });
+                    return { insertOne: { document: doc } };
                 } else if (existingStudent && !existingStudent.terms.some((t) => t.term === terms[0].term)) {
                     // Case 2: Student exists but term does not, so push the new term
                     doc.terms[0].check = '';
-                    bulkWriteStudentInfo.push({
+                    return {
                         updateOne: {
                             filter: { studentId: studentId },
                             update: { $push: { terms: terms[0] } },
                         },
-                    });
+                    };
                 } else {
                     // Case 3: Both student and term exist, so update the term details
-                    bulkWriteStudentInfo.push({
+                    return {
                         updateOne: {
                             filter: { studentId: studentId, 'terms.term': terms[0].term },
                             update: {
@@ -511,7 +511,7 @@ export const updateRequest = async (req, res) => {
                                 },
                             },
                         },
-                    });
+                    };
                 }
             })
         );
