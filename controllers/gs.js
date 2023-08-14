@@ -196,7 +196,7 @@ export const syncScoreList = async (req, res) => {
                             subjectName: subjectName,
                         };
 
-                        const result = await classColl.insertOne(doc);
+                        const result = await scoreColl.insertOne(doc);
 
                         console.log(`One score document was inserted with the id ${result.insertedId}`);
                     }
