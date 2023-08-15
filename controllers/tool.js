@@ -303,44 +303,97 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
         const studentName = alisaName.substring(3);
 
-        const cursor = scoreInfoColl.find(
-            {
-                deadline: {
-                    $gte: new Date(startDate),
-                    $lt: new Date(endDate),
+        const assignments = scoreInfoColl
+            .find(
+                {
+                    deadline: {
+                        $gte: new Date(startDate),
+                        $lt: new Date(endDate),
+                    },
+                    classId: zaloClassId,
                 },
-                classId: zaloClassId,
-            },
-            { projection: { _id: 0, uniqueHash: 0 } }
-        );
+                { projection: { _id: 0, uniqueHash: 0 } }
+            )
+            .sort({ deadline: 1 });
 
         // const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${className} THÁNG ${currentMonth}/${currentYear}`;
 
         // const averageScore = '';
         // const rankInClass = '';
 
-        let hh = [];
+        // Step 1: Group by subjectName and deadline
+        const groupedAssignments = {};
 
-        await cursor.forEach((v) => {
-            const {
-                deadline,
-                delay,
-                studentId,
-                classId,
-                className,
-                studentName,
-                correct,
-                total,
-                subjectDate,
-                subject,
-                status,
-                subjectName,
-            } = v;
+        await assignments.forEach((assignment) => {
+            // const {
+            //     deadline,
+            //     delay,
+            //     studentId,
+            //     classId,
+            //     className,
+            //     studentName,
+            //     correct,
+            //     total,
+            //     subjectDate,
+            //     subject,
+            //     status,
+            //     subjectName,
+            // } = v;
 
-            // const formatScore = correct == null ? '' : correct / total;
-
-            console.log(v);
+            const key = `${assignment.subjectName}-${assignment.deadline}`;
+            if (!groupedAssignments[key]) {
+                groupedAssignments[key] = [];
+            }
+            groupedAssignments[key].push(assignment);
         });
+
+        // Step 2 and 3: Compute scores and rank the students
+        const rankingInfo = [];
+
+        for (const key in groupedAssignments) {
+            const group = groupedAssignments[key];
+            const scores = group.map((assignment) => ({
+                studentId: assignment.studentId,
+                score: assignment.correct / assignment.total,
+            }));
+
+            scores.sort((a, b) => b.score - a.score);
+
+            // Calculate rank
+            let rank = 1;
+            let prevScore = scores[0].score;
+            const ranks = {};
+
+            scores.forEach((scoreObj, idx) => {
+                if (scoreObj.score !== prevScore) {
+                    rank = idx + 1;
+                }
+                ranks[scoreObj.studentId] = rank;
+                prevScore = scoreObj.score;
+            });
+
+            rankingInfo.push({
+                key: key.split('-')[0], // Get the subject name from the key
+                scores,
+                ranks,
+            });
+        }
+
+        // Step 4: Convert to 2D format
+        const result = [['No', 'subjectName', 'Score', 'Rank']];
+
+        rankingInfo.forEach((info, idx) => {
+            info.scores.forEach((scoreObj) => {
+                result.push([
+                    idx + 1,
+                    info.key,
+                    parseFloat(scoreObj.score.toFixed(2)),
+                    `Top ${info.ranks[scoreObj.studentId]}`,
+                ]);
+            });
+        });
+
+        console.log(result);
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
