@@ -314,7 +314,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 },
                 { projection: { _id: 0, uniqueHash: 0 } }
             )
-            .sort({ deadline: 1 });
+            .sort({ deadline: -1 });
 
         // const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${className} THÁNG ${currentMonth}/${currentYear}`;
 
