@@ -202,9 +202,9 @@ export const syncScoreList = async (req, res) => {
 
         res.send('Done!');
     } catch (err) {
-        if (err.code === 11000) {
+        if (err.code === 'E11000') {
             // Duplicate key error code in MongoDB
-            console.error('A document with this studentId, deadline, and subjectName already exists.');
+            console.error('A document with this field already exists.');
         } else {
             console.error('An error occurred:', err.message);
         }
