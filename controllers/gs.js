@@ -190,40 +190,38 @@ export const syncScoreList = async (req, res) => {
 
                     console.log(deadlineDate);
 
-                    return;
+                    // const [datePart, timePart] = deadlineDate.split(' ');
+                    // const [day, month, year] = datePart.split('/');
+                    // const [hours, minutes, seconds] = timePart.split(':');
 
-                    const [datePart, timePart] = deadlineDate.split(' ');
-                    const [day, month, year] = datePart.split('/');
-                    const [hours, minutes, seconds] = timePart.split(':');
+                    // const adjustedBsonDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
 
-                    const adjustedBsonDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
+                    // const uniqueHash = generateHash(studentId, adjustedBsonDate, subjectName);
 
-                    const uniqueHash = generateHash(studentId, adjustedBsonDate, subjectName);
+                    // const doc = {
+                    //     uniqueHash: uniqueHash,
+                    //     deadline: adjustedBsonDate,
+                    //     delay: delay === '' ? null : delay,
+                    //     studentId: parseInt(studentId),
+                    //     classId: classId,
+                    //     className: className,
+                    //     studentName: studentName,
+                    //     correct: correct == '' ? null : parseInt(correct),
+                    //     total: total == '' ? null : parseInt(total),
+                    //     subjectDate: subjectDate,
+                    //     subject: subject,
+                    //     status: status,
+                    //     subjectName: subjectName,
+                    // };
 
-                    const doc = {
-                        uniqueHash: uniqueHash,
-                        deadline: adjustedBsonDate,
-                        delay: delay === '' ? null : delay,
-                        studentId: parseInt(studentId),
-                        classId: classId,
-                        className: className,
-                        studentName: studentName,
-                        correct: correct == '' ? null : parseInt(correct),
-                        total: total == '' ? null : parseInt(total),
-                        subjectDate: subjectDate,
-                        subject: subject,
-                        status: status,
-                        subjectName: subjectName,
-                    };
+                    // // Check if the hash exists
+                    // const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
 
-                    // Check if the hash exists
-                    const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
+                    // if (!existingDoc) {
+                    //     const result = await scoreColl.insertOne(doc);
 
-                    if (!existingDoc) {
-                        const result = await scoreColl.insertOne(doc);
-
-                        console.log(`One score document was inserted with the id ${result.insertedId}`);
-                    }
+                    //     console.log(`One score document was inserted with the id ${result.insertedId}`);
+                    // }
                 });
             }
         });
