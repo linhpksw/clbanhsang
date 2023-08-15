@@ -178,48 +178,36 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
-                    const currentDate = new Date(deadline);
-                    currentDate.setUTCHours(0, 0, 0, 0);
+                    const doc = {
+                        deadline: new Date(deadline).toISOString(),
+                        delay: delay === '' ? null : delay,
+                        studentId: parseInt(studentId),
+                        classId: classId,
+                        className: className,
+                        studentName: studentName,
+                        correct: parseInt(correct) === '' ? null : parseInt(correct),
+                        total: parseInt(total) === '' ? null : parseInt(total),
+                        subjectDate: subjectDate,
+                        subject: subject,
+                        status: status,
+                        subjectName: subjectName,
+                    };
 
-                    const endDate = new Date(currentDate);
-                    endDate.setUTCHours(23, 59, 59, 999);
+                    const result = await scoreColl.insertOne(doc);
 
-                    const isExist = await scoreColl.findOne(
-                        {
-                            studentId: parseInt(studentId),
-                            deadline: { $gte: currentDate, $lte: endDate },
-                            subjectName: subjectName,
-                        },
-                        { projection: { _id: 0 } }
-                    );
-
-                    if (isExist == null) {
-                        const doc = {
-                            deadline: new Date(deadline).toISOString(),
-                            delay: delay === '' ? null : delay,
-                            studentId: parseInt(studentId),
-                            classId: classId,
-                            className: className,
-                            studentName: studentName,
-                            correct: parseInt(correct) === '' ? null : parseInt(correct),
-                            total: parseInt(total) === '' ? null : parseInt(total),
-                            subjectDate: subjectDate,
-                            subject: subject,
-                            status: status,
-                            subjectName: subjectName,
-                        };
-
-                        const result = await scoreColl.insertOne(doc);
-
-                        console.log(`One score document was inserted with the id ${result.insertedId}`);
-                    }
+                    console.log(`One score document was inserted with the id ${result.insertedId}`);
                 });
             }
         });
 
         res.send('Done!');
     } catch (err) {
-        console.error(err);
+        if (err.code === 11000) {
+            // Duplicate key error code in MongoDB
+            console.error('A document with this studentId, deadline, and subjectName already exists.');
+        } else {
+            console.error('An error occurred:', err.message);
+        }
     } finally {
     }
 };
