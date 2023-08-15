@@ -163,7 +163,7 @@ export const syncScoreList = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R2C1:R${lastRow}C13`,
+                    range: `${sheetName}!R2C1:R${20}C13`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
@@ -186,14 +186,17 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
-                    const createDate = new Date(deadline);
-                    const formatDate = new Date(createDate.getMonth(), createDate.getDate(), createDate.getFullYear());
+                    const day = deadline.getDate();
+                    const month = deadline.getMonth();
+                    const year = deadline.getFullYear();
 
-                    const uniqueHash = generateHash(studentId, formatDate, subjectName);
+                    const adjustedBsonDate = new Date(Date.UTC(year, month, day));
+
+                    const uniqueHash = generateHash(studentId, adjustedBsonDate, subjectName);
 
                     const doc = {
                         uniqueHash: uniqueHash,
-                        deadline: formatDate,
+                        deadline: adjustedBsonDate,
                         delay: delay === '' ? null : delay,
                         studentId: parseInt(studentId),
                         classId: classId,
