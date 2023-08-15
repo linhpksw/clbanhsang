@@ -163,7 +163,7 @@ export const syncScoreList = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R6271C1:R${lastRow}C13`,
+                    range: `${sheetName}!R2:R${lastRow}C13`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
@@ -186,43 +186,35 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
-                    const deadlineDate = new Date(deadline);
-                    console.log(deadline);
+                    const [day, month, year] = deadline.split('/');
+                    const formatDate = new Date(`${month}/${day}/${year}`);
 
-                    console.log(deadlineDate);
+                    const uniqueHash = generateHash(studentId, formatDate, subjectName);
 
-                    // const [datePart, timePart] = deadlineDate.split(' ');
-                    // const [day, month, year] = datePart.split('/');
-                    // const [hours, minutes, seconds] = timePart.split(':');
+                    const doc = {
+                        uniqueHash: uniqueHash,
+                        deadline: formatDate,
+                        delay: delay === '' ? null : delay,
+                        studentId: parseInt(studentId),
+                        classId: classId,
+                        className: className,
+                        studentName: studentName,
+                        correct: correct == '' ? null : parseInt(correct),
+                        total: total == '' ? null : parseInt(total),
+                        subjectDate: subjectDate,
+                        subject: subject,
+                        status: status,
+                        subjectName: subjectName,
+                    };
 
-                    // const adjustedBsonDate = new Date(Date.UTC(year, month - 1, day, hours, minutes, seconds));
+                    // Check if the hash exists
+                    const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
 
-                    // const uniqueHash = generateHash(studentId, adjustedBsonDate, subjectName);
+                    if (!existingDoc) {
+                        const result = await scoreColl.insertOne(doc);
 
-                    // const doc = {
-                    //     uniqueHash: uniqueHash,
-                    //     deadline: adjustedBsonDate,
-                    //     delay: delay === '' ? null : delay,
-                    //     studentId: parseInt(studentId),
-                    //     classId: classId,
-                    //     className: className,
-                    //     studentName: studentName,
-                    //     correct: correct == '' ? null : parseInt(correct),
-                    //     total: total == '' ? null : parseInt(total),
-                    //     subjectDate: subjectDate,
-                    //     subject: subject,
-                    //     status: status,
-                    //     subjectName: subjectName,
-                    // };
-
-                    // // Check if the hash exists
-                    // const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
-
-                    // if (!existingDoc) {
-                    //     const result = await scoreColl.insertOne(doc);
-
-                    //     console.log(`One score document was inserted with the id ${result.insertedId}`);
-                    // }
+                        console.log(`One score document was inserted with the id ${result.insertedId}`);
+                    }
                 });
             }
         });
