@@ -184,16 +184,6 @@ export const syncScoreList = async (req, res) => {
                     const endDate = new Date(currentDate);
                     endDate.setUTCHours(23, 59, 59, 999);
 
-                    const dateObject = new Date(deadline);
-                    if (isNaN(dateObject.getTime())) {
-                        console.error('Invalid date:', deadline);
-                    } else {
-                        const isoString = dateObject.toISOString();
-                        console.log(isoString);
-                    }
-
-                    return;
-
                     const isExist = await scoreColl.findOne(
                         {
                             studentId: parseInt(studentId),
@@ -205,7 +195,7 @@ export const syncScoreList = async (req, res) => {
 
                     if (isExist == null) {
                         const doc = {
-                            // deadline: new Date(deadline).toISOString(),
+                            deadline: new Date(deadline).toISOString(),
                             delay: delay === '' ? null : delay,
                             studentId: parseInt(studentId),
                             classId: classId,
@@ -219,9 +209,9 @@ export const syncScoreList = async (req, res) => {
                             subjectName: subjectName,
                         };
 
-                        // const result = await scoreColl.insertOne(doc);
+                        const result = await scoreColl.insertOne(doc);
 
-                        // console.log(`One score document was inserted with the id ${result.insertedId}`);
+                        console.log(`One score document was inserted with the id ${result.insertedId}`);
                     }
                 });
             }
