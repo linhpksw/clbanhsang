@@ -16,7 +16,7 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
-const crypto = require('crypto');
+import crypto from 'crypto';
 
 function generateHash(studentId, deadline, subjectName) {
     const hash = crypto.createHash('sha256');
