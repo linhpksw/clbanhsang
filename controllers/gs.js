@@ -186,9 +186,10 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
-                    const day = deadline.getDate();
-                    const month = deadline.getMonth();
-                    const year = deadline.getFullYear();
+                    const deadlineDate = new Date(deadline);
+                    const day = deadlineDate.getDate();
+                    const month = deadlineDate.getMonth();
+                    const year = deadlineDate.getFullYear();
 
                     const adjustedBsonDate = new Date(Date.UTC(year, month, day));
 
