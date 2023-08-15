@@ -15,6 +15,7 @@ export const userRequest = async (req, res) => {
         const classColl = db.collection('classUsers');
         const classInfoColl = db.collection('classInfo');
         const studentInfoColl = db.collection('studentInfo');
+        const scoreInfoColl = db.collection('scoreInfo');
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
