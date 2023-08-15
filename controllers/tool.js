@@ -347,53 +347,55 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             groupedAssignments[key].push(assignment);
         });
 
-        // Step 2 and 3: Compute scores and rank the students
-        const rankingInfo = [];
+        console.log(groupedAssignments);
 
-        for (const key in groupedAssignments) {
-            const group = groupedAssignments[key];
-            const scores = group.map((assignment) => ({
-                studentId: assignment.studentId,
-                score: assignment.correct / assignment.total,
-            }));
+        // // Step 2 and 3: Compute scores and rank the students
+        // const rankingInfo = [];
 
-            scores.sort((a, b) => b.score - a.score);
+        // for (const key in groupedAssignments) {
+        //     const group = groupedAssignments[key];
+        //     const scores = group.map((assignment) => ({
+        //         studentId: assignment.studentId,
+        //         score: assignment.correct / assignment.total,
+        //     }));
 
-            // Calculate rank
-            let rank = 1;
-            let prevScore = scores[0].score;
-            const ranks = {};
+        //     scores.sort((a, b) => b.score - a.score);
 
-            scores.forEach((scoreObj, idx) => {
-                if (scoreObj.score !== prevScore) {
-                    rank = idx + 1;
-                }
-                ranks[scoreObj.studentId] = rank;
-                prevScore = scoreObj.score;
-            });
+        //     // Calculate rank
+        //     let rank = 1;
+        //     let prevScore = scores[0].score;
+        //     const ranks = {};
 
-            rankingInfo.push({
-                key: key.split('-')[0], // Get the subject name from the key
-                scores,
-                ranks,
-            });
-        }
+        //     scores.forEach((scoreObj, idx) => {
+        //         if (scoreObj.score !== prevScore) {
+        //             rank = idx + 1;
+        //         }
+        //         ranks[scoreObj.studentId] = rank;
+        //         prevScore = scoreObj.score;
+        //     });
 
-        // Step 4: Convert to 2D format
-        const result = [['No', 'subjectName', 'Score', 'Rank']];
+        //     rankingInfo.push({
+        //         key: key.split('-')[0], // Get the subject name from the key
+        //         scores,
+        //         ranks,
+        //     });
+        // }
 
-        rankingInfo.forEach((info, idx) => {
-            info.scores.forEach((scoreObj) => {
-                result.push([
-                    idx + 1,
-                    info.key,
-                    parseFloat(scoreObj.score.toFixed(2)),
-                    `Top ${info.ranks[scoreObj.studentId]}`,
-                ]);
-            });
-        });
+        // // Step 4: Convert to 2D format
+        // const result = [['No', 'subjectName', 'Score', 'Rank']];
 
-        console.log(result);
+        // rankingInfo.forEach((info, idx) => {
+        //     info.scores.forEach((scoreObj) => {
+        //         result.push([
+        //             idx + 1,
+        //             info.key,
+        //             parseFloat(scoreObj.score.toFixed(2)),
+        //             `Top ${info.ranks[scoreObj.studentId]}`,
+        //         ]);
+        //     });
+        // });
+
+        // console.log(result);
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
