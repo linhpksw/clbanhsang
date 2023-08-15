@@ -293,8 +293,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
     }
 
     const currentDate = new Date();
-    const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const firstDayOfNextMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
+    const currentMonth = currentDate.getUTCMonth();
+    const currentYear = currentDate.getUTCFullYear();
+    const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
+    const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
 
     zaloStudentInfo.forEach(async (v) => {
         const [zaloStudentId, zaloClassId, alisaName, role] = v;
@@ -302,15 +304,18 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const studentName = alisaName.substring(3);
 
         console.log(zaloStudentId, zaloClassId, alisaName, role);
-        console.log(firstDayOfMonth, firstDayOfNextMonth);
+        console.log(startDate, endDate);
 
-        const cursor = scoreInfoColl.find({
-            deadline: {
-                $gte: firstDayOfMonth,
-                $lt: firstDayOfNextMonth,
+        const cursor = scoreInfoColl.find(
+            {
+                deadline: {
+                    $gte: ISODate(startDate),
+                    $lt: ISODate(endDate),
+                },
+                classId: zaloClassId,
             },
-            classId: zaloClassId,
-        });
+            { projection: { _id: 0 } }
+        );
 
         await cursor.forEach((v) => {
             console.log(v);
