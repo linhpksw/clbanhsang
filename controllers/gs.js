@@ -195,7 +195,7 @@ export const syncScoreList = async (req, res) => {
 
                     if (isExist == null) {
                         const doc = {
-                            deadline: new Date(deadline),
+                            deadline: new Date(deadline).toISOString(),
                             delay: delay === '' ? null : delay,
                             studentId: parseInt(studentId),
                             classId: classId,
