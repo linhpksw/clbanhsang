@@ -302,7 +302,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const studentName = alisaName.substring(3);
 
         console.log(zaloStudentId, zaloClassId, alisaName, role);
-        console.log(startDate, endDate);
+        console.log(firstDayOfMonth, firstDayOfNextMonth);
 
         const cursor = scoreInfoColl.find({
             deadline: {
