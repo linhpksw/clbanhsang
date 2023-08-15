@@ -187,6 +187,7 @@ export const syncScoreList = async (req, res) => {
                     ] = v;
 
                     const deadlineDate = new Date(deadline);
+                    console.log(deadline);
 
                     console.log(deadlineDate);
 
