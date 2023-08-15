@@ -190,7 +190,7 @@ export const syncScoreList = async (req, res) => {
 
                     const doc = {
                         uniqueHash: uniqueHash,
-                        deadline: new ISODate(deadline),
+                        deadline: new Date(deadline),
                         delay: delay === '' ? null : delay,
                         studentId: parseInt(studentId),
                         classId: classId,

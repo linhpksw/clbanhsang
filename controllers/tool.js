@@ -309,8 +309,8 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const cursor = scoreInfoColl.find(
             {
                 deadline: {
-                    $gte: ISODate(startDate),
-                    $lt: ISODate(endDate),
+                    $gte: new Date(startDate),
+                    $lt: new Date(endDate),
                 },
                 classId: zaloClassId,
             },
