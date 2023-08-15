@@ -292,8 +292,9 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         return;
     }
 
-    const currentMonth = new Date().getUTCMonth();
-    const currentYear = new Date().getUTCFullYear();
+    const currentDate = new Date();
+    const currentMonth = currentDate.getUTCMonth();
+    const currentYear = currentDate.getUTCFullYear();
     const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
     const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
 
@@ -301,6 +302,9 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const [zaloStudentId, zaloClassId, alisaName, role] = v;
 
         const studentName = alisaName.substring(3);
+
+        console.log(zaloStudentId, zaloClassId, alisaName, role);
+        console.log(startDate, endDate);
 
         const cursor = scoreInfoColl.find(
             {
