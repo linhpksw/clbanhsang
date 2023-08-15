@@ -325,22 +325,22 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const groupedAssignments = {};
 
         await assignments.forEach((assignment) => {
-            // const {
-            //     deadline,
-            //     delay,
-            //     studentId,
-            //     classId,
-            //     className,
-            //     studentName,
-            //     correct,
-            //     total,
-            //     subjectDate,
-            //     subject,
-            //     status,
-            //     subjectName,
-            // } = v;
+            const {
+                deadline,
+                delay,
+                studentId,
+                classId,
+                className,
+                studentName,
+                correct,
+                total,
+                subjectDate,
+                subject,
+                status,
+                subjectName,
+            } = assignment;
 
-            const key = `${assignment.subjectName}-${assignment.deadline}`;
+            const key = `${subjectName}-${subject}-${deadline}`;
             if (!groupedAssignments[key]) {
                 groupedAssignments[key] = [];
             }
@@ -378,20 +378,22 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             });
 
             rankingInfo.push({
-                key: key.split('-')[0], // Get the subject name from the key
+                subjectName: key.split('-')[0], // Get the subject name from the key
+                subject: key.split('-')[1],
                 scores,
                 ranks,
             });
         }
 
         // Step 4: Convert to 2D format
-        const result = [['No', 'subjectName', 'Score', 'Rank']];
+        const result = [['subject', 'subjectName', 'Score', 'Rank']];
 
         rankingInfo.forEach((info) => {
             info.scores.forEach((scoreObj) => {
                 if (scoreObj.studentId === zaloStudentId) {
                     result.push([
-                        info.key,
+                        info.subject,
+                        info.subjectName,
                         parseFloat(scoreObj.score.toFixed(2)),
                         `Top ${info.ranks[scoreObj.studentId]}`,
                     ]);
