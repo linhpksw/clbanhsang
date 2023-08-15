@@ -186,11 +186,14 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
-                    const uniqueHash = generateHash(studentId, deadline, subjectName);
+                    const createDate = new Date(deadline);
+                    const formatDate = new Date(createDate.getMonth(), createDate.getDate(), createDate.getFullYear());
+
+                    const uniqueHash = generateHash(studentId, formatDate, subjectName);
 
                     const doc = {
                         uniqueHash: uniqueHash,
-                        deadline: new Date(deadline),
+                        deadline: formatDate,
                         delay: delay === '' ? null : delay,
                         studentId: parseInt(studentId),
                         classId: classId,
