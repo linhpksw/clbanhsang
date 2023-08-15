@@ -187,6 +187,11 @@ export const syncScoreList = async (req, res) => {
                     ] = v;
 
                     const deadlineDate = new Date(deadline);
+
+                    console.log(deadlineDate);
+
+                    return;
+
                     const [datePart, timePart] = deadlineDate.split(' ');
                     const [day, month, year] = datePart.split('/');
                     const [hours, minutes, seconds] = timePart.split(':');
