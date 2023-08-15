@@ -285,6 +285,42 @@ Học phí mỗi buổi: ${tuition}`;
     }
 }
 
+async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
+    const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
+
+    if (zaloStudentInfo.length === 0) {
+        return;
+    }
+
+    const currentMonth = new Date().getUTCMonth();
+    const currentYear = new Date().getUTCFullYear();
+    const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
+    const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
+
+    zaloStudentInfo.forEach(async (v) => {
+        const [zaloStudentId, zaloClassId, alisaName, role] = v;
+
+        const studentName = alisaName.substring(3);
+
+        const cursor = scoreInfoColl.find(
+            {
+                deadline: {
+                    $gte: startDate,
+                    $lt: endDate,
+                },
+                classId: zaloClassId,
+            },
+            { projection: { _id: 0 } }
+        );
+
+        await cursor.forEach((v) => {
+            console.log(v);
+        });
+
+        // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
+    });
+}
+
 async function sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoColl) {
     const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
@@ -1491,4 +1527,5 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
+    sendScoreInfo,
 };

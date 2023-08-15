@@ -263,6 +263,7 @@ export const userRequest = async (req, res) => {
                         const isCPCK = formatContent === '#cpck';
                         const isDDHT = formatContent === '#ddht';
                         const isLHTG = formatContent === '#lhtg';
+                        const isDSHT = formatContent === '#dsht';
 
                         switch (true) {
                             case isDKTK:
@@ -319,6 +320,10 @@ export const userRequest = async (req, res) => {
                                     studentInfoColl
                                 );
 
+                                break;
+
+                            case isDSHT:
+                                await Tools.sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl);
                                 break;
 
                             case isTTCK:
