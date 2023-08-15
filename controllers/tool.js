@@ -303,9 +303,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
         const studentName = alisaName.substring(3);
 
-        console.log(zaloStudentId, zaloClassId, alisaName, role);
-        console.log(startDate, endDate);
-
         const cursor = scoreInfoColl.find(
             {
                 deadline: {
@@ -314,10 +311,34 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 },
                 classId: zaloClassId,
             },
-            { projection: { _id: 0 } }
+            { projection: { _id: 0, uniqueHash: 0 } }
         );
 
+        // const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${className} THÁNG ${currentMonth}/${currentYear}`;
+
+        // const averageScore = '';
+        // const rankInClass = '';
+
+        let hh = [];
+
         await cursor.forEach((v) => {
+            const {
+                deadline,
+                delay,
+                studentId,
+                classId,
+                className,
+                studentName,
+                correct,
+                total,
+                subjectDate,
+                subject,
+                status,
+                subjectName,
+            } = v;
+
+            // const formatScore = correct == null ? '' : correct / total;
+
             console.log(v);
         });
 
