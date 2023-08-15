@@ -16,6 +16,14 @@ const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
+const crypto = require('crypto');
+
+function generateHash(studentId, deadline, subjectName) {
+    const hash = crypto.createHash('sha256');
+    hash.update(`${studentId}-${deadline}-${subjectName}`);
+    return hash.digest('hex');
+}
+
 export const checkOARegister = async (req, res) => {
     const webhook = req.body;
 
@@ -178,7 +186,10 @@ export const syncScoreList = async (req, res) => {
                         subjectName,
                     ] = v;
 
+                    const uniqueHash = generateHash(studentId, deadline, subjectName);
+
                     const doc = {
+                        uniqueHash: uniqueHash,
                         deadline: new Date(deadline).toISOString(),
                         delay: delay === '' ? null : delay,
                         studentId: parseInt(studentId),
@@ -193,21 +204,21 @@ export const syncScoreList = async (req, res) => {
                         subjectName: subjectName,
                     };
 
-                    const result = await scoreColl.insertOne(doc);
+                    // Check if the hash exists
+                    const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
 
-                    console.log(`One score document was inserted with the id ${result.insertedId}`);
+                    if (!existingDoc) {
+                        const result = await scoreColl.insertOne(doc);
+
+                        console.log(`One score document was inserted with the id ${result.insertedId}`);
+                    }
                 });
             }
         });
 
         res.send('Done!');
     } catch (err) {
-        if (err.code === 'E11000') {
-            // Duplicate key error code in MongoDB
-            console.error('A document with this field already exists.');
-        } else {
-            console.error('An error occurred:', err.message);
-        }
+        console.error(err);
     } finally {
     }
 };
