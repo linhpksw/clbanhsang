@@ -366,10 +366,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         return;
                     }
 
-                    if (!studentTotals[studentId]) {
-                        studentTotals[studentId] = 0;
-                        studentCounts[studentId] = 0;
-                    }
+                    // if (!studentTotals[studentId]) {
+                    //     studentTotals[studentId] = 0;
+                    //     studentCounts[studentId] = 0;
+                    // }
 
                     const formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
 
