@@ -314,7 +314,11 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const [zaloStudentId, zaloClassId, role, alisaName] = v;
 
         // if zaloclassId not start with 2006, 2007, 2008 then skip this foreach
-        if (!zaloClassId.includes('2006') && !zaloClassId.includes('2007') && !zaloClassId.includes('2008')) {
+        if (
+            !zaloClassId.toString().startsWith('2006') &&
+            !zaloClassId.toString().startsWith('2007') &&
+            !zaloClassId.toString().startsWith('2008')
+        ) {
             return;
         }
 
