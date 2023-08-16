@@ -749,7 +749,7 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
 async function captureTableFromJSON(jsonData, accessToken) {
     const { className, studentName, aveClassScore, rankClass, results, checkAverageAll } = jsonData;
 
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'] });
     const page = await browser.newPage();
 
     // Set viewport for high resolution
