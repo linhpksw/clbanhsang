@@ -484,7 +484,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             });
         });
 
-        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${assignments[0].className} THÁNG ${currentMonth}/${currentYear}`;
+        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${assignments[0]['className']} THÁNG ${currentMonth}/${currentYear}`;
 
         console.log(header);
 
