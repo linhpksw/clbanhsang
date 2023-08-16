@@ -482,7 +482,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         deadline,
                         subject,
                         subjectName,
-                        parseFloat(score.toFixed(2)),
+                        parseFloat(score.toFixed(1)),
                         `Top ${ranks[studentId]}`,
                     ]);
                 }
