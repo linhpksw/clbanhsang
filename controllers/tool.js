@@ -347,20 +347,39 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             groupedAssignments[key].push(assignment);
         });
 
-        // console.log(groupedAssignments);
-
         // Step 2 and 3: Compute scores and rank the students
         const rankingInfo = [];
 
+        const convertDate = {
+            CN: 0,
+            T2: 1,
+            T3: 2,
+            T4: 3,
+            T5: 4,
+            T6: 5,
+            T7: 6,
+        };
+
         for (const key in groupedAssignments) {
             const group = groupedAssignments[key];
-            const scores = group.map((assignment) => ({
-                studentId: assignment.studentId,
-                score:
-                    assignment.correct === null
-                        ? parseFloat(0)
-                        : parseFloat((assignment.correct / assignment.total) * 10.0),
-            }));
+
+            const scores = group.map((ass) => {
+                const { studentId, correct, total, subjectDate, deadline } = ass;
+                const deadineDate = new Date(deadline);
+
+                let formatScore;
+
+                if (subjectDate !== 'Đủ' && deadineDate.getDay() !== convertDate[subjectDate]) {
+                    formatScore = '';
+                } else {
+                    formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
+                }
+
+                return {
+                    studentId: studentId,
+                    score: formatScore,
+                };
+            });
 
             scores.sort((a, b) => b.score - a.score);
 
@@ -377,21 +396,28 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 prevScore = scoreObj.score;
             });
 
+            const [subjectName, subject, deadline] = key.split('-');
+
+            const deadineDate = new Date(deadline);
+            const formatDeadline = `${deadineDate.getDate()}/${deadineDate.getMonth() + 1}`;
+
             rankingInfo.push({
-                subjectName: key.split('-')[0], // Get the subject name from the key
-                subject: key.split('-')[1],
+                subjectName: subjectName,
+                subject: subject,
+                deadline: formatDeadline,
                 scores,
                 ranks,
             });
         }
 
         // Step 4: Convert to 2D format
-        const result = [['subject', 'subjectName', 'Score', 'Rank']];
+        const result = [];
 
         rankingInfo.forEach((info) => {
             info.scores.forEach((scoreObj) => {
                 if (scoreObj.studentId === zaloStudentId) {
                     result.push([
+                        info.deadline,
                         info.subject,
                         info.subjectName,
                         parseFloat(scoreObj.score.toFixed(2)),
@@ -401,7 +427,11 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             });
         });
 
-        console.log(result);
+        const list = result.map((item, index) => {
+            [parseInt(index + 1), ...item];
+        });
+
+        console.log(list);
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
