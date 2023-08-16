@@ -369,7 +369,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 }
             }
 
-            const key = `${subjectName}-${subject}-${deadline}`;
+            const key = `${subjectName}~${subject}~${deadline}`;
             if (!groupedAssignments[key]) {
                 groupedAssignments[key] = [];
             }
@@ -477,7 +477,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 prevScore = scoreObj.score;
             });
 
-            const [subjectName, subject, deadline] = key.split('-');
+            const [subjectName, subject, deadline] = key.split('~');
 
             const deadineDate = new Date(deadline);
             const formatDeadline = `${deadineDate.getDate()}/${deadineDate.getMonth() + 1}`;
