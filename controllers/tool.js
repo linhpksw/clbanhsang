@@ -285,6 +285,8 @@ Học phí mỗi buổi: ${tuition}`;
     }
 }
 
+const puppeteer = require('puppeteer');
+
 async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
     const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
@@ -475,7 +477,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         }
 
         // Step 4: Convert to 2D format
-        const result = [];
+        const results = [];
 
         rankingInfo.forEach((info) => {
             const { ranks, scores, deadline, subject, subjectName } = info;
@@ -484,7 +486,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 const { studentId, score } = scoreObj;
 
                 if (studentId === zaloStudentId) {
-                    result.push([
+                    results.push([
                         deadline,
                         subject,
                         subjectName,
@@ -495,21 +497,340 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             });
         });
 
-        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${classNameZalo} THÁNG ${
-            currentMonth + 1
-        }/${currentYear}`;
+        const jsonData = {
+            className: classNameZalo,
+            studentName: studentName,
+            aveClassScore: Math.round(zaloStudentScore * 10) / 10,
+            rankClass: zaloStudentRank,
+            results: results,
+            checkAverageAll: checkAverageAll,
+        };
 
-        console.log(header);
+        const attachmentId = await captureTableFromJSON(jsonData, accessToken);
 
-        if (checkAverageAll) {
-            console.log(zaloStudentRank);
-            console.log(zaloStudentScore);
+        const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
+
+        if (attachmentId) {
+            await ZaloAPI.sendImageByAttachmentId(accessToken, zaloUserId, message, attachmentId);
         }
-
-        console.log(result);
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
+}
+
+async function generateTableHTML(className, studentName, aveClassScore, rankClass, results, checkAverageAll) {
+    // Construct Header
+    const date = new Date();
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    const extractRankClass = parseInt(rankClass.split(' ')[1]);
+    let rankAllCss;
+
+    if (extractRankClass <= 10) {
+        rankAllCss = 'rank-good';
+    } else if (extractRankClass <= 20) {
+        rankAllCss = 'rank-normal';
+    } else {
+        rankAllCss = 'rank-bad';
+    }
+
+    const tableHTML = `
+    <!DOCTYPE html>
+<html lang="en">
+    <head>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+        <meta charset="UTF-8">
+
+        <style>
+            /* color variables */
+            :root {
+                --clr-primary: #81d4fa;
+                --clr-primary-light: #e1f5fe;
+                --clr-primary-dark: #4fc3f7;
+                --clr-gray100: #f9fbff;
+                --clr-gray150: #f4f6fb;
+                --clr-gray200: #eef1f6;
+                --clr-gray300: #e1e5ee;
+                --clr-gray400: #767b91;
+                --clr-gray500: #4f546c;
+                --clr-gray600: #2a324b;
+                --clr-gray700: #161d34;
+                --clr-normal: #fff0c2;
+                --clr-normal-font: #a68b00;
+                --clr-bad: #ffcdd2;
+                --clr-bad-font: #c62828;
+                --clr-good: #c8e6c9;
+                --clr-good-font: #388e3c;
+                --clr-link: #2962ff;
+                /* border radius */
+                --radius: 0.2rem;
+            }
+    
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+    
+            body {
+                font-family: Be Vietnam Pro, sans-serif;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                color: var(--clr-gray500);
+                font-size: 1rem;
+                background-color: var(--clr-gray100);
+                flex-direction: column;
+            }
+
+            .table-wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .table-section {
+                margin-bottom: 2rem; /* Adjust this value to change space between two sections */
+            }
+    
+            table {
+                border-collapse: collapse;
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+                background-color: white;
+                text-align: center;
+                overflow: hidden;
+            }
+
+            .custom-table {
+                width: 500px;
+            }
+    
+            table thead {
+                box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            }
+    
+            th {
+                padding: 1rem 1.5rem;
+                font-size: 1rem;
+                font-weight: 600;
+            }
+    
+            td {
+                padding: 1rem 2rem;
+            }
+    
+            .rank {
+                display: inline-block;
+                border-radius: var(--radius);
+                padding: 0.4rem 1rem;
+                text-align: center;
+            }
+
+            .rank-normal {
+                background-color: var(--clr-normal);
+                color: var(--clr-normal-font);
+            }
+    
+            .rank-good {
+                background-color: var(--clr-good);
+                color: var(--clr-good-font);
+            }
+    
+            .rank-bad {
+                background-color: var(--clr-bad);
+                color: var(--clr-bad-font);
+            }
+
+           
+            /* Color alternating rows */
+            tr:nth-child(even) {
+                background-color: var(--clr-gray150);
+            }
+
+            .custom-header {
+                font-weight: 600;
+                color: #e11d48;
+                font-size: 1.5rem;
+                text-align: center;
+                margin-bottom: 0.7rem;
+                margin-top: 0.7rem;
+            }
+        </style>
+    </head>
+    
+    <body>
+        <div class="table-wrapper">
+            <div class="table-section">${tableHeader}</div>
+
+            <div class="table-section">
+                ${detailedTableHeader}
+                ${detailedTableRows}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </body>
+</html>
+    `;
+
+    const tableHeader = !checkAverageAll
+        ? ''
+        : `
+        <p class="custom-header">BẢNG THEO DÕI ĐIỂM HS LỚP ${className} T${month}/${year}</p>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Tên học sinh</th>
+                    <th>Điểm TB</th>
+                    <th>Xếp hạng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${studentName}</td>
+                    <td>${aveClassScore}</td>
+                    <td><p class="rank ${rankAllCss}">${rankClass}</p></td>
+                </tr>
+            </tbody>
+        </table>`;
+
+    const formatDetail = checkAverageAll
+        ? 'CHI TIẾT ĐIỂM SỐ'
+        : `CHI TIẾT ĐIỂM SỐ HS ${studentName} LỚP ${className} T${month}/${year}`;
+
+    // Construct detailed table
+    const detailedTableHeader = `
+        <p class="custom-header">${formatDetail}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Hạn nộp</th>
+                    <th>Môn học</th>
+                    <th>Tên bài</th>
+                    <th>Điểm số</th>
+                    <th>Xếp hạng</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    let detailedTableRows = '';
+    results.forEach((result, index) => {
+        const [deadline, subject, subjectName, score, rank] = result;
+
+        const extractRank = parseInt(rank.split(' ')[1]);
+        let rankCss;
+
+        if (extractRank <= 10) {
+            rankCss = 'rank-good';
+        } else if (extractRank <= 20) {
+            rankCss = 'rank-normal';
+        } else {
+            rankCss = 'rank-bad';
+        }
+
+        detailedTableRows += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${deadline}</td>
+                <td>${subject}</td>
+                <td>${subjectName}</td>
+                <td>${score}</td>
+                <td><p class="rank ${rankCss}">${rank}</p></td>
+            </tr>`;
+    });
+
+    // Return full HTML
+    return tableHTML;
+}
+
+async function captureTableFromJSON(jsonData, accessToken) {
+    const { className, studentName, aveClassScore, rankClass, results, checkAverageAll } = jsonData;
+
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
+
+    // Set viewport for high resolution
+    await page.setViewport({
+        width: 1000,
+        height: 500 + results.length * 50,
+        deviceScaleFactor: 3,
+    });
+
+    const tableHTML = await generateTableHTML(
+        className,
+        studentName,
+        aveClassScore,
+        rankClass,
+        results,
+        checkAverageAll
+    );
+
+    const uniqueId = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
+    const htmlFileName = `temp_${uniqueId}.html`;
+    const imageName = `table_${uniqueId}.png`;
+
+    const imagePath = `${__dirname}/${imageName}`;
+    const htmlFilePath = `${__dirname}/${htmlFileName}`;
+
+    // Save the tableHTML to a temporary file
+    const fs = require('fs');
+    fs.writeFileSync(htmlFilePath, tableHTML);
+
+    // Load the HTML file using page.goto()
+    await page.goto(`file://${htmlFilePath}`, { waitUntil: 'networkidle0' });
+
+    await page.screenshot({ path: imagePath, fullPage: true });
+
+    // Remove the temporary file
+    fs.unlinkSync(htmlFilePath);
+
+    await browser.close();
+
+    // Upload the captured image
+    const attachmentId = await uploadImageToZalo(accessToken, imagePath);
+
+    if (attachmentId) {
+        // If needed, remove the image after successful upload.
+        fs.unlinkSync(imagePath);
+    }
+    return attachmentId;
+}
+
+const axios = require('axios');
+const fs = require('fs');
+
+async function uploadImageToZalo(accessToken, imagePath) {
+    const formData = new FormData();
+    formData.append('file', fs.createReadStream(imagePath));
+
+    const config = {
+        headers: {
+            ...formData.getHeaders(),
+            access_token: accessToken,
+        },
+    };
+
+    try {
+        const response = await axios.post('https://openapi.zalo.me/v2.0/oa/upload/image', formData, config);
+        if (response.data.error === 0) {
+            console.log('Image uploaded successfully!');
+            return response.data.data.attachment_id;
+        } else {
+            console.error('Error uploading image:', response.data.message);
+            return null;
+        }
+    } catch (error) {
+        console.error('Failed to upload image:', error.message);
+        return null;
+    }
 }
 
 async function sendAssistantInfo(accessToken, zaloUserId, zaloColl, classInfoColl) {

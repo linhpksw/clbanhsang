@@ -198,6 +198,44 @@ async function sendImageByUrl(accessToken, zaloUserId, message, imageUrl) {
     console.log(jsonResponse);
 }
 
+async function sendImageByAttachmentId(accessToken, zaloUserId, message, attachmentId) {
+    const headers = {
+        access_token: accessToken,
+        'Content-Type': 'application/json',
+    };
+
+    const URL = `https://openapi.zalo.me/v3.0/oa/message/cs`;
+
+    const content = {
+        recipient: { user_id: `${zaloUserId}` },
+        message: {
+            text: message,
+            attachment: {
+                type: 'template',
+                payload: {
+                    template_type: 'media',
+                    elements: [
+                        {
+                            media_type: 'image',
+                            attachment_id: attachmentId,
+                        },
+                    ],
+                },
+            },
+        },
+    };
+
+    const response = await fetch(URL, {
+        method: 'post',
+        headers: headers,
+        body: JSON.stringify(content),
+    });
+
+    const jsonResponse = await response.json();
+
+    console.log(jsonResponse);
+}
+
 async function sendPlusMessage(accessToken, zaloUserId, attachMessage, apiUrl) {
     const headers = {
         access_token: accessToken,
@@ -392,4 +430,5 @@ export {
     sendInvoice,
     sendPlusMessage,
     uploadImage,
+    sendImageByAttachmentId,
 };
