@@ -1,5 +1,8 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
+import puppeteer from 'puppeteer';
+import fs from 'fs';
+import axios from 'axios';
 
 function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
     const convertWeekday = {
@@ -284,8 +287,6 @@ Học phí mỗi buổi: ${tuition}`;
         await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     }
 }
-
-const puppeteer = require('puppeteer');
 
 async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
     const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
@@ -781,7 +782,7 @@ async function captureTableFromJSON(jsonData, accessToken) {
     const htmlFilePath = `${__dirname}/${htmlFileName}`;
 
     // Save the tableHTML to a temporary file
-    const fs = require('fs');
+
     fs.writeFileSync(htmlFilePath, tableHTML);
 
     // Load the HTML file using page.goto()
@@ -803,9 +804,6 @@ async function captureTableFromJSON(jsonData, accessToken) {
     }
     return attachmentId;
 }
-
-const axios = require('axios');
-const fs = require('fs');
 
 async function uploadImageToZalo(accessToken, imagePath) {
     const formData = new FormData();
