@@ -163,7 +163,7 @@ export const syncScoreList = async (req, res) => {
 
                 const requestData = {
                     spreadsheetId: sourceId,
-                    range: `${sheetName}!R2:R${lastRow}C13`,
+                    range: `${sheetName}!R2C1:R${lastRow}C13`,
                 };
 
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
