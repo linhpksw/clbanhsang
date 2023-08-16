@@ -308,8 +308,17 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
     const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
     const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
 
+    let checkTHCS = true;
+
     zaloStudentInfo.forEach(async (v) => {
         const [zaloStudentId, zaloClassId, role, alisaName] = v;
+
+        // if zaloclassId not start with 2006, 2007, 2008 then skip this foreach
+        if (!zaloClassId.includes('2006') && !zaloClassId.includes('2007') && !zaloClassId.includes('2008')) {
+            return;
+        }
+
+        checkTHPT = false;
 
         const studentName = alisaName.slice(3);
         let classNameZalo;
@@ -518,6 +527,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
+
+    if (checkTHCS) {
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, 'Tính năng này chỉ áp dụng cho khối C3 tại trung tâm.');
+    }
 }
 
 async function generateTableHTML(className, studentName, aveClassScore, rankClass, results, checkAverageAll) {
