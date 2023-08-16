@@ -187,7 +187,7 @@ export const syncScoreList = async (req, res) => {
                     ] = v;
 
                     const [day, month, year] = deadline.split('/');
-                    const formatDate = new Date(`${month}/${day}/${year}`);
+                    const formatDate = new Date(Date.UTC(year, month - 1, day));
 
                     const uniqueHash = generateHash(studentId, formatDate, subjectName);
 
