@@ -489,15 +489,15 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             });
         });
 
-        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${classNameZalo} THÁNG ${currentMonth}/${currentYear}`;
-
-        console.log(assignments);
+        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${classNameZalo} THÁNG ${
+            currentMonth + 1
+        }/${currentYear}`;
 
         console.log(header);
 
         if (checkAverageAll) {
             console.log(zaloStudentRank);
-            console.log(zaloStudentScore);
+            console.log(parseFloat(zaloStudentScore.toFixed(2)));
         }
 
         console.log(result);
