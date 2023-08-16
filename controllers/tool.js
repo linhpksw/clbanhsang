@@ -307,7 +307,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
     zaloStudentInfo.forEach(async (v) => {
         const [zaloStudentId, zaloClassId, alisaName, role] = v;
 
-        const studentName = alisaName.substring(3);
+        const studentName = alisaName.slice(3);
         let classNameZalo;
 
         const assignments = scoreInfoColl
@@ -759,7 +759,7 @@ async function captureTableFromJSON(jsonData, accessToken) {
     await page.setViewport({
         width: 1000,
         height: 500 + results.length * 50,
-        deviceScaleFactor: 3,
+        deviceScaleFactor: 5,
     });
 
     const tableHTML = await generateTableHTML(
