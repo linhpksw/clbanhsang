@@ -3,6 +3,8 @@ import * as ZaloAPI from './zalo.js';
 import puppeteer from 'puppeteer';
 import fs from 'fs';
 import axios from 'axios';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
     const convertWeekday = {
@@ -772,8 +774,11 @@ async function captureTableFromJSON(jsonData, accessToken) {
     const htmlFileName = `temp_${uniqueId}.html`;
     const imageName = `table_${uniqueId}.png`;
 
-    const imagePath = `${__dirname}/${imageName}`;
-    const htmlFilePath = `${__dirname}/${htmlFileName}`;
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+
+    const imagePath = join(__dirname, imageName);
+    const htmlFilePath = join(__dirname, htmlFileName);
 
     // Save the tableHTML to a temporary file
 
