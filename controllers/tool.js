@@ -5,6 +5,7 @@ import fs from 'fs';
 import axios from 'axios';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
+import FormData from 'form-data';
 
 function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
     const convertWeekday = {
