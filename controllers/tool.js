@@ -316,13 +316,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             )
             .sort({ deadline: -1 });
 
-        // const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${className} THÁNG ${currentMonth}/${currentYear}`;
-
-        // const averageScore = '';
-        // const rankInClass = '';
-
         // Step 1: Group by subjectName and deadline
         const groupedAssignments = {};
+
+        let checkAverageAll = true;
 
         await assignments.forEach((assignment) => {
             const {
@@ -340,12 +337,68 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 subjectName,
             } = assignment;
 
+            if (subjectDate !== 'Đủ' || status !== 'Cũ') {
+                checkAverageAll = false;
+            }
+
             const key = `${subjectName}-${subject}-${deadline}`;
             if (!groupedAssignments[key]) {
                 groupedAssignments[key] = [];
             }
             groupedAssignments[key].push(assignment);
         });
+
+        let zaloStudentRank = '';
+        let zaloStudentScore = 0.0;
+        if (checkAverageAll) {
+            const studentTotals = {}; //will keep a sum of all scores for each student across assignments.
+            const studentCounts = {}; // will keep a count of the number of assignments for each student.
+
+            for (const key in groupedAssignments) {
+                const group = groupedAssignments[key];
+                group.forEach(({ studentId, correct, total, subjectDate, status }) => {
+                    if (subjectDate !== 'Đủ' || status !== 'Cũ') {
+                        return;
+                    }
+
+                    if (!studentTotals[studentId]) {
+                        studentTotals[studentId] = 0;
+                        studentCounts[studentId] = 0;
+                    }
+
+                    const formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
+
+                    studentTotals[studentId] += formatScore;
+                    studentCounts[studentId]++;
+                });
+            }
+
+            const averages = [];
+            for (const studentId in studentTotals) {
+                averages.push({
+                    studentId: parseInt(studentId),
+                    average: studentTotals[studentId] / studentCounts[studentId],
+                });
+            }
+
+            // Rank based on average scores:
+            averages.sort((a, b) => b.average - a.average);
+
+            let rankAll = 1;
+            let prevAverage = parseFloat(averages[0].average);
+            const ranksAll = {};
+
+            averages.forEach((avgObj, idx) => {
+                if (avgObj.average !== prevAverage) {
+                    rankAll = parseInt(idx + 1);
+                }
+                ranksAll[avgObj.studentId] = rankAll;
+                prevAverage = avgObj.average;
+            });
+
+            zaloStudentRank = `Top ${ranksAll[zaloStudentId]}`;
+            zaloStudentScore = averages.find((v) => v.studentId === zaloStudentId).average;
+        }
 
         // Step 2 and 3: Compute scores and rank the students
         const rankingInfo = [];
@@ -430,6 +483,15 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 }
             });
         });
+
+        const header = `BẢNG THEO DÕI ĐIỂM HS ${studentName} LỚP ${assignments[0].className} THÁNG ${currentMonth}/${currentYear}`;
+
+        console.log(header);
+
+        if (checkAverageAll) {
+            console.log(zaloStudentRank);
+            console.log(zaloStudentScore);
+        }
 
         console.log(result);
 
