@@ -302,6 +302,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const [zaloStudentId, zaloClassId, alisaName, role] = v;
 
         const studentName = alisaName.substring(3);
+        let classNameZalo;
 
         const assignments = scoreInfoColl
             .find(
@@ -337,8 +338,12 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 subjectName,
             } = assignment;
 
-            if (subjectDate !== 'Đủ' || status !== 'Cũ') {
-                checkAverageAll = false;
+            classNameZalo = className;
+
+            if (zaloStudentId == studentId) {
+                if (subjectDate !== 'Đủ' || status !== 'Cũ') {
+                    checkAverageAll = false;
+                }
             }
 
             const key = `${subjectName}-${subject}-${deadline}`;
