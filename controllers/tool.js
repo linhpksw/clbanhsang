@@ -306,6 +306,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
     zaloStudentInfo.forEach(async (v) => {
         const [zaloStudentId, zaloClassId, alisaName, role] = v;
+        console.log(alisaName);
 
         const studentName = alisaName.slice(3);
         let classNameZalo;
