@@ -389,6 +389,8 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             // Rank based on average scores:
             averages.sort((a, b) => b.average - a.average);
 
+            console.log(averages);
+
             let rankAll = 1;
             let prevAverage = parseFloat(averages[0].average);
             const ranksAll = {};
@@ -497,7 +499,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
         if (checkAverageAll) {
             console.log(zaloStudentRank);
-            console.log(parseFloat(zaloStudentScore.toFixed(2)));
+            console.log(zaloStudentScore);
         }
 
         console.log(result);
