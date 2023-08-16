@@ -414,24 +414,24 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const result = [];
 
         rankingInfo.forEach((info) => {
-            info.scores.forEach((scoreObj) => {
-                if (scoreObj.studentId === zaloStudentId) {
+            const { ranks, scores, deadline, subject, subjectName } = info;
+
+            scores.forEach((scoreObj) => {
+                const { studentId, score } = scoreObj;
+
+                if (studentId === zaloStudentId) {
                     result.push([
-                        info.deadline,
-                        info.subject,
-                        info.subjectName,
-                        parseFloat(scoreObj.score.toFixed(2)),
-                        `Top ${info.ranks[scoreObj.studentId]}`,
+                        deadline,
+                        subject,
+                        subjectName,
+                        parseFloat(score.toFixed(2)),
+                        `Top ${ranks[studentId]}`,
                     ]);
                 }
             });
         });
 
-        const list = result.map((item, index) => {
-            [parseInt(index + 1), ...item];
-        });
-
-        console.log(list);
+        console.log(result);
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
     });
