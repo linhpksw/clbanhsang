@@ -382,7 +382,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             for (const studentId in studentTotals) {
                 averages.push({
                     studentId: parseInt(studentId),
-                    average: studentTotals[studentId] / studentCounts[studentId],
+                    average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
                 });
             }
 
@@ -482,7 +482,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         deadline,
                         subject,
                         subjectName,
-                        parseFloat(score.toFixed(1)),
+                        Math.round(score * 10) / 10,
                         `Top ${ranks[studentId]}`,
                     ]);
                 }
