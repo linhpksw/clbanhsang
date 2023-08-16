@@ -322,7 +322,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             return;
         }
 
-        checkTHPT = false;
+        checkTHCS = false;
 
         const studentName = alisaName.slice(3);
         let classNameZalo;
