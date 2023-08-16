@@ -383,10 +383,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
             const averages = [];
             for (const studentId in studentTotals) {
-                console.log(studentId);
-                console.log('studentTotals[studentId]: ' + studentTotals[studentId]);
-                console.log('studentCounts[studentId]: ' + studentCounts[studentId]);
-
                 averages.push({
                     studentId: parseInt(studentId),
                     average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
@@ -395,8 +391,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
             // Rank based on average scores:
             averages.sort((a, b) => b.average - a.average);
-
-            console.log(averages);
 
             let rankAll = 1;
             let prevAverage = parseFloat(averages[0].average);
