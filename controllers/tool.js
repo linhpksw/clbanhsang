@@ -366,7 +366,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         return;
                     }
 
-                    if (!studentTotals[studentId]) {
+                    if (!(studentId in studentTotals)) {
                         studentTotals[studentId] = 0.0;
                         studentCounts[studentId] = 0;
                     }
