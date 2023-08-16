@@ -501,6 +501,9 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 const { studentId, score } = scoreObj;
 
                 if (studentId === zaloStudentId) {
+                    console.log('deadline: ', deadline);
+                    console.log('subject: ', subject);
+
                     results.push([
                         deadline,
                         subject,
@@ -522,8 +525,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         };
 
         const attachmentId = await captureTableFromJSON(jsonData, accessToken);
-
-        console.log(attachmentId);
 
         const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
 
@@ -820,8 +821,6 @@ async function captureTableFromJSON(jsonData, accessToken) {
 
     // Upload the captured image
     const attachmentId = await uploadImageToZalo(accessToken, imagePath);
-
-    console.log(attachmentId);
 
     if (attachmentId) {
         // If needed, remove the image after successful upload.
