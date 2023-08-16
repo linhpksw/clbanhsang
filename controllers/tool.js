@@ -298,6 +298,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         return;
     }
 
+    const loadingMessage = 'Đang xử lý dữ liệu, phụ huynh vui lòng chờ trong giây lát...';
+
+    await ZaloAPI.sendMessage(accessToken, zaloUserId, loadingMessage);
+
     const currentDate = new Date();
     const currentMonth = currentDate.getUTCMonth();
     const currentYear = currentDate.getUTCFullYear();
@@ -466,7 +470,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             const formatDeadline = `${deadineDate.getDate()}/${deadineDate.getMonth() + 1}`;
 
             rankingInfo.push({
-                subjectName: subjectName,
+                subjectName: subjectName.toLowerCase().replace(/^./, (s) => s.toUpperCase()),
                 subject: subject,
                 deadline: formatDeadline,
                 scores,
