@@ -530,6 +530,73 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
         rankAllCss = 'rank-bad';
     }
 
+    const tableHeader = !checkAverageAll
+        ? ''
+        : `
+        <p class="custom-header">BẢNG THEO DÕI ĐIỂM HS LỚP ${className} T${month}/${year}</p>
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Tên học sinh</th>
+                    <th>Điểm TB</th>
+                    <th>Xếp hạng</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>${studentName}</td>
+                    <td>${aveClassScore}</td>
+                    <td><p class="rank ${rankAllCss}">${rankClass}</p></td>
+                </tr>
+            </tbody>
+        </table>`;
+
+    const formatDetail = checkAverageAll
+        ? 'CHI TIẾT ĐIỂM SỐ'
+        : `CHI TIẾT ĐIỂM SỐ HS ${studentName} LỚP ${className} T${month}/${year}`;
+
+    // Construct detailed table
+    const detailedTableHeader = `
+        <p class="custom-header">${formatDetail}</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>STT</th>
+                    <th>Hạn nộp</th>
+                    <th>Môn học</th>
+                    <th>Tên bài</th>
+                    <th>Điểm số</th>
+                    <th>Xếp hạng</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    let detailedTableRows = '';
+    results.forEach((result, index) => {
+        const [deadline, subject, subjectName, score, rank] = result;
+
+        const extractRank = parseInt(rank.split(' ')[1]);
+        let rankCss;
+
+        if (extractRank <= 10) {
+            rankCss = 'rank-good';
+        } else if (extractRank <= 20) {
+            rankCss = 'rank-normal';
+        } else {
+            rankCss = 'rank-bad';
+        }
+
+        detailedTableRows += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${deadline}</td>
+                <td>${subject}</td>
+                <td>${subjectName}</td>
+                <td>${score}</td>
+                <td><p class="rank ${rankCss}">${rank}</p></td>
+            </tr>`;
+    });
+
     const tableHTML = `
     <!DOCTYPE html>
 <html lang="en">
@@ -674,73 +741,6 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
     </body>
 </html>
     `;
-
-    const tableHeader = !checkAverageAll
-        ? ''
-        : `
-        <p class="custom-header">BẢNG THEO DÕI ĐIỂM HS LỚP ${className} T${month}/${year}</p>
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>Tên học sinh</th>
-                    <th>Điểm TB</th>
-                    <th>Xếp hạng</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>${studentName}</td>
-                    <td>${aveClassScore}</td>
-                    <td><p class="rank ${rankAllCss}">${rankClass}</p></td>
-                </tr>
-            </tbody>
-        </table>`;
-
-    const formatDetail = checkAverageAll
-        ? 'CHI TIẾT ĐIỂM SỐ'
-        : `CHI TIẾT ĐIỂM SỐ HS ${studentName} LỚP ${className} T${month}/${year}`;
-
-    // Construct detailed table
-    const detailedTableHeader = `
-        <p class="custom-header">${formatDetail}</p>
-        <table>
-            <thead>
-                <tr>
-                    <th>STT</th>
-                    <th>Hạn nộp</th>
-                    <th>Môn học</th>
-                    <th>Tên bài</th>
-                    <th>Điểm số</th>
-                    <th>Xếp hạng</th>
-                </tr>
-            </thead>
-            <tbody>`;
-
-    let detailedTableRows = '';
-    results.forEach((result, index) => {
-        const [deadline, subject, subjectName, score, rank] = result;
-
-        const extractRank = parseInt(rank.split(' ')[1]);
-        let rankCss;
-
-        if (extractRank <= 10) {
-            rankCss = 'rank-good';
-        } else if (extractRank <= 20) {
-            rankCss = 'rank-normal';
-        } else {
-            rankCss = 'rank-bad';
-        }
-
-        detailedTableRows += `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${deadline}</td>
-                <td>${subject}</td>
-                <td>${subjectName}</td>
-                <td>${score}</td>
-                <td><p class="rank ${rankCss}">${rank}</p></td>
-            </tr>`;
-    });
 
     // Return full HTML
     return tableHTML;
