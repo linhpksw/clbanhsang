@@ -550,9 +550,9 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
     const extractRankClass = parseInt(rankClass.split(' ')[1]);
     let rankAllCss;
 
-    if (extractRankClass <= 10) {
+    if (extractRankClass <= 15) {
         rankAllCss = 'rank-good';
-    } else if (extractRankClass <= 20) {
+    } else if (extractRankClass <= 30) {
         rankAllCss = 'rank-normal';
     } else {
         rankAllCss = 'rank-bad';
@@ -606,9 +606,9 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
         const extractRank = parseInt(rank.split(' ')[1]);
         let rankCss;
 
-        if (extractRank <= 10) {
+        if (extractRank <= 15) {
             rankCss = 'rank-good';
-        } else if (extractRank <= 20) {
+        } else if (extractRank <= 30) {
             rankCss = 'rank-normal';
         } else {
             rankCss = 'rank-bad';
