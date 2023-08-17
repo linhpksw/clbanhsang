@@ -185,16 +185,38 @@ export const userRequest = async (req, res) => {
                             );
                         }
                     } else if (isDKHS) {
-                        Tools.signUp(
-                            accessToken,
-                            zaloUserId,
-                            zaloColl,
-                            classColl,
-                            classInfoColl,
-                            formatContent,
-                            messageId,
-                            'Học sinh'
-                        );
+                        // Check xem tin nhan den OA co tu phia Tro giang khong
+                        const isManager = await Tools.isManagerCheck(zaloUserId, classInfoColl);
+
+                        // Neu tu phia tro giang thi thay doi syntax
+                        if (isManager) {
+                            const extractZaloUserId = formatContent.slice(21);
+                            const extractFormatContent = formatContent.slice(0, 21);
+
+                            const response = await Tools.signUp(
+                                accessToken,
+                                extractZaloUserId,
+                                zaloColl,
+                                classColl,
+                                classInfoColl,
+                                extractFormatContent,
+                                messageId,
+                                'Học sinh'
+                            );
+
+                            ZaloAPI.sendMessage(accessToken, zaloUserId, response);
+                        } else {
+                            Tools.signUp(
+                                accessToken,
+                                zaloUserId,
+                                zaloColl,
+                                classColl,
+                                classInfoColl,
+                                formatContent,
+                                messageId,
+                                'Học sinh'
+                            );
+                        }
                     } else if (isXPH) {
                         Tools.deleteAccount(
                             formatContent,
