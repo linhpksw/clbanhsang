@@ -523,10 +523,14 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
         const attachmentId = await captureTableFromJSON(jsonData, accessToken);
 
-        const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
-
         if (attachmentId) {
+            const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
+
             await ZaloAPI.sendImageByAttachmentId(accessToken, zaloUserId, message, attachmentId);
+        } else {
+            const sorryMessage = 'Quá trình xử lý điểm đã bị lỗi, phụ huynh vui lòng thử lại.';
+
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
         }
 
         // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
@@ -822,8 +826,10 @@ async function captureTableFromJSON(jsonData, accessToken) {
     if (attachmentId) {
         // If needed, remove the image after successful upload.
         fs.unlinkSync(imagePath);
+        return attachmentId;
+    } else {
+        return null;
     }
-    return attachmentId;
 }
 
 async function uploadImageToZalo(accessToken, imagePath) {
