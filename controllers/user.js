@@ -19,7 +19,7 @@ export const userRequest = async (req, res) => {
 
         const { accessToken } = await MongoDB.readTokenFromDB(tokenColl);
 
-        let zaloUserId;
+        let zaloUserId, messageId;
 
         switch (eventName) {
             case 'user_click_chatnow':
@@ -89,6 +89,7 @@ export const userRequest = async (req, res) => {
 
             case 'user_send_image':
                 zaloUserId = webhook.sender.id;
+                messageId = webhook.message.msg_id;
 
                 const imageInfo = webhook.message;
 
@@ -106,6 +107,12 @@ export const userRequest = async (req, res) => {
 
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
                     else {
+                        const thankYouMessage = `Trung tâm cảm ơn bác ạ!`;
+
+                        await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
+
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, thankYouMessage);
+
                         await Tools.forwardImage2Assistant(
                             res,
                             accessToken,
@@ -122,7 +129,7 @@ export const userRequest = async (req, res) => {
             case 'user_send_text':
                 zaloUserId = webhook.sender.id;
 
-                const messageId = webhook.message.msg_id;
+                messageId = webhook.message.msg_id;
                 const content = webhook.message.text;
 
                 let formatContent = Tools.nomarlizeSyntax(content);
