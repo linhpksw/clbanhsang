@@ -580,7 +580,7 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
 
     const formatDetail = checkAverageAll
         ? 'CHI TIẾT ĐIỂM SỐ'
-        : `CHI TIẾT ĐIỂM SỐ HS ${studentName} LỚP ${className} T${month}/${year}`;
+        : `CHI TIẾT ĐIỂM SỐ HS ${studentName.toUpperCase()} LỚP ${className} T${month}/${year}`;
 
     // Construct detailed table
     const detailedTableHeader = `
@@ -698,7 +698,7 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
             }
 
             .custom-table {
-                width: 500px;
+                width: 600px;
             }
     
             table thead {
