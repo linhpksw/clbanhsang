@@ -501,9 +501,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 const { studentId, score } = scoreObj;
 
                 if (studentId === zaloStudentId) {
-                    console.log('deadline: ', deadline);
-                    console.log('subject: ', subject);
-
                     results.push([
                         deadline,
                         subject,
@@ -843,7 +840,6 @@ async function uploadImageToZalo(accessToken, imagePath) {
     try {
         const response = await axios.post('https://openapi.zalo.me/v2.0/oa/upload/image', formData, config);
         if (response.data.error === 0) {
-            console.log('Image uploaded successfully!');
             return response.data.data.attachment_id;
         } else {
             console.error('Error uploading image:', response.data.message);
