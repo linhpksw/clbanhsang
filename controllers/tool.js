@@ -699,7 +699,7 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
             }
 
             .custom-table {
-                width: 600px;
+                width: 800px;
             }
     
             table thead {
@@ -782,7 +782,7 @@ async function captureTableFromJSON(jsonData, accessToken) {
 
     // Set viewport for high resolution
     await page.setViewport({
-        width: 1000,
+        width: 1200,
         height: 500 + results.length * 50,
         deviceScaleFactor: 5,
     });
