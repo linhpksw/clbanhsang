@@ -250,7 +250,7 @@ export const syncScore = async (req, res) => {
                         const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
                         const itemYear = item.deadline.getFullYear();
 
-                        return itemMonth === parseInt(monthShub) && itemYear === parseInt(yearShub);
+                        return itemMonth == monthShub && itemYear == '20' + yearShub;
                     });
             },
             monthShub,
