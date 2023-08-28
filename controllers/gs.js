@@ -159,6 +159,8 @@ export const syncScore = async (req, res) => {
 
         const classData = classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
+        console.log(classData);
+
         if (classData === null) {
             console.log(`Class ${classId} not found!`);
             return;
