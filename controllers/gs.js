@@ -203,8 +203,21 @@ export const syncScore = async (req, res) => {
         await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
         console.log('Navigated to login page');
 
-        await page.waitForSelector('#email');
-        await page.type('#email', EMAIL);
+        // await page.waitForSelector('#email');
+        // await page.type('#email', EMAIL);
+
+        try {
+            await page.waitForSelector('#email');
+            await page.type('#email', EMAIL);
+        } catch (error) {
+            console.log('Error typing into email:', error.message);
+            await page.screenshot({ path: 'error_screenshot.png' });
+
+            console.log('Error typing into email:', error.message);
+            const pageContent = await page.content();
+            console.log(pageContent);
+        }
+
         await page.waitForSelector('#password');
         await page.type('#password', PASSWORD);
         await page.click('#loginButton');
