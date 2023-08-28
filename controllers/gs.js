@@ -209,130 +209,130 @@ export const syncScore = async (req, res) => {
 
         console.log('Navigated to homework page');
 
-        const data = await page.evaluate(
-            (monthShub, yearShub) => {
-                const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
+        // const data = await page.evaluate(
+        //     (monthShub, yearShub) => {
+        //         const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
 
-                return Array.from(liNodes)
-                    .map((liNode) => {
-                        // Extract homework ID from the li class name using a regex
-                        const idMatch = liNode.className.match(/exercise-item-(\d+)/);
-                        const homeworkId = idMatch ? idMatch[1] : null;
+        //         return Array.from(liNodes)
+        //             .map((liNode) => {
+        //                 // Extract homework ID from the li class name using a regex
+        //                 const idMatch = liNode.className.match(/exercise-item-(\d+)/);
+        //                 const homeworkId = idMatch ? idMatch[1] : null;
 
-                        // Extract title, type, and status
-                        const titleNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-12 p.MuiTypography-root');
-                        const typeNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-9 p.MuiTypography-root');
-                        const statusNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-3 p.MuiTypography-root');
+        //                 // Extract title, type, and status
+        //                 const titleNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-12 p.MuiTypography-root');
+        //                 const typeNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-9 p.MuiTypography-root');
+        //                 const statusNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-3 p.MuiTypography-root');
 
-                        const title = titleNode ? titleNode.innerText : null;
-                        const type = typeNode ? typeNode.innerText : null;
-                        const status = statusNode ? statusNode.innerText : null;
+        //                 const title = titleNode ? titleNode.innerText : null;
+        //                 const type = typeNode ? typeNode.innerText : null;
+        //                 const status = statusNode ? statusNode.innerText : null;
 
-                        // Separate the title into deadline and name
-                        const titleMatch = title.match(/^\[(\d+\/\d+\/\d{4})-(\d{2}:\d{2})-.*\]\s*(.+)$/);
+        //                 // Separate the title into deadline and name
+        //                 const titleMatch = title.match(/^\[(\d+\/\d+\/\d{4})-(\d{2}:\d{2})-.*\]\s*(.+)$/);
 
-                        let deadline = null;
-                        let name = null;
+        //                 let deadline = null;
+        //                 let name = null;
 
-                        if (titleMatch) {
-                            const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
-                            const timeSegment = titleMatch[2];
+        //                 if (titleMatch) {
+        //                     const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
+        //                     const timeSegment = titleMatch[2];
 
-                            deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
-                            name = titleMatch[3];
-                        }
+        //                     deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
+        //                     name = titleMatch[3];
+        //                 }
 
-                        return { homeworkId, deadline, name, type, status };
-                    })
-                    .filter((item) => {
-                        if (!item.deadline) return false;
+        //                 return { homeworkId, deadline, name, type, status };
+        //             })
+        //             .filter((item) => {
+        //                 if (!item.deadline) return false;
 
-                        const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
-                        const itemYear = item.deadline.getFullYear();
+        //                 const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
+        //                 const itemYear = item.deadline.getFullYear();
 
-                        return itemMonth === parseInt(monthShub) && itemYear === parseInt(yearShub);
-                    });
-            },
-            monthShub,
-            yearShub
-        );
+        //                 return itemMonth === parseInt(monthShub) && itemYear === parseInt(yearShub);
+        //             });
+        //     },
+        //     monthShub,
+        //     yearShub
+        // );
 
-        console.log(data);
+        // console.log(data);
 
-        const pdfLinksSet = new Set(); // Set to hold the unique PDF links
+        // const pdfLinksSet = new Set(); // Set to hold the unique PDF links
 
-        page.on('response', async (response) => {
-            const url = response.url();
-            const requestMethod = response.request().method();
+        // page.on('response', async (response) => {
+        //     const url = response.url();
+        //     const requestMethod = response.request().method();
 
-            if (url.endsWith('.pdf') && requestMethod === 'GET') {
-                pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
-            }
-        });
+        //     if (url.endsWith('.pdf') && requestMethod === 'GET') {
+        //         pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
+        //     }
+        // });
 
-        // Get the IDs of all homework items
-        const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
-            items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
-        );
+        // // Get the IDs of all homework items
+        // const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
+        //     items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
+        // );
 
-        for (let i = 0; i < 5; i++) {
-            const hwId = homeworkIds[i];
+        // for (let i = 0; i < 5; i++) {
+        //     const hwId = homeworkIds[i];
 
-            console.log(`Processing HW ID: ${hwId}`);
-            const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
+        //     console.log(`Processing HW ID: ${hwId}`);
+        //     const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
 
-            if (!homeworkItem) {
-                console.log(`Homework item not found for ID: ${hwId}`);
-                continue;
-            }
+        //     if (!homeworkItem) {
+        //         console.log(`Homework item not found for ID: ${hwId}`);
+        //         continue;
+        //     }
 
-            await homeworkItem.click();
+        //     await homeworkItem.click();
 
-            await new Promise((r) => setTimeout(r, 2000));
+        //     await new Promise((r) => setTimeout(r, 2000));
 
-            // Simulate the button click for downloading.
-            const downloadButtonXPath =
-                '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
+        //     // Simulate the button click for downloading.
+        //     const downloadButtonXPath =
+        //         '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
 
-            await page.waitForXPath(downloadButtonXPath);
+        //     await page.waitForXPath(downloadButtonXPath);
 
-            const [downloadButton] = await page.$x(downloadButtonXPath);
+        //     const [downloadButton] = await page.$x(downloadButtonXPath);
 
-            if (downloadButton) {
-                await downloadButton.click();
-                // You might want to add a delay here to ensure the network request is completed.
-                await new Promise((r) => setTimeout(r, 2000));
-            } else {
-                console.log('Download button not found for test ID:', hwId);
-            }
-        }
+        //     if (downloadButton) {
+        //         await downloadButton.click();
+        //         // You might want to add a delay here to ensure the network request is completed.
+        //         await new Promise((r) => setTimeout(r, 2000));
+        //     } else {
+        //         console.log('Download button not found for test ID:', hwId);
+        //     }
+        // }
 
         await browser.close();
 
-        console.log('PDF links:', pdfLinksSet);
+        // console.log('PDF links:', pdfLinksSet);
 
-        // Convert Set to Array
-        const pdfLinksArray = [...pdfLinksSet];
+        // // Convert Set to Array
+        // const pdfLinksArray = [...pdfLinksSet];
 
-        pdfLinksArray.forEach((link) => {
-            // Extract exercise ID from URL
-            const match = link.match(/tests\/(\d+)\/file_url\//);
-            if (match && match[1]) {
-                const exerciseId = match[1];
+        // pdfLinksArray.forEach((link) => {
+        //     // Extract exercise ID from URL
+        //     const match = link.match(/tests\/(\d+)\/file_url\//);
+        //     if (match && match[1]) {
+        //         const exerciseId = match[1];
 
-                // Find corresponding homework in the data array
-                const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
-                if (homeworkItem) {
-                    homeworkItem.pdfLink = link; // Append the PDF link to the homework item
-                }
-            }
-        });
+        //         // Find corresponding homework in the data array
+        //         const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
+        //         if (homeworkItem) {
+        //             homeworkItem.pdfLink = link; // Append the PDF link to the homework item
+        //         }
+        //     }
+        // });
 
-        console.log(data);
+        // console.log(data);
 
-        // Batch insert data
-        const result = await homeworkInfoColl.insertMany(data);
-        console.log(`Successfully inserted ${result.insertedCount} documents!`);
+        // // Batch insert data
+        // const result = await homeworkInfoColl.insertMany(data);
+        // console.log(`Successfully inserted ${result.insertedCount} documents!`);
 
         res.send('Done!');
     } catch (err) {
