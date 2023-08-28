@@ -187,8 +187,15 @@ export const syncScore = async (req, res) => {
 
         const page = await browser.newPage();
 
-        await page.goto(LOGIN_URL);
-        console.log('Navigated to login page');
+        try {
+            await page.goto(LOGIN_URL);
+            console.log('Navigated to login page');
+        } catch (error) {
+            console.log('Failed to navigate:', error.message);
+        }
+
+        // await page.goto(LOGIN_URL);
+        // console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
         await page.type('#password', PASSWORD);
