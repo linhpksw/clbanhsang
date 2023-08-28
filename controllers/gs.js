@@ -192,25 +192,23 @@ export const syncScore = async (req, res) => {
         console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
-        // console.log('Typing email...', EMAIL);
 
         await page.type('#password', PASSWORD);
-        // console.log('Typing password...', PASSWORD);
 
         await page.click('#loginButton');
-        console.log('Logging in...');
+        // console.log('Logging in...');
         // Wait for navigation to complete after login
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
-        console.log('Navigated to class page');
+        // console.log('Navigated to class page');
 
         // Find the button or its parent element and click it
         const buttonSelector = '.MuiListItem-root'; // Update this selector based on the actual button's parent element
         await page.waitForSelector(buttonSelector);
         await page.click(buttonSelector);
-        console.log('Clicked on the button');
+        // console.log('Clicked on the button');
 
         // Wait for the page to load
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
