@@ -212,6 +212,11 @@ export const syncScore = async (req, res) => {
 
         console.log('Navigated to homework page');
 
+        const content = await page.content();
+        console.log(content);
+
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+
         const data = await page.evaluate(() => {
             const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
 
