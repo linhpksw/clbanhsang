@@ -191,19 +191,16 @@ export const syncScore = async (req, res) => {
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         );
 
-        page.on('requestfailed', (request) => {
-            console.log(`Request failed: ${request.url()} - ${request.failure().errorText}`);
-        });
-
-        page.on('console', (message) => {
-            console.log(`Console log: ${message.text()}`);
-        });
-
+        await page.setRequestInterception(true);
         page.on('request', (request) => {
-            console.log(`Request made: ${request.url()}`);
+            if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
+                request.abort();
+            } else {
+                request.continue();
+            }
         });
 
-        await page.goto(LOGIN_URL);
+        await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
         console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
