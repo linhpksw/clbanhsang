@@ -255,78 +255,78 @@ export const syncScore = async (req, res) => {
 
         console.log(data);
 
-        // const pdfLinksSet = new Set(); // Set to hold the unique PDF links
+        const pdfLinksSet = new Set(); // Set to hold the unique PDF links
 
-        // page.on('response', async (response) => {
-        //     const url = response.url();
-        //     const requestMethod = response.request().method();
+        page.on('response', async (response) => {
+            const url = response.url();
+            const requestMethod = response.request().method();
 
-        //     if (url.endsWith('.pdf') && requestMethod === 'GET') {
-        //         pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
-        //     }
-        // });
+            if (url.endsWith('.pdf') && requestMethod === 'GET') {
+                pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
+            }
+        });
 
-        // // Get the IDs of all homework items
-        // const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
-        //     items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
-        // );
+        // Get the IDs of all homework items
+        const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
+            items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
+        );
 
-        // for (let i = 0; i < 5; i++) {
-        //     const hwId = homeworkIds[i];
+        for (let i = 0; i < 5; i++) {
+            const hwId = homeworkIds[i];
 
-        //     console.log(`Processing HW ID: ${hwId}`);
-        //     const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
+            console.log(`Processing HW ID: ${hwId}`);
+            const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
 
-        //     if (!homeworkItem) {
-        //         console.log(`Homework item not found for ID: ${hwId}`);
-        //         continue;
-        //     }
+            if (!homeworkItem) {
+                console.log(`Homework item not found for ID: ${hwId}`);
+                continue;
+            }
 
-        //     await homeworkItem.click();
+            await homeworkItem.click();
 
-        //     await new Promise((r) => setTimeout(r, 2000));
+            await new Promise((r) => setTimeout(r, 2000));
 
-        //     // Simulate the button click for downloading.
-        //     const downloadButtonXPath =
-        //         '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
+            // Simulate the button click for downloading.
+            const downloadButtonXPath =
+                '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
 
-        //     await page.waitForXPath(downloadButtonXPath);
+            await page.waitForXPath(downloadButtonXPath);
 
-        //     const [downloadButton] = await page.$x(downloadButtonXPath);
+            const [downloadButton] = await page.$x(downloadButtonXPath);
 
-        //     if (downloadButton) {
-        //         await downloadButton.click();
-        //         // You might want to add a delay here to ensure the network request is completed.
-        //         await new Promise((r) => setTimeout(r, 2000));
-        //     } else {
-        //         console.log('Download button not found for test ID:', hwId);
-        //     }
-        // }
+            if (downloadButton) {
+                await downloadButton.click();
+                // You might want to add a delay here to ensure the network request is completed.
+                await new Promise((r) => setTimeout(r, 2000));
+            } else {
+                console.log('Download button not found for test ID:', hwId);
+            }
+        }
 
-        // console.log('PDF links:', pdfLinksSet);
+        console.log('PDF links:', pdfLinksSet);
 
-        // // Convert Set to Array
-        // const pdfLinksArray = [...pdfLinksSet];
+        // Convert Set to Array
+        const pdfLinksArray = [...pdfLinksSet];
 
-        // pdfLinksArray.forEach((link) => {
-        //     // Extract exercise ID from URL
-        //     const match = link.match(/tests\/(\d+)\/file_url\//);
-        //     if (match && match[1]) {
-        //         const exerciseId = match[1];
+        pdfLinksArray.forEach((link) => {
+            // Extract exercise ID from URL
+            const match = link.match(/tests\/(\d+)\/file_url\//);
+            if (match && match[1]) {
+                const exerciseId = match[1];
 
-        //         // Find corresponding homework in the data array
-        //         const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
-        //         if (homeworkItem) {
-        //             homeworkItem.pdfLink = link; // Append the PDF link to the homework item
-        //         }
-        //     }
-        // });
+                // Find corresponding homework in the data array
+                const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
+                if (homeworkItem) {
+                    homeworkItem.pdfLink = link; // Append the PDF link to the homework item
+                }
+            }
+        });
 
-        // console.log(data);
+        console.log(data);
 
-        // // Batch insert data
-        // const result = await homeworkInfoColl.insertMany(data);
-        // console.log(`Successfully inserted ${result.insertedCount} documents!`);
+        // Batch insert data
+        const result = await homeworkInfoColl.insertMany(data);
+        console.log(`Successfully inserted ${result.insertedCount} documents!`);
 
         res.send('Done!');
     } catch (err) {
