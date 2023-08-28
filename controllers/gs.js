@@ -191,21 +191,14 @@ export const syncScore = async (req, res) => {
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         );
 
-        try {
-            await page.goto(LOGIN_URL);
-            console.log('Navigated to login page');
-        } catch (error) {
-            console.log('Failed to navigate:', error.message);
-        }
-
-        // await page.goto(LOGIN_URL);
-        // console.log('Navigated to login page');
+        await page.goto(LOGIN_URL);
+        console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
         await page.type('#password', PASSWORD);
         await page.click('#loginButton');
 
-        await page.waitForNavigation();
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
