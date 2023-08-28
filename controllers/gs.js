@@ -160,9 +160,6 @@ export const syncScore = async (req, res) => {
 
         const { classId, monthShub, yearShub } = webhook;
 
-        const formatMonth = parseInt(monthShub);
-        const formatYear = parseInt('20' + yearShub);
-
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
         if (classData === null) {
