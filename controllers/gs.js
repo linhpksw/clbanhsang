@@ -162,8 +162,6 @@ export const syncScore = async (req, res) => {
         const formatMonth = parseInt(monthShub);
         const formatYear = parseInt('20' + yearShub);
 
-        console.log(classId, monthShub, yearShub);
-
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
         if (classData === null) {
@@ -194,10 +192,10 @@ export const syncScore = async (req, res) => {
         console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
-        console.log('Typing email...', EMAIL);
+        // console.log('Typing email...', EMAIL);
 
         await page.type('#password', PASSWORD);
-        console.log('Typing password...', PASSWORD);
+        // console.log('Typing password...', PASSWORD);
 
         await page.click('#loginButton');
         console.log('Logging in...');
