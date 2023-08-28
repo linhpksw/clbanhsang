@@ -182,17 +182,17 @@ export const syncScore = async (req, res) => {
         const HOMEWORK_URL = BASE_URL + `/class/${CLASS_ID}/homework/list`;
 
         const browser = await puppeteer.launch({
-            headless: 'true',
+            headless: 'new',
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
         const page = await browser.newPage();
+        page.setDefaultNavigationTimeout(90000);
 
         await page.goto(LOGIN_URL);
 
         await page.type('#email', EMAIL);
         await page.type('#password', PASSWORD);
         await page.click('#loginButton');
-        await new Promise((r) => setTimeout(r, 5000));
         // Wait for navigation to complete after login
         await page.waitForNavigation();
 
@@ -205,7 +205,8 @@ export const syncScore = async (req, res) => {
         await page.click(buttonSelector);
 
         // Wait for the page to load
-        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+        // await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+        await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
         // Now navigate to the homework page
         await page.goto(HOMEWORK_URL);
