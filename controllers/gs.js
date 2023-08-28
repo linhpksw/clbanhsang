@@ -18,6 +18,8 @@ const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 import crypto from 'crypto';
 import puppeteer from 'puppeteer';
+import path from 'path';
+import fs from 'fs';
 
 function generateHash(studentId, deadline, subjectName) {
     const hash = crypto.createHash('sha256');
@@ -354,6 +356,21 @@ export const syncScore = async (req, res) => {
         if (browser) {
             await browser.close();
         }
+
+        // Delete all PDF files from /root/Downloads/
+        const directoryPath = '/root/Downloads/';
+        fs.readdir(directoryPath, (err, files) => {
+            if (err) throw err;
+
+            for (const file of files) {
+                if (path.extname(file) === '.pdf') {
+                    // Check if the file extension is .pdf
+                    fs.unlink(path.join(directoryPath, file), (err) => {
+                        if (err) throw err;
+                    });
+                }
+            }
+        });
     }
 };
 
