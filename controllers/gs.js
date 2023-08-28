@@ -196,7 +196,7 @@ export const syncScore = async (req, res) => {
         await page.type('#password', PASSWORD);
 
         await page.click('#loginButton');
-        // console.log('Logging in...');
+        console.log('Logging in...');
         // Wait for navigation to complete after login
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
