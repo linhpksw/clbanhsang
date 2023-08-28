@@ -191,13 +191,10 @@ export const syncScore = async (req, res) => {
         console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
-
         await page.type('#password', PASSWORD);
-
         await page.click('#loginButton');
-        console.log('Logging in...');
 
-        await page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 60000 });
+        await page.waitForNavigation();
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
