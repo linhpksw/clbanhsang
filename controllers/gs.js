@@ -158,9 +158,7 @@ export const syncScore = async (req, res) => {
         const homeworkInfoColl = db.collection('homeworkInfo');
 
         const { classId, monthShub, yearShub } = webhook;
-
-        const formatMonth = parseInt(monthShub);
-        const formatYear = parseInt('20' + yearShub);
+        console.log(classId, monthShub, yearShub);
 
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
@@ -170,6 +168,7 @@ export const syncScore = async (req, res) => {
         }
 
         const { username, password, code } = classData;
+        console.log(username, password, code);
 
         const CLASS_ID = code;
         const EMAIL = username;
