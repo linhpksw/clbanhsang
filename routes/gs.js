@@ -19,7 +19,7 @@ router.post('/syncStudentList', Sheets.syncStudentList);
 
 // Score Database
 router.post('/syncScoreList', Sheets.syncScoreList);
-router.post('/syncScore', Sheets.getScore);
+router.post('/getScore', Sheets.getScore);
 router.post('/syncScore', Sheets.syncScore);
 
 export default router;
