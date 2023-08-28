@@ -185,24 +185,28 @@ export const syncScore = async (req, res) => {
             headless: 'new',
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
+
         const page = await browser.newPage();
-        page.setDefaultNavigationTimeout(90000);
 
         await page.goto(LOGIN_URL);
+        console.log('Navigated to login page');
 
         await page.type('#email', EMAIL);
         await page.type('#password', PASSWORD);
         await page.click('#loginButton');
+        console.log('Logging in...');
         // Wait for navigation to complete after login
         await page.waitForNavigation();
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
+        console.log('Navigated to class page');
 
         // Find the button or its parent element and click it
         const buttonSelector = '.MuiListItem-root'; // Update this selector based on the actual button's parent element
         await page.waitForSelector(buttonSelector);
         await page.click(buttonSelector);
+        console.log('Clicked on the button');
 
         // Wait for the page to load
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
@@ -211,8 +215,6 @@ export const syncScore = async (req, res) => {
         await page.goto(HOMEWORK_URL);
 
         console.log('Navigated to homework page');
-
-        await page.waitForNavigation({ waitUntil: 'networkidle0' });
 
         const data = await page.evaluate(() => {
             const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
@@ -299,8 +301,6 @@ export const syncScore = async (req, res) => {
         //     }
         // }
 
-        await browser.close();
-
         // console.log('PDF links:', pdfLinksSet);
 
         // // Convert Set to Array
@@ -330,6 +330,7 @@ export const syncScore = async (req, res) => {
     } catch (err) {
         console.error(err);
     } finally {
+        await browser.close();
     }
 };
 
