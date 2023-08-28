@@ -205,8 +205,7 @@ export const syncScore = async (req, res) => {
         await page.click(buttonSelector);
 
         // Wait for the page to load
-        // await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
-        await page.waitForNavigation({ waitUntil: 'networkidle0' });
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
         // Now navigate to the homework page
         await page.goto(HOMEWORK_URL);
@@ -420,7 +419,7 @@ export const syncScoreList = async (req, res) => {
                     if (!existingDoc) {
                         const result = await scoreColl.insertOne(doc);
 
-                        console.log(`One score document was inserted with the id ${result.insertedId}`);
+                        console.log(`One score document was inserted with the id ${result.insertedId} in scoreInfo`);
                     }
                 });
             }
