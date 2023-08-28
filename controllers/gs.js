@@ -147,6 +147,7 @@ export const checkOARegister = async (req, res) => {
 
 export const syncScore = async (req, res) => {
     const webhook = req.body;
+    console.log('Syncing score...');
 
     try {
         await MongoDB.client.connect();
