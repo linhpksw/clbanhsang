@@ -18,7 +18,6 @@ const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 import crypto from 'crypto';
 import puppeteer from 'puppeteer';
-import fs from 'fs';
 
 function generateHash(studentId, deadline, subjectName) {
     const hash = crypto.createHash('sha256');
@@ -160,6 +159,9 @@ export const syncScore = async (req, res) => {
 
         const { classId, monthShub, yearShub } = webhook;
 
+        const formatMonth = parseInt(monthShub);
+        const formatYear = parseInt('20' + yearShub);
+
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
         if (classData === null) {
@@ -193,11 +195,10 @@ export const syncScore = async (req, res) => {
 
         await page.type('#password', PASSWORD);
 
-        const navigationPromise = page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 30000 });
-
         await page.click('#loginButton');
         console.log('Logging in...');
-        await navigationPromise;
+        // Wait for navigation to complete after login
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
@@ -247,7 +248,6 @@ export const syncScore = async (req, res) => {
                             const [hour, minute] = titleMatch[2].split(':').map((num) => parseInt(num, 10));
                             // Subtract 1 from month because JavaScript Date objects are 0-indexed for months
                             deadline = new Date(year, month - 1, day, hour, minute, 0);
-                            name = titleMatch[3];
                         }
 
                         return { homeworkId, deadline, name, type, status };
@@ -353,21 +353,6 @@ export const syncScore = async (req, res) => {
         if (browser) {
             await browser.close();
         }
-
-        // Delete all PDF files from /root/Downloads/
-        const directoryPath = '/root/Downloads/';
-        fs.readdir(directoryPath, (err, files) => {
-            if (err) throw err;
-
-            for (const file of files) {
-                if (path.extname(file) === '.pdf') {
-                    // Check if the file extension is .pdf
-                    fs.unlink(path.join(directoryPath, file), (err) => {
-                        if (err) throw err;
-                    });
-                }
-            }
-        });
     }
 };
 
