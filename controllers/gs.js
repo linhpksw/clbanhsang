@@ -218,40 +218,53 @@ export const syncScore = async (req, res) => {
 
         console.log('Navigated to homework page');
 
-        const data = await page.evaluate(() => {
-            const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
+        const data = await page.evaluate(
+            (monthShub, yearShub) => {
+                const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
 
-            return Array.from(liNodes).map((liNode) => {
-                // Extract homework ID from the li class name using a regex
-                const idMatch = liNode.className.match(/exercise-item-(\d+)/);
-                const homeworkId = idMatch ? idMatch[1] : null;
+                return Array.from(liNodes)
+                    .map((liNode) => {
+                        // Extract homework ID from the li class name using a regex
+                        const idMatch = liNode.className.match(/exercise-item-(\d+)/);
+                        const homeworkId = idMatch ? idMatch[1] : null;
 
-                // Extract title, type, and status
-                const titleNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-12 p.MuiTypography-root');
-                const typeNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-9 p.MuiTypography-root');
-                const statusNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-3 p.MuiTypography-root');
+                        // Extract title, type, and status
+                        const titleNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-12 p.MuiTypography-root');
+                        const typeNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-9 p.MuiTypography-root');
+                        const statusNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-3 p.MuiTypography-root');
 
-                const title = titleNode ? titleNode.innerText : null;
-                const type = typeNode ? typeNode.innerText : null;
-                const status = statusNode ? statusNode.innerText : null;
+                        const title = titleNode ? titleNode.innerText : null;
+                        const type = typeNode ? typeNode.innerText : null;
+                        const status = statusNode ? statusNode.innerText : null;
 
-                // Separate the title into deadline and name
-                const titleMatch = title.match(/^\[(\d+\/\d+\/\d{4})-(\d{2}:\d{2})-.*\]\s*(.+)$/);
+                        // Separate the title into deadline and name
+                        const titleMatch = title.match(/^\[(\d+\/\d+\/\d{4})-(\d{2}:\d{2})-.*\]\s*(.+)$/);
 
-                let deadline = null;
-                let name = null;
+                        let deadline = null;
+                        let name = null;
 
-                if (titleMatch) {
-                    const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
-                    const timeSegment = titleMatch[2];
+                        if (titleMatch) {
+                            const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
+                            const timeSegment = titleMatch[2];
 
-                    deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
-                    name = titleMatch[3];
-                }
+                            deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
+                            name = titleMatch[3];
+                        }
 
-                return { homeworkId, deadline, name, type, status };
-            });
-        });
+                        return { homeworkId, deadline, name, type, status };
+                    })
+                    .filter((item) => {
+                        if (!item.deadline) return false;
+
+                        const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
+                        const itemYear = item.deadline.getFullYear();
+
+                        return itemMonth == monthShub && itemYear == '20' + yearShub;
+                    });
+            },
+            monthShub,
+            yearShub
+        );
 
         console.log(data);
 
@@ -326,7 +339,7 @@ export const syncScore = async (req, res) => {
 
         // Batch insert data
         const result = await homeworkInfoColl.insertMany(data);
-        console.log(`Successfully inserted ${result.insertedCount} documents!`);
+        console.log(`Successfully inserted ${result.insertedCount} documents into homeworkInfo!`);
 
         res.send('Done!');
     } catch (err) {
