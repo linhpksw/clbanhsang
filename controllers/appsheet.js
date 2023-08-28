@@ -353,6 +353,9 @@ export const updateClassRequest = async (req, res) => {
             absentSubject1,
             absentSubject2,
             subjects,
+            username,
+            password,
+            code,
         } = webhook;
 
         const shortNameSubject2Full = {
@@ -397,9 +400,10 @@ export const updateClassRequest = async (req, res) => {
             startTerm: startTerm,
             endTerm: endTerm,
             subjects: newSubjects,
+            username: username,
+            password: password,
+            code: code,
         };
-
-        // await MongoDB.updateOneUser(classInfoColl, { classId: classId }, { $set: newDoc });
 
         await classInfoColl.updateOne({ classId: classId }, { $set: newDoc }, { upsert: true });
 
