@@ -157,6 +157,9 @@ export const syncScore = async (req, res) => {
 
         const { classId, monthShub, yearShub } = webhook;
 
+        const formatMonth = parseInt(monthShub);
+        const formatYear = parseInt('20' + yearShub);
+
         console.log(classId, monthShub, yearShub);
 
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
@@ -210,7 +213,7 @@ export const syncScore = async (req, res) => {
         console.log('Navigated to homework page');
 
         const data = await page.evaluate(
-            (monthShub, yearShub) => {
+            (formatMonth, formatYear) => {
                 const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
 
                 return Array.from(liNodes)
@@ -250,11 +253,11 @@ export const syncScore = async (req, res) => {
                         const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
                         const itemYear = item.deadline.getFullYear();
 
-                        return itemMonth == monthShub && itemYear == '20' + yearShub;
+                        return itemMonth === formatMonth && itemYear === formatYear;
                     });
             },
-            monthShub,
-            yearShub
+            formatMonth,
+            formatYear
         );
 
         console.log(data);
