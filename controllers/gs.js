@@ -159,18 +159,12 @@ export const syncScore = async (req, res) => {
 
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
-        console.log(classData);
-
         if (classData === null) {
             console.log(`Class ${classId} not found!`);
             return;
         }
 
         const { username, password, code } = classData;
-
-        console.log('Username:', username);
-        console.log('password:', password);
-        console.log('code:', code);
 
         const CLASS_ID = code;
         const EMAIL = username;
@@ -257,7 +251,7 @@ export const syncScore = async (req, res) => {
                 });
         });
 
-        // console.log(data);
+        console.log(data);
 
         const pdfLinksSet = new Set(); // Set to hold the unique PDF links
 
@@ -309,7 +303,7 @@ export const syncScore = async (req, res) => {
 
         await browser.close();
 
-        // console.log('PDF links:', pdfLinksSet);
+        console.log('PDF links:', pdfLinksSet);
 
         // Convert Set to Array
         const pdfLinksArray = [...pdfLinksSet];
@@ -330,9 +324,9 @@ export const syncScore = async (req, res) => {
 
         console.log(data);
 
-        // Batch insert data
-        const result = await homeworkInfoColl.insertMany(data);
-        console.log(`Successfully inserted ${result.insertedCount} documents!`);
+        // // Batch insert data
+        // const result = await homeworkInfoColl.insertMany(data);
+        // console.log(`Successfully inserted ${result.insertedCount} documents!`);
 
         res.send('Done!');
     } catch (err) {
