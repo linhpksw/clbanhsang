@@ -244,11 +244,10 @@ export const syncScore = async (req, res) => {
                         let name = null;
 
                         if (titleMatch) {
-                            const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
-                            const timeSegment = titleMatch[2];
-
-                            console.log(`${year}-${month}-${day}T${timeSegment}`);
-                            deadline = new Date(`${year}-${month}-${day}T${timeSegment}:00`);
+                            const [day, month, year] = titleMatch[1].split('/').map((num) => parseInt(num, 10));
+                            const [hour, minute] = titleMatch[2].split(':').map((num) => parseInt(num, 10));
+                            // Subtract 1 from month because JavaScript Date objects are 0-indexed for months
+                            deadline = new Date(year, month - 1, day, hour, minute, 0);
                             name = titleMatch[3];
                         }
 
@@ -283,10 +282,10 @@ export const syncScore = async (req, res) => {
             items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
         );
 
-        for (let i = 0; i < data.length; i++) {
+        for (let i = 0; i < data.length + 1; i++) {
             const hwId = homeworkIds[i];
 
-            // console.log(`Processing HW ID: ${hwId}`);
+            console.log(`Processing HW ID: ${hwId}`);
             const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
 
             if (!homeworkItem) {
