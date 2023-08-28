@@ -247,7 +247,8 @@ export const syncScore = async (req, res) => {
                             const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
                             const timeSegment = titleMatch[2];
 
-                            deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
+                            console.log(`${year}-${month}-${day}T${timeSegment}`);
+                            deadline = new Date(`${year}-${month}-${day}T${timeSegment}:00`);
                             name = titleMatch[3];
                         }
 
@@ -335,9 +336,17 @@ export const syncScore = async (req, res) => {
 
         // console.log(data);
 
-        // Batch insert data
-        const result = await homeworkInfoColl.insertMany(data);
-        console.log(`Successfully inserted ${result.insertedCount} documents into homeworkInfo!`);
+        const operations = data.map((record) => ({
+            updateOne: {
+                filter: { homeworkId: record.homeworkId },
+                update: { $set: record },
+                upsert: true,
+            },
+        }));
+
+        const result = await homeworkInfoColl.bulkWrite(operations);
+
+        console.log(`Successfully upserted ${result.upsertedCount} documents into homeworkInfo!`);
 
         res.send('Done!');
     } catch (err) {
