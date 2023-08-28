@@ -168,7 +168,7 @@ export const syncScore = async (req, res) => {
         }
 
         const { username, password, code } = classData;
-        console.log(username, password, code);
+        // console.log(username, password, code);
 
         const CLASS_ID = code;
         const EMAIL = username;
