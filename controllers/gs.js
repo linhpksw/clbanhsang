@@ -149,6 +149,8 @@ export const syncScore = async (req, res) => {
     const webhook = req.body;
     console.log('Syncing score...');
 
+    let browser;
+
     try {
         await MongoDB.client.connect();
         const db = MongoDB.client.db('zalo_servers');
@@ -159,6 +161,8 @@ export const syncScore = async (req, res) => {
 
         const formatMonth = parseInt(monthShub);
         const formatYear = parseInt('20' + yearShub);
+
+        console.log(classId, monthShub, yearShub);
 
         const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
@@ -179,7 +183,7 @@ export const syncScore = async (req, res) => {
         const MEMBER_URL = BASE_URL + `/class/${CLASS_ID}/member/list`;
         const HOMEWORK_URL = BASE_URL + `/class/${CLASS_ID}/homework/list`;
 
-        const browser = await puppeteer.launch({
+        browser = await puppeteer.launch({
             headless: 'new',
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
@@ -187,19 +191,28 @@ export const syncScore = async (req, res) => {
         const page = await browser.newPage();
 
         await page.goto(LOGIN_URL);
+        console.log('Navigated to login page');
+
         await page.type('#email', EMAIL);
+        console.log('Typing email...', EMAIL);
+
         await page.type('#password', PASSWORD);
+        console.log('Typing password...', PASSWORD);
+
         await page.click('#loginButton');
+        console.log('Logging in...');
         // Wait for navigation to complete after login
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
 
         // Now navigate to the class page
         await page.goto(CLASS_URL);
+        console.log('Navigated to class page');
 
         // Find the button or its parent element and click it
         const buttonSelector = '.MuiListItem-root'; // Update this selector based on the actual button's parent element
         await page.waitForSelector(buttonSelector);
         await page.click(buttonSelector);
+        console.log('Clicked on the button');
 
         // Wait for the page to load
         await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
@@ -244,87 +257,88 @@ export const syncScore = async (req, res) => {
             });
         });
 
-        // console.log(data);
+        console.log(data);
 
-        const pdfLinksSet = new Set(); // Set to hold the unique PDF links
+        // const pdfLinksSet = new Set(); // Set to hold the unique PDF links
 
-        page.on('response', async (response) => {
-            const url = response.url();
-            const requestMethod = response.request().method();
+        // page.on('response', async (response) => {
+        //     const url = response.url();
+        //     const requestMethod = response.request().method();
 
-            if (url.endsWith('.pdf') && requestMethod === 'GET') {
-                pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
-            }
-        });
+        //     if (url.endsWith('.pdf') && requestMethod === 'GET') {
+        //         pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
+        //     }
+        // });
 
-        // Get the IDs of all homework items
-        const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
-            items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
-        );
+        // // Get the IDs of all homework items
+        // const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
+        //     items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
+        // );
 
-        for (let i = 0; i < 5; i++) {
-            const hwId = homeworkIds[i];
+        // for (let i = 0; i < 5; i++) {
+        //     const hwId = homeworkIds[i];
 
-            console.log(`Processing HW ID: ${hwId}`);
-            const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
+        //     console.log(`Processing HW ID: ${hwId}`);
+        //     const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
 
-            if (!homeworkItem) {
-                console.log(`Homework item not found for ID: ${hwId}`);
-                continue;
-            }
+        //     if (!homeworkItem) {
+        //         console.log(`Homework item not found for ID: ${hwId}`);
+        //         continue;
+        //     }
 
-            await homeworkItem.click();
+        //     await homeworkItem.click();
 
-            await new Promise((r) => setTimeout(r, 2000));
+        //     await new Promise((r) => setTimeout(r, 2000));
 
-            // Simulate the button click for downloading.
-            const downloadButtonXPath =
-                '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
+        //     // Simulate the button click for downloading.
+        //     const downloadButtonXPath =
+        //         '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
 
-            await page.waitForXPath(downloadButtonXPath);
+        //     await page.waitForXPath(downloadButtonXPath);
 
-            const [downloadButton] = await page.$x(downloadButtonXPath);
+        //     const [downloadButton] = await page.$x(downloadButtonXPath);
 
-            if (downloadButton) {
-                await downloadButton.click();
-                // You might want to add a delay here to ensure the network request is completed.
-                await new Promise((r) => setTimeout(r, 2000));
-            } else {
-                console.log('Download button not found for test ID:', hwId);
-            }
-        }
+        //     if (downloadButton) {
+        //         await downloadButton.click();
+        //         // You might want to add a delay here to ensure the network request is completed.
+        //         await new Promise((r) => setTimeout(r, 2000));
+        //     } else {
+        //         console.log('Download button not found for test ID:', hwId);
+        //     }
+        // }
 
         // console.log('PDF links:', pdfLinksSet);
 
-        // Convert Set to Array
-        const pdfLinksArray = [...pdfLinksSet];
+        // // Convert Set to Array
+        // const pdfLinksArray = [...pdfLinksSet];
 
-        pdfLinksArray.forEach((link) => {
-            // Extract exercise ID from URL
-            const match = link.match(/tests\/(\d+)\/file_url\//);
-            if (match && match[1]) {
-                const exerciseId = match[1];
+        // pdfLinksArray.forEach((link) => {
+        //     // Extract exercise ID from URL
+        //     const match = link.match(/tests\/(\d+)\/file_url\//);
+        //     if (match && match[1]) {
+        //         const exerciseId = match[1];
 
-                // Find corresponding homework in the data array
-                const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
-                if (homeworkItem) {
-                    homeworkItem.pdfLink = link; // Append the PDF link to the homework item
-                }
-            }
-        });
+        //         // Find corresponding homework in the data array
+        //         const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
+        //         if (homeworkItem) {
+        //             homeworkItem.pdfLink = link; // Append the PDF link to the homework item
+        //         }
+        //     }
+        // });
 
-        console.log(data);
+        // console.log(data);
 
-        // Batch insert data
-        const result = await homeworkInfoColl.insertMany(data);
-        console.log(`Successfully inserted ${result.insertedCount} documents!`);
-
-        await browser.close();
+        // // Batch insert data
+        // const result = await homeworkInfoColl.insertMany(data);
+        // console.log(`Successfully inserted ${result.insertedCount} documents!`);
 
         res.send('Done!');
     } catch (err) {
         console.error(err);
     } finally {
+        if (browser) {
+            await browser.close();
+        }
     }
 };
 
