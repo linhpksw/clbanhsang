@@ -181,7 +181,7 @@ export const syncScore = async (req, res) => {
         const HOMEWORK_URL = BASE_URL + `/class/${CLASS_ID}/homework/list`;
 
         browser = await puppeteer.launch({
-            headless: false,
+            headless: 'new',
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
 
