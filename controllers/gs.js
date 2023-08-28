@@ -17,6 +17,7 @@ const SCOPE = process.env.SCOPE;
 const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 import crypto from 'crypto';
+import puppeteer from 'puppeteer';
 
 function generateHash(studentId, deadline, subjectName) {
     const hash = crypto.createHash('sha256');
@@ -136,6 +137,211 @@ export const checkOARegister = async (req, res) => {
                 await sheets.spreadsheets.values.update(requestUpdate);
             }
         });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+export const syncScore = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classInfoColl = db.collection('classInfo');
+        const homeworkInfoColl = db.collection('homeworkInfo');
+
+        const { classId, monthShub, yearShub } = webhook;
+
+        const classData = classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
+
+        if (classData === null) {
+            console.log(`Class ${classId} not found!`);
+            return;
+        }
+
+        const { username, password, code } = classData;
+
+        const CLASS_ID = code;
+        const EMAIL = username;
+        const PASSWORD = password;
+
+        const BASE_URL = 'https://shub.edu.vn';
+        const LOGIN_URL = BASE_URL + '/login/teacher';
+        const CLASS_URL = BASE_URL + '/class';
+        const MEMBER_URL = BASE_URL + `/class/${CLASS_ID}/member/list`;
+        const HOMEWORK_URL = BASE_URL + `/class/${CLASS_ID}/homework/list`;
+
+        const browser = await puppeteer.launch({
+            headless: 'new',
+        });
+        const page = await browser.newPage();
+
+        await page.goto(LOGIN_URL);
+
+        await page.type('#email', EMAIL);
+        await page.type('#password', PASSWORD);
+        await page.click('#loginButton');
+
+        // Wait for navigation to complete after login
+        await page.waitForNavigation();
+
+        // Now navigate to the class page
+        await page.goto(CLASS_URL);
+
+        // Find the button or its parent element and click it
+        const buttonSelector = '.MuiListItem-root'; // Update this selector based on the actual button's parent element
+        await page.waitForSelector(buttonSelector);
+        await page.click(buttonSelector);
+
+        // Wait for the page to load
+        await page.waitForNavigation({ waitUntil: 'domcontentloaded' });
+
+        // Now navigate to the homework page
+        await page.goto(HOMEWORK_URL);
+
+        console.log('Navigated to homework page');
+
+        const data = await page.evaluate(() => {
+            const liNodes = document.querySelectorAll('li[class^="MuiListItem-root"][class*="exercise-item-"]');
+
+            return Array.from(liNodes)
+                .map((liNode) => {
+                    // Extract homework ID from the li class name using a regex
+                    const idMatch = liNode.className.match(/exercise-item-(\d+)/);
+                    const homeworkId = idMatch ? idMatch[1] : null;
+
+                    // Extract title, type, and status
+                    const titleNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-12 p.MuiTypography-root');
+                    const typeNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-9 p.MuiTypography-root');
+                    const statusNode = liNode.querySelector('.MuiGrid-item.MuiGrid-grid-xs-3 p.MuiTypography-root');
+
+                    const title = titleNode ? titleNode.innerText : null;
+                    const type = typeNode ? typeNode.innerText : null;
+                    const status = statusNode ? statusNode.innerText : null;
+
+                    // Separate the title into deadline and name
+                    const titleMatch = title.match(/^\[(\d+\/\d+\/\d{4})-(\d{2}:\d{2})-.*\]\s*(.+)$/);
+
+                    let deadline = null;
+                    let name = null;
+
+                    if (titleMatch) {
+                        const [day, month, year] = titleMatch[1].split('/').map((part) => part.padStart(2, '0'));
+                        const timeSegment = titleMatch[2];
+
+                        deadline = new Date(`${year}-${month}-${day}T${timeSegment}`);
+                        name = titleMatch[3];
+                    }
+
+                    return { homeworkId, deadline, name, type, status };
+                })
+                .filter((item) => {
+                    if (!item.deadline) return false;
+
+                    const itemMonth = item.deadline.getMonth() + 1; // getMonth() is zero-based
+                    const itemYear = item.deadline.getFullYear();
+
+                    return itemMonth === monthShub && itemYear === yearShub;
+                });
+        });
+
+        // console.log(data);
+
+        const pdfLinksSet = new Set(); // Set to hold the unique PDF links
+
+        page.on('response', async (response) => {
+            const url = response.url();
+            const requestMethod = response.request().method();
+
+            if (url.endsWith('.pdf') && requestMethod === 'GET') {
+                pdfLinksSet.add(url); // Adding to a Set ensures uniqueness
+            }
+        });
+
+        // Get the IDs of all homework items
+        const homeworkIds = await page.$$eval('li[class*="exercise-item-"]', (items) =>
+            items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
+        );
+
+        for (let i = 0; i < 5; i++) {
+            const hwId = homeworkIds[i];
+
+            console.log(`Processing HW ID: ${hwId}`);
+            const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
+
+            if (!homeworkItem) {
+                console.log(`Homework item not found for ID: ${hwId}`);
+                continue;
+            }
+
+            await homeworkItem.click();
+
+            await new Promise((r) => setTimeout(r, 2000));
+
+            // Simulate the button click for downloading.
+            const downloadButtonXPath =
+                '//button[contains(@class, "MuiButtonBase-root") and .//span[contains(text(), "Tải về")]]';
+
+            await page.waitForXPath(downloadButtonXPath);
+
+            const [downloadButton] = await page.$x(downloadButtonXPath);
+
+            if (downloadButton) {
+                await downloadButton.click();
+                // You might want to add a delay here to ensure the network request is completed.
+                await new Promise((r) => setTimeout(r, 2000));
+            } else {
+                console.log('Download button not found for test ID:', hwId);
+            }
+        }
+
+        await browser.close();
+
+        // console.log('PDF links:', pdfLinksSet);
+
+        // Convert Set to Array
+        const pdfLinksArray = [...pdfLinksSet];
+
+        pdfLinksArray.forEach((link) => {
+            // Extract exercise ID from URL
+            const match = link.match(/tests\/(\d+)\/file_url\//);
+            if (match && match[1]) {
+                const exerciseId = match[1];
+
+                // Find corresponding homework in the data array
+                const homeworkItem = data.find((hw) => hw.homeworkId == exerciseId);
+                if (homeworkItem) {
+                    homeworkItem.pdfLink = link; // Append the PDF link to the homework item
+                }
+            }
+        });
+
+        console.log(data);
+
+        // Batch insert data
+        const result = await homeworkInfoColl.insertMany(data);
+        console.log(`Successfully inserted ${result.insertedCount} documents!`);
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
+export const getScore = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const scoreColl = db.collection('scoreInfo');
+
+        const { classId, month, year } = webhook;
 
         res.send('Done!');
     } catch (err) {
