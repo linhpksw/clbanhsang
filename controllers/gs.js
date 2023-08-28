@@ -192,13 +192,13 @@ export const syncScore = async (req, res) => {
         );
 
         await page.setRequestInterception(true);
-        page.on('request', (request) => {
-            if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
-                request.abort();
-            } else {
-                request.continue();
-            }
-        });
+        // page.on('request', (request) => {
+        //     if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
+        //         request.abort();
+        //     } else {
+        //         request.continue();
+        //     }
+        // });
 
         await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
         console.log('Navigated to login page');
