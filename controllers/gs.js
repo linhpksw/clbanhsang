@@ -266,8 +266,6 @@ export const syncScore = async (req, res) => {
             yearShub
         );
 
-        console.log(data);
-
         const pdfLinksSet = new Set(); // Set to hold the unique PDF links
 
         page.on('response', async (response) => {
@@ -284,10 +282,10 @@ export const syncScore = async (req, res) => {
             items.map((item) => item.className.match(/exercise-item-(\d+)/)[1])
         );
 
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < data.length; i++) {
             const hwId = homeworkIds[i];
 
-            console.log(`Processing HW ID: ${hwId}`);
+            // console.log(`Processing HW ID: ${hwId}`);
             const homeworkItem = await page.$(`li.exercise-item-${hwId}`);
 
             if (!homeworkItem) {
@@ -316,7 +314,7 @@ export const syncScore = async (req, res) => {
             }
         }
 
-        console.log('PDF links:', pdfLinksSet);
+        // console.log('PDF links:', pdfLinksSet);
 
         // Convert Set to Array
         const pdfLinksArray = [...pdfLinksSet];
@@ -335,7 +333,7 @@ export const syncScore = async (req, res) => {
             }
         });
 
-        console.log(data);
+        // console.log(data);
 
         // Batch insert data
         const result = await homeworkInfoColl.insertMany(data);
