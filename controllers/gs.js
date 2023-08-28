@@ -18,7 +18,6 @@ const client = new google.auth.JWT(CLIENT_EMAIL, null, PRIVATE_KEY, [SCOPE]);
 
 import crypto from 'crypto';
 import puppeteer from 'puppeteer';
-import path from 'path';
 import fs from 'fs';
 
 function generateHash(studentId, deadline, subjectName) {
