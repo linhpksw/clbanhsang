@@ -181,7 +181,7 @@ export const syncScore = async (req, res) => {
         const HOMEWORK_URL = BASE_URL + `/class/${CLASS_ID}/homework/list`;
 
         browser = await puppeteer.launch({
-            headless: 'new',
+            headless: false,
             args: ['--no-sandbox', '--disable-setuid-sandbox'],
         });
 
@@ -192,18 +192,20 @@ export const syncScore = async (req, res) => {
         );
 
         await page.setRequestInterception(true);
-        // page.on('request', (request) => {
-        //     if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
-        //         request.abort();
-        //     } else {
-        //         request.continue();
-        //     }
-        // });
+        page.on('request', (request) => {
+            if (['image', 'stylesheet', 'font', 'script'].includes(request.resourceType())) {
+                request.abort();
+            } else {
+                request.continue();
+            }
+        });
 
         await page.goto(LOGIN_URL, { waitUntil: 'domcontentloaded' });
         console.log('Navigated to login page');
 
+        await page.waitForSelector('#email');
         await page.type('#email', EMAIL);
+        await page.waitForSelector('#password');
         await page.type('#password', PASSWORD);
         await page.click('#loginButton');
 
