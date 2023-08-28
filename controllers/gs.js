@@ -157,7 +157,7 @@ export const syncScore = async (req, res) => {
 
         const { classId, monthShub, yearShub } = webhook;
 
-        const classData = classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
+        const classData = await classInfoColl.findOne({ classId: classId }, { projection: { _id: 0 } });
 
         console.log(classData);
 
