@@ -451,14 +451,13 @@ export const syncScoreList = async (req, res) => {
                         subjectName: subjectName,
                     };
 
-                    // Check if the hash exists
-                    const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
+                    await scoreColl.updateOne(
+                        { uniqueHash: uniqueHash }, // the filter
+                        { $set: doc }, // update or set the doc
+                        { upsert: true } // if the document doesn't exist, create it
+                    );
 
-                    if (!existingDoc) {
-                        const result = await scoreColl.insertOne(doc);
-
-                        console.log(`One score document was inserted with the id ${result.insertedId} in scoreInfo`);
-                    }
+                    console.log(`Upserted document with uniqueHash: ${uniqueHash} in scoreInfo`);
                 });
             }
         });
