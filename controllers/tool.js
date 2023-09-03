@@ -403,6 +403,8 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         });
                     }
 
+                    console.log(studentTotals);
+
                     const averages = [];
                     for (const studentId in studentTotals) {
                         averages.push({
@@ -410,6 +412,8 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                             average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
                         });
                     }
+
+                    console.log(averages);
 
                     // Rank based on average scores:
                     averages.sort((a, b) => b.average - a.average);
