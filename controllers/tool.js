@@ -541,7 +541,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
             await ZaloAPI.sendMessage(accessToken, zaloUserId, 'Tính năng này chỉ áp dụng cho khối C3 tại trung tâm.');
         }
     } catch (error) {
-        console.error('Failed to send score info:', error.message);
+        console.error('Failed to send score info:', error);
 
         const failContent = `Quá trình xử lý điểm bị lỗi, phụ huynh vui lòng liên hệ trợ giảng để được hỗ trợ.`;
 
