@@ -1723,7 +1723,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
         const isMatch = userPhone === registerPhone;
         const isNotMatch = userPhone !== registerPhone;
 
-        // Neu chua tung dang ky bao gio (dang ki lan dau tien)
+        // Neu chua tung dang ky bao gio (dang ki lan dau tien cho tai khoan Zalo)
         if (isNotYetRegister) {
             let zaloStudentIdArr = [];
             let zaloClassIdArr = [];
@@ -1754,6 +1754,22 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
                 // Neu sdt nam trong ds dang ki
                 if (isContainRegisterPhone) {
+                    const existingUserWithPhone = await MongoDB.findOneUser(
+                        zaloColl,
+                        { userPhone: registerPhone },
+                        { projection: { _id: 1 } }
+                    );
+
+                    if (existingUserWithPhone) {
+                        const failContent = `⭐ Thông báo!\n\nĐã có 1 tài khoản Zalo khác đăng ký với SĐT này.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã được đăng kí với trợ giảng trước đó. Nếu có nhu cầu chuyển đổi, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+
+                        await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'like');
+
+                        await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+
+                        return failContent;
+                    }
+
                     // set up role cho zalo user
                     const classInfo = await MongoDB.findOneUser(
                         classInfoColl,
@@ -1848,7 +1864,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
             }
         }
 
-        // Neu match voi sdt dki (dang ki them cho hs khac)
+        // Neu match voi sdt dki (luc dau moi la null, o day la dang ki them cho hs khac)
         else if (isMatch) {
             // Kiem tra sdt trong cu phap da duoc lien ket voi IDHS chua
             let linkStudentIdList = [];
@@ -1862,7 +1878,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
             // Neu da duoc lien ket
             if (isLinked) {
-                const failContent = `⭐ Thông báo!\n\nSố điện thoại ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}. Phụ huynh không cần phải đăng kí lại nữa ạ.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+                const failContent = `⭐ Thông báo!\n\nSĐT ${registerPhone} đã được đăng kí với ID học sinh ${targetStudentId}. Phụ huynh không cần phải đăng kí lại nữa ạ.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã được đăng kí với trợ giảng trước đó. Nếu có nhu cầu chuyển đổi, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
                 await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'like');
 
@@ -2009,7 +2025,7 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
         // Neu khong match voi sdt dang ki (da co tai khoan khac dang ki Zalo nay roi)
         else if (isNotMatch) {
-            const failContent = `⭐ Thông báo!\n\nĐã có 1 số điện thoại khác đăng kí với tài khoản Zalo này.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 số điện thoại đã được đăng kí với học sinh trước đó. Nếu có nhu cầu chuyển đổi tài khoản, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
+            const failContent = `⭐ Thông báo!\n\nĐã có 1 SĐT khác đăng kí với Zalo này.\n\n${zaloRole} lưu ý:\nMỗi tài khoản Zalo chỉ được liên kết với 1 SĐT đã được đăng kí với trợ giảng trước đó. Nếu có nhu cầu chuyển đổi, ${zaloRole} vui lòng liên hệ với trợ giảng để được hỗ trợ.`;
 
             await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'like');
 
