@@ -451,13 +451,29 @@ export const syncScoreList = async (req, res) => {
                         subjectName: subjectName,
                     };
 
-                    await scoreColl.updateOne(
-                        { uniqueHash: uniqueHash }, // the filter
-                        { $set: doc }, // update or set the doc
-                        { upsert: true } // if the document doesn't exist, create it
-                    );
+                    // Fetch the existing document using the uniqueHash
+                    const existingDoc = await scoreColl.findOne({ uniqueHash: uniqueHash });
 
-                    console.log(`Upserted document with uniqueHash: ${uniqueHash} in scoreInfo`);
+                    if (!existingDoc) {
+                        // If document doesn't exist, insert the new document
+                        await scoreColl.insertOne(doc);
+                        console.log(`Inserted new document with uniqueHash: ${uniqueHash} in scoreInfo`);
+                    } else {
+                        // Check if any field is different between the existing document and the new one
+                        let isDifferent = false;
+                        for (let key in doc) {
+                            if (doc[key] !== existingDoc[key]) {
+                                isDifferent = true;
+                                break;
+                            }
+                        }
+
+                        if (isDifferent) {
+                            // Update the document if there's a difference
+                            await scoreColl.updateOne({ uniqueHash: uniqueHash }, { $set: doc });
+                            console.log(`Updated document with uniqueHash: ${uniqueHash} in scoreInfo`);
+                        }
+                    }
                 });
             }
         });
