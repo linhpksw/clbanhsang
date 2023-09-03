@@ -292,252 +292,261 @@ Học phí mỗi buổi: ${tuition}`;
 }
 
 async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
-    const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
+    try {
+        const zaloStudentInfo = await notifyRegister(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo.length === 0) {
-        return;
-    }
-
-    const loadingMessage = 'Đang xử lý dữ liệu, phụ huynh vui lòng chờ trong giây lát...';
-
-    await ZaloAPI.sendMessage(accessToken, zaloUserId, loadingMessage);
-
-    const currentDate = new Date();
-    const currentMonth = currentDate.getUTCMonth();
-    const currentYear = currentDate.getUTCFullYear();
-    const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
-    const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
-
-    let checkTHCS = true;
-
-    zaloStudentInfo.forEach(async (v) => {
-        const [zaloStudentId, zaloClassId, role, alisaName] = v;
-
-        // if zaloclassId not start with 2006, 2007, 2008 then skip this foreach
-        if (
-            !zaloClassId.toString().startsWith('2006') &&
-            !zaloClassId.toString().startsWith('2007') &&
-            !zaloClassId.toString().startsWith('2008')
-        ) {
+        if (zaloStudentInfo.length === 0) {
             return;
         }
 
-        checkTHCS = false;
+        const loadingMessage = 'Đang xử lý dữ liệu, phụ huynh vui lòng chờ trong giây lát...';
 
-        const studentName = alisaName.slice(3);
-        let classNameZalo;
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, loadingMessage);
 
-        const assignments = scoreInfoColl
-            .find(
-                {
-                    deadline: {
-                        $gte: new Date(startDate),
-                        $lt: new Date(endDate),
+        const currentDate = new Date();
+        const currentMonth = currentDate.getUTCMonth();
+        const currentYear = currentDate.getUTCFullYear();
+        const startDate = new Date(Date.UTC(currentYear, currentMonth, 1));
+        const endDate = new Date(Date.UTC(currentYear, currentMonth + 1, 1));
+
+        let checkTHCS = true;
+
+        zaloStudentInfo.forEach(async (v) => {
+            const [zaloStudentId, zaloClassId, role, alisaName] = v;
+
+            // if zaloclassId not start with 2006, 2007, 2008 then skip this foreach
+            if (
+                !zaloClassId.toString().startsWith('2006') &&
+                !zaloClassId.toString().startsWith('2007') &&
+                !zaloClassId.toString().startsWith('2008')
+            ) {
+                return;
+            }
+
+            checkTHCS = false;
+
+            const studentName = alisaName.slice(3);
+            let classNameZalo;
+
+            const assignments = scoreInfoColl
+                .find(
+                    {
+                        deadline: {
+                            $gte: new Date(startDate),
+                            $lt: new Date(endDate),
+                        },
+                        classId: zaloClassId,
                     },
-                    classId: zaloClassId,
-                },
-                { projection: { _id: 0, uniqueHash: 0 } }
-            )
-            .sort({ deadline: -1 });
+                    { projection: { _id: 0, uniqueHash: 0 } }
+                )
+                .sort({ deadline: -1 });
 
-        // Step 1: Group by subjectName and deadline
-        const groupedAssignments = {};
+            // Step 1: Group by subjectName and deadline
+            const groupedAssignments = {};
 
-        let checkAverageAll = true;
+            let checkAverageAll = true;
 
-        await assignments.forEach((assignment) => {
-            const {
-                deadline,
-                delay,
-                studentId,
-                classId,
-                className,
-                studentName,
-                correct,
-                total,
-                subjectDate,
-                subject,
-                status,
-                subjectName,
-            } = assignment;
+            await assignments.forEach((assignment) => {
+                const {
+                    deadline,
+                    delay,
+                    studentId,
+                    classId,
+                    className,
+                    studentName,
+                    correct,
+                    total,
+                    subjectDate,
+                    subject,
+                    status,
+                    subjectName,
+                } = assignment;
 
-            classNameZalo = className;
+                classNameZalo = className;
 
-            if (zaloStudentId == studentId) {
-                if (subjectDate !== 'Đủ' || status !== 'Cũ') {
-                    checkAverageAll = false;
+                if (zaloStudentId == studentId) {
+                    if (subjectDate !== 'Đủ' || status !== 'Cũ') {
+                        checkAverageAll = false;
+                    }
                 }
+
+                const key = `${subjectName}~${subject}~${deadline}`;
+                if (!groupedAssignments[key]) {
+                    groupedAssignments[key] = [];
+                }
+                groupedAssignments[key].push(assignment);
+            });
+
+            let zaloStudentRank = '';
+            let zaloStudentScore = 0.0;
+            if (checkAverageAll) {
+                const studentTotals = {}; //will keep a sum of all scores for each student across assignments.
+                const studentCounts = {}; // will keep a count of the number of assignments for each student.
+
+                for (const key in groupedAssignments) {
+                    const group = groupedAssignments[key];
+                    group.forEach(({ studentId, correct, total, subjectDate, status }) => {
+                        if (subjectDate !== 'Đủ' || status !== 'Cũ') {
+                            return;
+                        }
+
+                        if (!(studentId in studentTotals)) {
+                            studentTotals[studentId] = 0.0;
+                            studentCounts[studentId] = 0;
+                        }
+
+                        const formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
+
+                        studentTotals[studentId] += formatScore;
+                        studentCounts[studentId]++;
+                    });
+                }
+
+                const averages = [];
+                for (const studentId in studentTotals) {
+                    averages.push({
+                        studentId: parseInt(studentId),
+                        average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
+                    });
+                }
+
+                // Rank based on average scores:
+                averages.sort((a, b) => b.average - a.average);
+
+                let rankAll = 1;
+                let prevAverage = parseFloat(averages[0].average);
+                const ranksAll = {};
+
+                averages.forEach((avgObj, idx) => {
+                    if (avgObj.average !== prevAverage) {
+                        rankAll = parseInt(idx + 1);
+                    }
+                    ranksAll[avgObj.studentId] = rankAll;
+                    prevAverage = avgObj.average;
+                });
+
+                zaloStudentRank = `Top ${ranksAll[zaloStudentId]}`;
+                zaloStudentScore = averages.find((v) => v.studentId === zaloStudentId).average;
             }
 
-            const key = `${subjectName}~${subject}~${deadline}`;
-            if (!groupedAssignments[key]) {
-                groupedAssignments[key] = [];
-            }
-            groupedAssignments[key].push(assignment);
-        });
+            // Step 2 and 3: Compute scores and rank the students
+            const rankingInfo = [];
 
-        let zaloStudentRank = '';
-        let zaloStudentScore = 0.0;
-        if (checkAverageAll) {
-            const studentTotals = {}; //will keep a sum of all scores for each student across assignments.
-            const studentCounts = {}; // will keep a count of the number of assignments for each student.
+            const convertDate = {
+                CN: 0,
+                T2: 1,
+                T3: 2,
+                T4: 3,
+                T5: 4,
+                T6: 5,
+                T7: 6,
+            };
 
             for (const key in groupedAssignments) {
                 const group = groupedAssignments[key];
-                group.forEach(({ studentId, correct, total, subjectDate, status }) => {
-                    if (subjectDate !== 'Đủ' || status !== 'Cũ') {
-                        return;
+
+                const scores = group.map((ass) => {
+                    const { studentId, correct, total, subjectDate, deadline } = ass;
+                    const deadineDate = new Date(deadline);
+
+                    let formatScore;
+
+                    if (subjectDate !== 'Đủ' && deadineDate.getDay() !== convertDate[subjectDate]) {
+                        formatScore = '';
+                    } else {
+                        formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
                     }
 
-                    if (!(studentId in studentTotals)) {
-                        studentTotals[studentId] = 0.0;
-                        studentCounts[studentId] = 0;
+                    return {
+                        studentId: studentId,
+                        score: formatScore,
+                    };
+                });
+
+                scores.sort((a, b) => b.score - a.score);
+
+                // Calculate rank
+                let rank = 1;
+                let prevScore = parseFloat(scores[0].score);
+                const ranks = {};
+
+                scores.forEach((scoreObj, idx) => {
+                    if (scoreObj.score !== prevScore) {
+                        rank = parseInt(idx + 1);
                     }
-
-                    const formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
-
-                    studentTotals[studentId] += formatScore;
-                    studentCounts[studentId]++;
+                    ranks[scoreObj.studentId] = rank;
+                    prevScore = scoreObj.score;
                 });
-            }
 
-            const averages = [];
-            for (const studentId in studentTotals) {
-                averages.push({
-                    studentId: parseInt(studentId),
-                    average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
-                });
-            }
+                const [subjectName, subject, deadline] = key.split('~');
 
-            // Rank based on average scores:
-            averages.sort((a, b) => b.average - a.average);
-
-            let rankAll = 1;
-            let prevAverage = parseFloat(averages[0].average);
-            const ranksAll = {};
-
-            averages.forEach((avgObj, idx) => {
-                if (avgObj.average !== prevAverage) {
-                    rankAll = parseInt(idx + 1);
-                }
-                ranksAll[avgObj.studentId] = rankAll;
-                prevAverage = avgObj.average;
-            });
-
-            zaloStudentRank = `Top ${ranksAll[zaloStudentId]}`;
-            zaloStudentScore = averages.find((v) => v.studentId === zaloStudentId).average;
-        }
-
-        // Step 2 and 3: Compute scores and rank the students
-        const rankingInfo = [];
-
-        const convertDate = {
-            CN: 0,
-            T2: 1,
-            T3: 2,
-            T4: 3,
-            T5: 4,
-            T6: 5,
-            T7: 6,
-        };
-
-        for (const key in groupedAssignments) {
-            const group = groupedAssignments[key];
-
-            const scores = group.map((ass) => {
-                const { studentId, correct, total, subjectDate, deadline } = ass;
                 const deadineDate = new Date(deadline);
+                const formatDeadline = `${deadineDate.getDate()}/${deadineDate.getMonth() + 1}`;
 
-                let formatScore;
+                rankingInfo.push({
+                    subjectName: subjectName.toLowerCase().replace(/^./, (s) => s.toUpperCase()),
+                    subject: subject,
+                    deadline: formatDeadline,
+                    scores,
+                    ranks,
+                });
+            }
 
-                if (subjectDate !== 'Đủ' && deadineDate.getDay() !== convertDate[subjectDate]) {
-                    formatScore = '';
-                } else {
-                    formatScore = correct === null ? 0.0 : (correct / total) * 10.0;
-                }
+            // Step 4: Convert to 2D format
+            const results = [];
 
-                return {
-                    studentId: studentId,
-                    score: formatScore,
-                };
+            rankingInfo.forEach((info) => {
+                const { ranks, scores, deadline, subject, subjectName } = info;
+
+                scores.forEach((scoreObj) => {
+                    const { studentId, score } = scoreObj;
+
+                    if (studentId === zaloStudentId) {
+                        results.push([
+                            deadline,
+                            subject,
+                            subjectName,
+                            Math.round(score * 10) / 10,
+                            `Top ${ranks[studentId]}`,
+                        ]);
+                    }
+                });
             });
 
-            scores.sort((a, b) => b.score - a.score);
+            const jsonData = {
+                className: classNameZalo,
+                studentName: studentName,
+                aveClassScore: Math.round(zaloStudentScore * 10) / 10,
+                rankClass: zaloStudentRank,
+                results: results,
+                checkAverageAll: checkAverageAll,
+            };
 
-            // Calculate rank
-            let rank = 1;
-            let prevScore = parseFloat(scores[0].score);
-            const ranks = {};
+            const attachmentId = await captureTableFromJSON(jsonData, accessToken);
 
-            scores.forEach((scoreObj, idx) => {
-                if (scoreObj.score !== prevScore) {
-                    rank = parseInt(idx + 1);
-                }
-                ranks[scoreObj.studentId] = rank;
-                prevScore = scoreObj.score;
-            });
+            if (attachmentId) {
+                const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
 
-            const [subjectName, subject, deadline] = key.split('~');
+                await ZaloAPI.sendImageByAttachmentId(accessToken, zaloUserId, message, attachmentId);
+            } else {
+                const sorryMessage = 'Quá trình xử lý điểm đã bị lỗi, phụ huynh vui lòng thử lại.';
 
-            const deadineDate = new Date(deadline);
-            const formatDeadline = `${deadineDate.getDate()}/${deadineDate.getMonth() + 1}`;
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
+            }
 
-            rankingInfo.push({
-                subjectName: subjectName.toLowerCase().replace(/^./, (s) => s.toUpperCase()),
-                subject: subject,
-                deadline: formatDeadline,
-                scores,
-                ranks,
-            });
-        }
-
-        // Step 4: Convert to 2D format
-        const results = [];
-
-        rankingInfo.forEach((info) => {
-            const { ranks, scores, deadline, subject, subjectName } = info;
-
-            scores.forEach((scoreObj) => {
-                const { studentId, score } = scoreObj;
-
-                if (studentId === zaloStudentId) {
-                    results.push([
-                        deadline,
-                        subject,
-                        subjectName,
-                        Math.round(score * 10) / 10,
-                        `Top ${ranks[studentId]}`,
-                    ]);
-                }
-            });
+            // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
         });
 
-        const jsonData = {
-            className: classNameZalo,
-            studentName: studentName,
-            aveClassScore: Math.round(zaloStudentScore * 10) / 10,
-            rankClass: zaloStudentRank,
-            results: results,
-            checkAverageAll: checkAverageAll,
-        };
-
-        const attachmentId = await captureTableFromJSON(jsonData, accessToken);
-
-        if (attachmentId) {
-            const message = 'Trung tâm Toán Ánh Sáng xin gửi kết quả học tập của con.';
-
-            await ZaloAPI.sendImageByAttachmentId(accessToken, zaloUserId, message, attachmentId);
-        } else {
-            const sorryMessage = 'Quá trình xử lý điểm đã bị lỗi, phụ huynh vui lòng thử lại.';
-
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
+        if (checkTHCS) {
+            await ZaloAPI.sendMessage(accessToken, zaloUserId, 'Tính năng này chỉ áp dụng cho khối C3 tại trung tâm.');
         }
+    } catch (error) {
+        console.error('Failed to send score info:', error.message);
+        const failContent = `Quá trình xử lý điểm bị lỗi, phụ huynh vui lòng liên hệ trợ giảng để được hỗ trợ.`;
 
-        // await ZaloAPI.sendMessage(accessToken, zaloUserId, message);
-    });
+        await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
-    if (checkTHCS) {
-        await ZaloAPI.sendMessage(accessToken, zaloUserId, 'Tính năng này chỉ áp dụng cho khối C3 tại trung tâm.');
+        return failContent;
     }
 }
 
