@@ -413,7 +413,7 @@ export const syncScoreList = async (req, res) => {
                 const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
                 const data = responseData.values;
 
-                data.forEach(async (v) => {
+                const promises = data.map(async (v) => {
                     const [
                         deadline,
                         submit,
@@ -462,7 +462,12 @@ export const syncScoreList = async (req, res) => {
                         // Check if any field is different between the existing document and the new one
                         let isDifferent = false;
                         for (let key in doc) {
-                            if (doc[key] !== existingDoc[key]) {
+                            if (doc[key] instanceof Date && existingDoc[key] instanceof Date) {
+                                if (doc[key].getTime() !== existingDoc[key].getTime()) {
+                                    isDifferent = true;
+                                    break;
+                                }
+                            } else if (doc[key] !== existingDoc[key]) {
                                 isDifferent = true;
                                 break;
                             }
@@ -475,6 +480,8 @@ export const syncScoreList = async (req, res) => {
                         }
                     }
                 });
+
+                await Promise.all(promises);
             }
         });
 
