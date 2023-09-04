@@ -345,10 +345,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
                 const assignmentsArr = await assignments.toArray();
 
-                console.log(assignmentsArr);
-                console.log(assignmentsArr.length);
-
-                if (assignments.length === 0) {
+                if (assignmentsArr.length === 0) {
                     const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${currentMonth} này.`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
@@ -361,7 +358,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
                 let checkAverageAll = true;
 
-                await assignments.forEach((assignment) => {
+                await assignmentsArr.forEach((assignment) => {
                     const {
                         deadline,
                         delay,
