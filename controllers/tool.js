@@ -327,6 +327,9 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 checkTHCS = false;
 
                 const studentName = alisaName.slice(3);
+
+                console.log('studentName: ', studentName);
+
                 let classNameZalo;
 
                 const assignments = scoreInfoColl
@@ -341,6 +344,8 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         { projection: { _id: 0, uniqueHash: 0 } }
                     )
                     .sort({ deadline: -1 });
+
+                console.log('assignments: ', assignments);
 
                 // Step 1: Group by subjectName and deadline
                 const groupedAssignments = {};
@@ -381,7 +386,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 let zaloStudentRank = '';
                 let zaloStudentScore = 0.0;
                 if (checkAverageAll) {
-                    const studentTotals = {}; //will keep a sum of all scores for each student across assignments.
+                    const studentTotals = {}; // will keep a sum of all scores for each student across assignments.
                     const studentCounts = {}; // will keep a count of the number of assignments for each student.
 
                     for (const key in groupedAssignments) {
@@ -403,7 +408,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         });
                     }
 
-                    console.log(studentTotals);
+                    console.log('studentTotals: ', studentTotals);
 
                     const averages = [];
                     for (const studentId in studentTotals) {
@@ -413,7 +418,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         });
                     }
 
-                    console.log(averages);
+                    console.log('averages: ', averages);
 
                     // Rank based on average scores:
                     averages.sort((a, b) => b.average - a.average);
