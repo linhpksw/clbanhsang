@@ -343,8 +343,10 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                     )
                     .sort({ deadline: -1 });
 
-                console.log(assignments);
-                console.log(assignments.length);
+                const assignmentsArr = await assignments.toArray();
+
+                console.log(assignmentsArr);
+                console.log(assignmentsArr.length);
 
                 if (assignments.length === 0) {
                     const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${currentMonth} này.`;
