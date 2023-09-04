@@ -343,7 +343,7 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                     )
                     .sort({ deadline: -1 });
 
-                if (assignments.length === 0) {
+                if (assignments.toArray().length === 0) {
                     const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${currentMonth} này.`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
