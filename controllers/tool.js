@@ -346,7 +346,9 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                 const assignmentsArr = await assignments.toArray();
 
                 if (assignmentsArr.length === 0) {
-                    const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${currentMonth} này.`;
+                    const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${
+                        currentMonth + 1
+                    } này.`;
 
                     await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
 
