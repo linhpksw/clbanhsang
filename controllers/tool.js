@@ -328,8 +328,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
 
                 const studentName = alisaName.slice(3);
 
-                console.log('studentName: ', studentName);
-
                 let classNameZalo;
 
                 const assignments = scoreInfoColl
@@ -345,7 +343,13 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                     )
                     .sort({ deadline: -1 });
 
-                console.log('assignments: ', assignments);
+                if (assignments.length === 0) {
+                    const sorryMessage = `Hiện tại trung tâm chưa có dữ liệu điểm của con trong tháng ${currentMonth} này.`;
+
+                    await ZaloAPI.sendMessage(accessToken, zaloUserId, sorryMessage);
+
+                    return;
+                }
 
                 // Step 1: Group by subjectName and deadline
                 const groupedAssignments = {};
@@ -408,8 +412,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                         });
                     }
 
-                    console.log('studentTotals: ', studentTotals);
-
                     const averages = [];
                     for (const studentId in studentTotals) {
                         averages.push({
@@ -417,8 +419,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
                             average: Math.round((studentTotals[studentId] / studentCounts[studentId]) * 10) / 10,
                         });
                     }
-
-                    console.log('averages: ', averages);
 
                     // Rank based on average scores:
                     averages.sort((a, b) => b.average - a.average);
@@ -555,8 +555,6 @@ async function sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl) {
         const failContent = `Quá trình xử lý điểm bị lỗi, phụ huynh vui lòng liên hệ trợ giảng để được hỗ trợ.`;
 
         await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
-
-        return failContent;
     }
 }
 
