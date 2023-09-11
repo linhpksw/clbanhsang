@@ -353,7 +353,7 @@ export const userRequest = async (req, res) => {
                                 break;
 
                             case isDSHT:
-                                await Tools.sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl);
+                                // await Tools.sendScoreInfo(accessToken, zaloUserId, zaloColl, scoreInfoColl);
                                 break;
 
                             case isTTCK:
