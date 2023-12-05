@@ -1,10 +1,7 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
-import puppeteer from 'puppeteer';
 import fs from 'fs';
 import axios from 'axios';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
 import FormData from 'form-data';
 
 function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
@@ -793,64 +790,6 @@ async function generateTableHTML(className, studentName, aveClassScore, rankClas
 
     // Return full HTML
     return tableHTML;
-}
-
-async function captureTableFromJSON(jsonData, accessToken) {
-    const { className, studentName, aveClassScore, rankClass, results, checkAverageAll } = jsonData;
-
-    const browser = await puppeteer.launch({ headless: 'new', args: ['--no-sandbox'], timeout: 90000 });
-    const page = await browser.newPage();
-
-    // Set viewport for high resolution
-    await page.setViewport({
-        width: 1200,
-        height: 500 + results.length * 50,
-        deviceScaleFactor: 5,
-    });
-
-    const tableHTML = await generateTableHTML(
-        className,
-        studentName,
-        aveClassScore,
-        rankClass,
-        results,
-        checkAverageAll
-    );
-
-    const uniqueId = `${Date.now()}_${Math.floor(Math.random() * 10000)}`;
-    const htmlFileName = `temp_${uniqueId}.html`;
-    const imageName = `table_${uniqueId}.png`;
-
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-
-    const imagePath = join(__dirname, imageName);
-    const htmlFilePath = join(__dirname, htmlFileName);
-
-    // Save the tableHTML to a temporary file
-
-    fs.writeFileSync(htmlFilePath, tableHTML);
-
-    // Load the HTML file using page.goto()
-    await page.goto(`file://${htmlFilePath}`, { waitUntil: 'networkidle0' });
-
-    await page.screenshot({ path: imagePath, fullPage: true });
-
-    // Remove the temporary file
-    fs.unlinkSync(htmlFilePath);
-
-    await browser.close();
-
-    // Upload the captured image
-    const attachmentId = await uploadImageToZalo(accessToken, imagePath);
-
-    if (attachmentId) {
-        // If needed, remove the image after successful upload.
-        fs.unlinkSync(imagePath);
-        return attachmentId;
-    } else {
-        return null;
-    }
 }
 
 async function uploadImageToZalo(accessToken, imagePath) {
