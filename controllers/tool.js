@@ -1659,7 +1659,9 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
             const registerPhone = formatContent.slice(-10);
 
-            console.log('zaloUserId', zaloUserId);
+            console.log('targetStudentId: ', targetStudentId);
+            console.log('registerPhone: ', registerPhone);
+            console.log('zaloUserId: ', zaloUserId);
 
             const isExistInZaloColl = await MongoDB.findOneUser(
                 zaloColl,
