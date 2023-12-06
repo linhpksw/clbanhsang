@@ -127,11 +127,8 @@ export const userRequest = async (req, res) => {
 
             case 'user_send_text':
                 zaloUserId = webhook.sender.id;
-                console.log('zaloUserId', zaloUserId);
-
                 messageId = webhook.message.msg_id;
                 const content = webhook.message.text;
-                console.log('content', content);
 
                 let formatContent = Tools.nomarlizeSyntax(content);
 
@@ -174,6 +171,8 @@ export const userRequest = async (req, res) => {
 
                             ZaloAPI.sendMessage(accessToken, zaloUserId, response);
                         } else {
+                            console.log('zaloUserId from parent', zaloUserId);
+
                             Tools.signUp(
                                 accessToken,
                                 zaloUserId,

@@ -1651,7 +1651,6 @@ async function deleteAccount(formatContent, accessToken, taZaloId, zaloColl, cla
 async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoColl, formatContent, messageId, zaloRole) {
     try {
         console.log('zaloUserId:', zaloUserId);
-        console.log('formatContent:', formatContent);
 
         // dkph 2004001 0123456789
         const TOTAL_REGISTER_SYNTAX = 21;
@@ -1661,9 +1660,6 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
             const targetStudentId = parseInt(formatContent.substring(4, 11));
 
             const registerPhone = formatContent.slice(-10);
-
-            console.log('targetStudentId:', targetStudentId);
-            console.log('registerPhone:', registerPhone);
 
             const isExistInZaloColl = await MongoDB.findOneUser(
                 zaloColl,
