@@ -1650,8 +1650,6 @@ async function deleteAccount(formatContent, accessToken, taZaloId, zaloColl, cla
 
 async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoColl, formatContent, messageId, zaloRole) {
     try {
-        console.log('zaloUserId:', zaloUserId);
-
         // dkph 2004001 0123456789
         const TOTAL_REGISTER_SYNTAX = 21;
         const isValidRegisterSyntax = formatContent.length === TOTAL_REGISTER_SYNTAX;
@@ -1666,8 +1664,6 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
                 { zaloUserId: `${zaloUserId}` },
                 { projection: { _id: 0 } }
             );
-
-            console.log('isExistInZaloColl', isExistInZaloColl);
 
             // Neu phu huynh chua co du lieu trong Zalo Coll
             // Neu nguoi dung quan tam lan dau
@@ -2011,7 +2007,6 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
             return failContent;
         }
     } catch (error) {
-        console.log(error);
         const failContent = `❌ Đăng kí thất bại!\n\nĐã có lỗi xảy ra. ${zaloRole} hãy liên hệ trợ giảng để được hỗ trợ.`;
 
         await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'sad');

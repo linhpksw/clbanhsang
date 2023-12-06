@@ -171,8 +171,6 @@ export const userRequest = async (req, res) => {
 
                             ZaloAPI.sendMessage(accessToken, zaloUserId, response);
                         } else {
-                            console.log('zaloUserId from parent', zaloUserId);
-
                             Tools.signUp(
                                 accessToken,
                                 zaloUserId,
