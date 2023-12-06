@@ -1659,11 +1659,15 @@ async function signUp(accessToken, zaloUserId, zaloColl, classColl, classInfoCol
 
             const registerPhone = formatContent.slice(-10);
 
+            console.log('zaloUserId', zaloUserId);
+
             const isExistInZaloColl = await MongoDB.findOneUser(
                 zaloColl,
                 { zaloUserId: `${zaloUserId}` },
                 { projection: { _id: 0 } }
             );
+
+            console.log('isExistInZaloColl', isExistInZaloColl);
 
             // Neu phu huynh chua co du lieu trong Zalo Coll
             // Neu nguoi dung quan tam lan dau
