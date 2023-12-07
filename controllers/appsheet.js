@@ -1,4 +1,3 @@
-import * as Tools from './tool.js';
 import * as ZaloAPI from './zalo.js';
 import * as MongoDB from './mongo.js';
 import path from 'path';
