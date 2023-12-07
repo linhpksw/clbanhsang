@@ -1501,5 +1501,4 @@ export {
     sendImageBack2Parent,
     sendAssistantInfo,
     getStudyDate,
-    sendScoreInfo,
 };
