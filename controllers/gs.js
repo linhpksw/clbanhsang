@@ -136,6 +136,95 @@ export const checkOARegister = async (req, res) => {
     }
 };
 
+export const syncStudentList = async (req, res) => {
+    const webhook = req.body;
+
+    try {
+        await MongoDB.client.connect();
+        const db = MongoDB.client.db('zalo_servers');
+        const classColl = db.collection('classUsers');
+
+        const { sourceId, sheetName, lastRow } = webhook;
+
+        client.authorize(async (err) => {
+            if (err) {
+                console.error(err);
+                return;
+            } else {
+                const sheets = google.sheets({ version: 'v4', auth: client });
+
+                const requestData = {
+                    spreadsheetId: sourceId,
+                    range: `${sheetName}!R2C1:R${lastRow}C22`,
+                };
+
+                const responseData = (await sheets.spreadsheets.values.get(requestData)).data;
+                const data = responseData.values;
+
+                data.forEach(async (v) => {
+                    const [
+                        sId,
+                        cId,
+                        eDate,
+                        status,
+                        ,
+                        bYear,
+                        fName,
+                        lName,
+                        lDate,
+                        ,
+                        ,
+                        ,
+                        ,
+                        sPhone,
+                        school,
+                        sEmail,
+                        fParentName,
+                        fParentPhone,
+                        sParentName,
+                        sParentPhone,
+                        ,
+                        subject,
+                    ] = v;
+
+                    const formatCId = cId.includes('#') ? 'N' + cId.slice(1) : cId;
+
+                    const isExist = await classColl.findOne({ studentId: parseInt(sId) }, { projection: { _id: 0 } });
+
+                    if (isExist == null) {
+                        const doc = {
+                            studentId: parseInt(sId),
+                            classId: formatCId,
+                            enrollDate: eDate,
+                            status: status,
+                            birthYear: bYear,
+                            fullName: `${fName} ${lName}`,
+                            subject: subject,
+                            leaveDate: lDate === '' ? null : lDate,
+                            studentPhone: sPhone === '' ? null : sPhone,
+                            school: school === '' ? null : school,
+                            studentEmail: sEmail === '' ? null : sEmail,
+                            firstParentName: fParentName === '' ? null : fParentName,
+                            firstParentPhone: fParentPhone === '' ? null : fParentPhone,
+                            secondParentName: sParentName === '' ? null : sParentName,
+                            secondParentPhone: sParentPhone === '' ? null : sParentPhone,
+                        };
+
+                        const result = await classColl.insertOne(doc);
+
+                        console.log(`One document was inserted with the id ${result.insertedId}`);
+                    }
+                });
+            }
+        });
+
+        res.send('Done!');
+    } catch (err) {
+        console.error(err);
+    } finally {
+    }
+};
+
 export const getOAUsers = async (req, res) => {
     const webhook = req.body;
 
