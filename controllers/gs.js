@@ -866,7 +866,7 @@ export const sendMessage = async (req, res) => {
                 }
 
                 const imageId = await ZaloAPI.uploadImage(accessToken, './img/noti.jpg');
-                const inviteIcon = await ZaloAPI.uploadImage(accessToken, './img/invite.png');
+                const mapIcon = await ZaloAPI.uploadImage(accessToken, './img/map.png');
 
                 for (let i = 0; i < rowsToSend.length; i++) {
                     const row = rowsToSend[i];
@@ -922,12 +922,12 @@ export const sendMessage = async (req, res) => {
                                 ],
                                 buttons: [
                                     {
-                                        title: `PH vào nhóm tại đây`,
+                                        title: `Địa chỉ trên bản đồ `,
                                         payload: {
-                                            url: 'https://web.facebook.com/groups/clbtoananhsang/',
+                                            url: 'https://goo.gl/maps/ZsnJphBtPNprUpuJ8',
                                         },
                                         type: 'oa.open.url',
-                                        image_icon: inviteIcon,
+                                        image_icon: mapIcon,
                                     },
                                 ],
                             },
