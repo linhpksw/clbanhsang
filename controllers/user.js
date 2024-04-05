@@ -37,10 +37,14 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { projection: { _id: 0 } }
                 );
+                console.log('isExistInZaloColl: ', isExistInZaloColl);
 
                 // Neu nguoi dung quan tam lan dau
                 if (isExistInZaloColl === null) {
+                    console.log('new user follow');
+
                     const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+                    console.log(profileDoc);
 
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
 
@@ -51,6 +55,8 @@ export const userRequest = async (req, res) => {
 
                 // Nguoi dung quan tam tro lai
                 else {
+                    console.log('user follow back');
+
                     MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'follow' } });
 
                     if (isExistInZaloColl.userPhone === null) {
@@ -64,7 +70,9 @@ export const userRequest = async (req, res) => {
                 break;
 
             case 'unfollow':
+                console.log('process unfollow');
                 zaloUserId = webhook.follower.id;
+
                 await Tools.sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classInfoColl);
 
                 break;
