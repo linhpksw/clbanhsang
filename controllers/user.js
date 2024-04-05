@@ -141,6 +141,7 @@ export const userRequest = async (req, res) => {
                 let formatContent = Tools.nomarlizeSyntax(content);
 
                 const isFollowOA = await Tools.isFollow(zaloUserId, accessToken);
+                console.log('isFollowOA: ', isFollowOA);
 
                 if (isFollowOA) {
                     // Kiem tra cu phap co phai tra cuu khong
@@ -179,6 +180,8 @@ export const userRequest = async (req, res) => {
 
                             ZaloAPI.sendMessage(accessToken, zaloUserId, response);
                         } else {
+                            console.log('sign up for parent');
+
                             Tools.signUp(
                                 accessToken,
                                 zaloUserId,
