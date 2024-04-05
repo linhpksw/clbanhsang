@@ -56,7 +56,7 @@ async function getFollowers(accessToken) {
 async function getProfile(accessToken, zaloUserId) {
     const dataRequest = `%7B%22user_id%22%3A%22${zaloUserId}%22%7D`;
 
-    const URL = `https://openapi.zalo.me/v2.0/oa/getprofile?data=${dataRequest}`;
+    const URL = `https://openapi.zalo.me/v3.0/oa/user/detail?data=${dataRequest}`;
 
     const response = await fetch(URL, {
         method: 'get',
@@ -68,6 +68,8 @@ async function getProfile(accessToken, zaloUserId) {
     if (jsonResponse.error !== 0) {
         return null;
     }
+
+    console.log('user info:', jsonResponse.data);
 
     let { user_gender: userGender, display_name: displayName } = jsonResponse.data;
 
