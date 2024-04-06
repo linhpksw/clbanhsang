@@ -141,7 +141,6 @@ export const userRequest = async (req, res) => {
                 let formatContent = Tools.nomarlizeSyntax(content);
 
                 const isFollowOA = await Tools.isFollow(zaloUserId, accessToken);
-                console.log('isFollowOA: ', isFollowOA);
 
                 if (isFollowOA) {
                     // Kiem tra cu phap co phai tra cuu khong
@@ -247,6 +246,8 @@ export const userRequest = async (req, res) => {
                             'Học sinh'
                         );
                     } else if (isDKTG) {
+                        // dang ki lam tro giang OA
+                        // syntax: dktg 2009A0 0915806944 Trọng Linh
                         Tools.signUp4Assistant(
                             res,
                             accessToken,

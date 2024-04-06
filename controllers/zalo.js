@@ -69,50 +69,18 @@ async function getProfile(accessToken, zaloUserId) {
         return null;
     }
 
-    console.log('user info:', jsonResponse.data);
-
-    let { user_gender: userGender, display_name: displayName } = jsonResponse.data;
-
-    userGender == 1 ? (userGender = 'Nam') : (userGender = 'Nữ');
+    const { display_name: displayName, user_is_follower: isFollow } = jsonResponse.data;
 
     const result = {
         zaloUserId: zaloUserId,
         displayName: displayName,
-        status: 'follow',
-        userGender: userGender,
+        status: isFollow ? 'follow' : 'unfollow',
+        userGender: null,
         userPhone: null,
         students: [],
     };
 
     return result;
-}
-
-async function updateFollowerInfo(accessToken, studentId, zaloUserId, phone, aliasName) {
-    const URL = `https://openapi.zalo.me/v2.0/oa/updatefollowerinfo`;
-
-    const data = {
-        address: `${studentId}`,
-        user_id: `${zaloUserId}`,
-        phone: `${phone}`,
-        name: `${aliasName}`,
-        district_id: '009',
-        city_id: '01',
-    };
-
-    const headers = {
-        access_token: accessToken,
-        'Content-Type': 'application/json',
-    };
-
-    const result = await fetch(URL, {
-        method: 'post',
-        headers: headers,
-        body: JSON.stringify(data),
-    });
-
-    const jsonResponse = await result.json();
-
-    console.log(jsonResponse);
 }
 
 async function getConversation(accessToken, zaloUserId) {
@@ -422,7 +390,6 @@ export {
     getFollowers,
     getProfile,
     sendMessage,
-    updateFollowerInfo,
     tagFollower,
     removeFollowerFromTag,
     sendReaction,
