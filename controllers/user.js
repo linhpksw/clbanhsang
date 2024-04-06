@@ -254,15 +254,10 @@ export const userRequest = async (req, res) => {
 
                         // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                         if (isManager) {
-                            console.log('Manager');
-                            console.log('webhook', webhook);
-
                             const quoteMessageId = webhook.message.quote_msg_id || null;
 
                             if (quoteMessageId !== null) {
                                 const replyContent = webhook.message.text;
-                                console.log('replyContent', replyContent);
-                                console.log('zaloUserId', zaloUserId);
 
                                 await Tools.sendMessageBack2Parent(
                                     accessToken,

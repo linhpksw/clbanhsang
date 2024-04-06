@@ -101,7 +101,6 @@ async function getConversation(accessToken, zaloUserId) {
     });
 
     const jsonResponse = await response.json();
-    console.log('getConversation', jsonResponse);
 
     return jsonResponse.data;
 }
