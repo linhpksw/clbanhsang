@@ -858,6 +858,7 @@ async function findZaloIdFromUserPhone(zaloColl, userPhone) {
 
 async function sendMessageBack2Parent(accessToken, zaloUserId, replyContent, quoteMessageId, zaloColl) {
     const conversation = await ZaloAPI.getConversation(accessToken, zaloUserId);
+    console.log(conversation);
 
     for (let i = 0; i < conversation.length; i++) {
         const { message_id, message } = conversation[i];
@@ -958,7 +959,7 @@ async function isManagerCheck(zaloUserId, classInfoColl) {
         { projection: { _id: 0 } }
     );
 
-    return result === null ? false : true;
+    return result !== null;
 }
 
 async function isFollow(zaloUserId, accessToken) {

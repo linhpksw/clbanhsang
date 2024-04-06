@@ -37,14 +37,10 @@ export const userRequest = async (req, res) => {
                     { zaloUserId: `${zaloUserId}` },
                     { projection: { _id: 0 } }
                 );
-                console.log('isExistInZaloColl: ', isExistInZaloColl);
 
                 // Neu nguoi dung quan tam lan dau
                 if (isExistInZaloColl === null) {
-                    console.log('new user follow');
-
                     const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
-                    console.log(profileDoc);
 
                     await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
 
@@ -55,8 +51,6 @@ export const userRequest = async (req, res) => {
 
                 // Nguoi dung quan tam tro lai
                 else {
-                    console.log('user follow back');
-
                     MongoDB.updateOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { $set: { status: 'follow' } });
 
                     if (isExistInZaloColl.userPhone === null) {
@@ -70,7 +64,6 @@ export const userRequest = async (req, res) => {
                 break;
 
             case 'unfollow':
-                console.log('process unfollow');
                 zaloUserId = webhook.follower.id;
 
                 await Tools.sendUnfollow2Assistant(accessToken, zaloUserId, zaloColl, classInfoColl);
@@ -179,8 +172,6 @@ export const userRequest = async (req, res) => {
 
                             ZaloAPI.sendMessage(accessToken, zaloUserId, response);
                         } else {
-                            console.log('sign up for parent');
-
                             Tools.signUp(
                                 accessToken,
                                 zaloUserId,
@@ -263,10 +254,14 @@ export const userRequest = async (req, res) => {
 
                         // Neu tu phia tro giang thi phan hoi lai cho phu huynh
                         if (isManager) {
+                            console.log('Manager');
+                            console.log('webhook', webhook);
+
                             const quoteMessageId = webhook.message.quote_msg_id || null;
 
                             if (quoteMessageId !== null) {
                                 const replyContent = webhook.message.text;
+                                console.log('replyContent', replyContent);
 
                                 await Tools.sendMessageBack2Parent(
                                     accessToken,
@@ -606,7 +601,6 @@ export const invoiceRequest = async (req, res) => {
                 );
 
                 if (existClass === null) {
-                    console.log('Class not exist');
                     break;
                 }
 

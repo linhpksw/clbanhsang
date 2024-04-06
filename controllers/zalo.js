@@ -6,10 +6,12 @@ import FormData from 'form-data';
 async function getFollowers(accessToken) {
     let totalFollowers = [];
     let offset = 0;
-    let count = 50;
-    const dataRequest = `%7B%22offset%22%3A${offset}%2C%22count%22%3A${count}%7D`;
+    const count = 50;
+    const isFollower = true;
 
-    const URL = `https://openapi.zalo.me/v2.0/oa/getfollowers?data=${dataRequest}`;
+    let dataRequest = `%7B%22offset%22%3A${offset}%2C%22count%22%3A${count}%2C%22is_follower%22%3A${isFollower}%7D`;
+
+    let URL = `https://openapi.zalo.me/v3.0/oa/user/getlist?data=${dataRequest}`;
 
     const response = await fetch(URL, {
         method: 'get',
@@ -18,15 +20,14 @@ async function getFollowers(accessToken) {
 
     const jsonResponse = await response.json();
 
-    const { total, followers } = jsonResponse.data;
-    totalFollowers.push(...followers);
+    const { total, users } = jsonResponse.data;
+    totalFollowers.push(...users);
 
     while (totalFollowers.length < total) {
         offset += 50;
-        count += 50;
-        const dataRequest = `%7B%22offset%22%3A${offset}%2C%22count%22%3A${count}%7D`;
 
-        const URL = `https://openapi.zalo.me/v2.0/oa/getfollowers?data=${dataRequest}`;
+        dataRequest = `%7B%22offset%22%3A${offset}%2C%22count%22%3A${count}%2C%22is_follower%22%3A${isFollower}%7D`;
+        URL = `https://openapi.zalo.me/v3.0/oa/user/getlist?data=${dataRequest}`;
 
         const response = await fetch(URL, {
             method: 'get',
@@ -35,9 +36,9 @@ async function getFollowers(accessToken) {
 
         const jsonResponse = await response.json();
 
-        const { total, followers } = jsonResponse.data;
+        const { total, users } = jsonResponse.data;
 
-        totalFollowers.push(...followers);
+        totalFollowers.push(...users);
     }
 
     let result = [];
