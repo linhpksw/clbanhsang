@@ -1003,8 +1003,8 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
     const { userPhone, displayName } = zaloInfo;
 
     // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-    for (let i = 0; i < isRegister.students.length; i++) {
-        const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+    for (let i = 0; i < zaloInfo.students.length; i++) {
+        const { zaloStudentId, zaloClassId, aliasName } = zaloInfo.students[i];
 
         // chuyen tiep tin nhan den tro giang tuong ung
         const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
