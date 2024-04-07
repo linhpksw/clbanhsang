@@ -1,8 +1,5 @@
 import * as MongoDB from './mongo.js';
 import * as ZaloAPI from './zalo.js';
-import fs from 'fs';
-import axios from 'axios';
-import FormData from 'form-data';
 
 function getStudyDate(startTerm, endTerm, weekday1, weekday2, absent1List, absent2List) {
     const convertWeekday = {
@@ -217,6 +214,81 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
         if (userPhone === null) {
             const attachMessage = {
                 text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
+                attachment: {
+                    type: 'template',
+                    payload: {
+                        buttons: [
+                            {
+                                title: 'Đăng kí tài khoản',
+                                payload: '#dktk',
+                                type: 'oa.query.show',
+                            },
+                        ],
+                    },
+                },
+            };
+
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+            return studentArr;
+        } else {
+            students.forEach((v) => {
+                if (!v.zaloClassId.includes('N')) {
+                    studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
+                }
+            });
+
+            if (studentArr.length === 0) {
+                const goodByeMessage =
+                    'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
+
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+            }
+
+            return studentArr;
+        }
+    }
+}
+
+async function notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl) {
+    const isExist = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
+
+    let studentArr = [];
+
+    if (isExist === null) {
+        const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
+
+        await ZaloAPI.removeFollowerFromTag(accessToken, zaloUserId, 'Chưa quan tâm');
+
+        await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
+
+        await MongoDB.insertOneUser(zaloColl, profileDoc);
+
+        const attachMessage = {
+            text: 'Phụ huynh hãy đăng ký tài khoản để được hỗ trợ nhanh nhất từ trợ giảng của trung tâm.',
+            attachment: {
+                type: 'template',
+                payload: {
+                    buttons: [
+                        {
+                            title: 'Đăng kí tài khoản',
+                            payload: '#dktk',
+                            type: 'oa.query.show',
+                        },
+                    ],
+                },
+            },
+        };
+
+        await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+        return studentArr;
+    } else {
+        const { userPhone, students } = isExist;
+
+        if (userPhone === null) {
+            const attachMessage = {
+                text: 'Phụ huynh hãy đăng ký tài khoản để được hỗ trợ nhanh nhất từ trợ giảng của trung tâm.',
                 attachment: {
                     type: 'template',
                     payload: {
@@ -915,59 +987,56 @@ async function sendImage2Assistant(res, accessToken, classInfoColl, zaloClassId,
 }
 
 async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, classInfoColl, imageInfo) {
-    const isRegister = await MongoDB.findOneUser(
+    const zaloStudentInfo = await notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl);
+
+    if (zaloStudentInfo.length === 0) {
+        return;
+    }
+
+    const zaloInfo = await MongoDB.findOneUser(
         zaloColl,
         { zaloUserId: `${zaloUserId}` },
         { projection: { _id: 0, students: 1, userPhone: 1, displayName: 1 } }
     );
 
-    // PHHS chua dang ki tai khoan thi khong nhan lai
-    if (isRegister.students.length === 0) {
-        return;
-    }
-    // PHHS da dang ki tai khoan thi chuyen tiep toi tro giang
-    else {
-        const { attachments, text: content, msg_id: messageId } = imageInfo;
-        const { userPhone, displayName } = isRegister;
+    const { attachments, text: content, msg_id: messageId } = imageInfo;
+    const { userPhone, displayName } = zaloInfo;
 
-        // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-        for (let i = 0; i < isRegister.students.length; i++) {
-            const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
+    // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+    for (let i = 0; i < isRegister.students.length; i++) {
+        const { zaloStudentId, zaloClassId, aliasName } = isRegister.students[i];
 
-            // chuyen tiep tin nhan den tro giang tuong ung
-            const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
-                content === undefined ? ':' : ` với nội dung: ${content}.`
-            }\n\nUID: ${userPhone}`;
+        // chuyen tiep tin nhan den tro giang tuong ung
+        const forwardImageContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi ảnh${
+            content === undefined ? ':' : ` với nội dung: ${content}.`
+        }\n\nUID: ${userPhone}`;
 
-            await sendImage2Assistant(res, accessToken, classInfoColl, zaloClassId, attachments, forwardImageContent);
-        }
+        await sendImage2Assistant(res, accessToken, classInfoColl, zaloClassId, attachments, forwardImageContent);
     }
 }
 
 async function forwardMessage2Assistant(accessToken, zaloUserId, messageId, zaloColl, classInfoColl, content) {
+    const zaloStudentInfo = await notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl);
+
+    if (zaloStudentInfo.length === 0) {
+        return;
+    }
+
     const zaloInfo = await MongoDB.findOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { projection: { _id: 0 } });
 
-    const isExist = zaloInfo !== null;
+    // PHHS da dang ki tai khoan
+    const { userPhone, displayName } = zaloInfo;
 
-    if (isExist) {
-        const isRegister = zaloInfo.students.length !== 0;
+    const totalStudent = zaloInfo.students.length;
 
-        // PHHS da dang ki tai khoan
-        if (isRegister) {
-            const { userPhone, displayName } = zaloInfo;
+    for (let i = 0; i < totalStudent; i++) {
+        // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
+        const { zaloStudentId, zaloClassId, aliasName } = zaloInfo.students[i];
 
-            const totalStudent = zaloInfo.students.length;
+        // chuyen tiep tin nhan den tro giang tuong ung
+        const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
 
-            for (let i = 0; i < totalStudent; i++) {
-                // Vong lap vi co truong hop 1 tai khoan Zalo dki 2 HS
-                const { zaloStudentId, zaloClassId, aliasName } = zaloInfo.students[i];
-
-                // chuyen tiep tin nhan den tro giang tuong ung
-                const forwardContent = `${aliasName} (${displayName}) ${zaloStudentId} lớp ${zaloClassId} đã gửi tin:\n${content}\n\nUID: ${userPhone}\nMID: ${messageId}`;
-
-                await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
-            }
-        }
+        await sendMessage2Assistant(accessToken, classInfoColl, zaloClassId, forwardContent);
     }
 }
 
