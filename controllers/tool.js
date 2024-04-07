@@ -189,13 +189,7 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
         await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa đăng kí');
 
         await MongoDB.insertOneUser(zaloColl, profileDoc);
-    }
 
-    let studentArr = [];
-
-    const { userPhone, students } = isExist;
-
-    if (userPhone === null) {
         const attachMessage = {
             text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
             attachment: {
@@ -216,20 +210,46 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 
         return studentArr;
     } else {
-        students.forEach((v) => {
-            if (!v.zaloClassId.includes('N')) {
-                studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
+        let studentArr = [];
+
+        const { userPhone, students } = isExist;
+
+        if (userPhone === null) {
+            const attachMessage = {
+                text: 'Phụ huynh cần đăng kí tài khoản để có thể sử dụng tính năng này.',
+                attachment: {
+                    type: 'template',
+                    payload: {
+                        buttons: [
+                            {
+                                title: 'Đăng kí tài khoản',
+                                payload: '#dktk',
+                                type: 'oa.query.show',
+                            },
+                        ],
+                    },
+                },
+            };
+
+            await ZaloAPI.sendMessageWithButton(accessToken, zaloUserId, attachMessage);
+
+            return studentArr;
+        } else {
+            students.forEach((v) => {
+                if (!v.zaloClassId.includes('N')) {
+                    studentArr.push([v.zaloStudentId, v.zaloClassId, v.role, v.aliasName]);
+                }
+            });
+
+            if (studentArr.length === 0) {
+                const goodByeMessage =
+                    'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
+
+                await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
             }
-        });
 
-        if (studentArr.length === 0) {
-            const goodByeMessage =
-                'Hiện tại phụ huynh đang không có con học tại trung tâm. Chúc phụ huynh một ngày tốt lành!';
-
-            await ZaloAPI.sendMessage(accessToken, zaloUserId, goodByeMessage);
+            return studentArr;
         }
-
-        return studentArr;
     }
 }
 
