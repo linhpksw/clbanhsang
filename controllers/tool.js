@@ -181,6 +181,8 @@ dkhs 2005xxx 0912345678
 async function notifyRegister(accessToken, zaloUserId, zaloColl) {
     const isExist = await MongoDB.findOneUser(zaloColl, { zaloUserId: zaloUserId }, { projection: { _id: 0 } });
 
+    let studentArr = [];
+
     if (isExist === null) {
         const profileDoc = await ZaloAPI.getProfile(accessToken, zaloUserId);
 
@@ -210,8 +212,6 @@ async function notifyRegister(accessToken, zaloUserId, zaloColl) {
 
         return studentArr;
     } else {
-        let studentArr = [];
-
         const { userPhone, students } = isExist;
 
         if (userPhone === null) {
