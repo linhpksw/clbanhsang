@@ -107,7 +107,7 @@ export const userRequest = async (req, res) => {
 
                     // Neu tu phia phu huynh thi phan hoi lai tin nhan hinh anh cho tro giang
                     else {
-                        await Tools.forwardImage2Assistant(
+                        const isSucess = await Tools.forwardImage2Assistant(
                             res,
                             accessToken,
                             zaloUserId,
@@ -116,11 +116,13 @@ export const userRequest = async (req, res) => {
                             imageInfo
                         );
 
-                        const thankYouMessage = `Trung tâm cảm ơn bác ạ!`;
+                        if (isSucess) {
+                            const thankYouMessage = `Trung tâm cảm ơn bác ạ!`;
 
-                        await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
+                            await ZaloAPI.sendReaction(accessToken, zaloUserId, messageId, 'heart');
 
-                        await ZaloAPI.sendMessage(accessToken, zaloUserId, thankYouMessage);
+                            await ZaloAPI.sendMessage(accessToken, zaloUserId, thankYouMessage);
+                        }
                     }
                 }
 

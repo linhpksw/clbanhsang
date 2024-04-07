@@ -990,7 +990,7 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
     const zaloStudentInfo = await notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl);
 
     if (zaloStudentInfo.length === 0) {
-        return;
+        return false;
     }
 
     const zaloInfo = await MongoDB.findOneUser(
@@ -1013,6 +1013,8 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
 
         await sendImage2Assistant(res, accessToken, classInfoColl, zaloClassId, attachments, forwardImageContent);
     }
+
+    return true;
 }
 
 async function forwardMessage2Assistant(accessToken, zaloUserId, messageId, zaloColl, classInfoColl, content) {
