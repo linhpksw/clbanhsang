@@ -395,9 +395,9 @@ export const userRequest = async (req, res) => {
 
                 // Neu chua follow OA
                 else {
-                    // const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
+                    const failContent = `PHHS vui lòng nhấn Quan tâm OA để được hỗ trợ nhanh chóng và sử dụng đầy đủ những tính năng của lớp toán.`;
 
-                    // await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
+                    await ZaloAPI.sendMessage(accessToken, zaloUserId, failContent);
 
                     await ZaloAPI.tagFollower(accessToken, zaloUserId, 'Chưa quan tâm');
                 }

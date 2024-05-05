@@ -1018,11 +1018,11 @@ async function forwardImage2Assistant(res, accessToken, zaloUserId, zaloColl, cl
 }
 
 async function forwardMessage2Assistant(accessToken, zaloUserId, messageId, zaloColl, classInfoColl, content) {
-    const zaloStudentInfo = await notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl);
+    // const zaloStudentInfo = await notifyRegisterWhenChat(accessToken, zaloUserId, zaloColl);
 
-    if (zaloStudentInfo.length === 0) {
-        return;
-    }
+    // if (zaloStudentInfo.length === 0) {
+    //     return;
+    // }
 
     const zaloInfo = await MongoDB.findOneUser(zaloColl, { zaloUserId: `${zaloUserId}` }, { projection: { _id: 0 } });
 
