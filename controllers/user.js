@@ -317,7 +317,7 @@ export const userRequest = async (req, res) => {
 
                             case isDC: {
                                 const attachMessage = {
-                                    text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại trường THPT Lê Hồng Phong, số 27 Tô Hiệu, P.Nguyễn Trãi, Hà Đông.`,
+                                    text: `Trung tâm toán Câu lạc bộ Ánh Sáng có địa chỉ tại Trung Tâm Đào Tạo Và Nghiên Cứu Khoa Học, số 27 Tô Hiệu, P.Nguyễn Trãi, Hà Đông.`,
                                     attachment: {
                                         type: 'template',
                                         payload: {
@@ -325,7 +325,7 @@ export const userRequest = async (req, res) => {
                                                 {
                                                     title: 'Xem cụ thể trên bản đồ',
                                                     payload: {
-                                                        url: 'https://maps.app.goo.gl/jugZtSFAoQi7sBfV6',
+                                                        url: 'https://maps.app.goo.gl/B1gid7k25ewuz4Wz8',
                                                     },
                                                     type: 'oa.open.url',
                                                 },
