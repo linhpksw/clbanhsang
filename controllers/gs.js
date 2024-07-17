@@ -924,7 +924,7 @@ export const sendMessage = async (req, res) => {
                                     {
                                         title: `Địa chỉ trên bản đồ `,
                                         payload: {
-                                            url: 'https://goo.gl/maps/ZsnJphBtPNprUpuJ8',
+                                            url: 'https://maps.app.goo.gl/a9WABGLbt2dCZKm8A',
                                         },
                                         type: 'oa.open.url',
                                         image_icon: mapIcon,
