@@ -867,6 +867,7 @@ export const sendMessage = async (req, res) => {
 
                 const imageId = await ZaloAPI.uploadImage(accessToken, './img/noti.jpg');
                 const mapIcon = await ZaloAPI.uploadImage(accessToken, './img/map.png');
+                const groupFbIcon = await ZaloAPI.uploadImage(accessToken, './img/invite.png');
 
                 for (let i = 0; i < rowsToSend.length; i++) {
                     const row = rowsToSend[i];
@@ -922,12 +923,20 @@ export const sendMessage = async (req, res) => {
                                 ],
                                 buttons: [
                                     {
-                                        title: `Địa chỉ trên bản đồ `,
+                                        title: `Địa chỉ lớp học`,
                                         payload: {
                                             url: 'https://maps.app.goo.gl/a9WABGLbt2dCZKm8A',
                                         },
                                         type: 'oa.open.url',
                                         image_icon: mapIcon,
+                                    },
+                                    {
+                                        title: `Nhóm FB Hỗ trợ học tập`,
+                                        payload: {
+                                            url: 'https://www.facebook.com/groups/clbanhsang',
+                                        },
+                                        type: 'oa.open.url',
+                                        image_icon: groupFbIcon,
                                     },
                                 ],
                             },
